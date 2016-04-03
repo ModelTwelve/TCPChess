@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TCPTest {
+namespace TCPChess {
     public class ChessServer {
         private int _listeningPort;
         private CancellationToken cToken;

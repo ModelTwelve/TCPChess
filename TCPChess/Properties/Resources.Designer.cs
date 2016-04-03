@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TCPTest.Properties {
+namespace TCPChess.Properties {
 
 
     /// <summary>

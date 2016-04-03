@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TCPTest {
+namespace TCPChess {
     public partial class MainForm : Form {
 
         private List<string> clientTestCommands = null;

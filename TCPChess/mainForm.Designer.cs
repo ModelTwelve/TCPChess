@@ -1,4 +1,4 @@
-﻿namespace TCPTest {
+﻿namespace TCPChess {
     partial class MainForm {
         /// <summary>
         /// Required designer variable.
