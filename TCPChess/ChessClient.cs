@@ -11,18 +11,16 @@ using System.Threading.Tasks;
 
 namespace TCPChess {
     public class ChessClient {
-
+        private object _lock = new object();
         private CancellationToken cToken;
         private IProgress<ReportingClass> progress;
-        private ReportingClass reportingClass = new ReportingClass();
-        private bool doneWrite = false;
-        private bool doneRead = false;
-        private List<string> clientTestCommands;
+        private ReportingClass reportingClass = new ReportingClass();        
+        private List<string> clientCommands;
 
-        public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientTestCommands=null) {
+        public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands=null) {
             this.cToken = cToken;
             this.progress = progress;
-            this.clientTestCommands = clientTestCommands ?? new List<string>();
+            this.clientCommands = clientCommands ?? new List<string>();
         }
 
         public async Task Start(int port) {
@@ -51,40 +49,49 @@ namespace TCPChess {
         }
 
         private async Task allDone() {
-            while (!doneWrite || !doneRead) {
-                if (doneWrite) {
-                    doneRead = true;
-                }
+            while (!cToken.IsCancellationRequested) { 
                 // Give the reader one additional sec to read from the stream while data is still available
-                Task.Delay(1000, cToken).Wait(cToken);
+                Task.Delay(1000).Wait();
             }
         }
 
         private async Task writeTask(StreamWriter writer) {
             writer.AutoFlush = true;
-            for (int i = 0; i < clientTestCommands.Count; i++) {
-                string messageToSend = clientTestCommands[i];
+            while (true) {
+                string messageToSend = null;
+                if (clientCommands.Count > 0) {
+                    lock (_lock) {
+                        messageToSend = clientCommands[0];
 
-                reportingClass.addMessage("Sending: " + messageToSend);
-                progress.Report(reportingClass);
-
-                await writer.WriteLineAsync(messageToSend);
-
-                Task.Delay(1000).Wait();
-            }
-
-            doneWrite = true;
+                        reportingClass.addMessage("Sending: " + messageToSend);
+                        progress.Report(reportingClass);
+                        clientCommands.RemoveAt(0);
+                    }
+                    await writer.WriteLineAsync(messageToSend);
+                }
+                Task.Delay(100).Wait();
+            }     
         }
 
         private async Task readTask(StreamReader reader) {
             while (true) {
                 var dataFromServer = await reader.ReadLineAsync();
-
-                doneRead = false;
-
                 if (!string.IsNullOrEmpty(dataFromServer)) {
                     reportingClass.addMessage(dataFromServer);
                 }
+                progress.Report(reportingClass);
+            }
+        }
+
+        public void requestMove(string moveTo) {
+            lock (_lock) {
+                clientCommands.Add("MOVE,"+moveTo);
+            }
+        }
+
+        public void getBoard() {
+            lock (_lock) {
+                clientCommands.Add("GET,board");
             }
         }
     }

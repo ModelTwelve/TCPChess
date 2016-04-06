@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,18 +14,35 @@ namespace TCPChess {
     public partial class MainForm : Form {
 
         private List<string> clientTestCommands = null;
-        private Dictionary<string, List<string>> serverResponses = null;
+        private List<string[]> serverResponses = null;
 
         private Dictionary<string, PictureBox> pbPieces = new Dictionary<string, PictureBox>();
 
-        private CancellationTokenSource tokenSource = new CancellationTokenSource();
+        private CancellationTokenSource serverTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource clientTokenSource = new CancellationTokenSource();
         private object _serverLock = new object();
         private object _clientLock = new object();
 
         private string currentBoardLayout = "";
 
+        private Brush black = new SolidBrush(Color.DarkGray);
+        private Brush white = new SolidBrush(Color.AntiqueWhite);
+        private Brush yellow = new SolidBrush(Color.Yellow);
+
+        private int margin = 10;
+        private float width = 50;
+        private float height = 50;
+
+        private ChessClient client = null;
+
+        private int selectedX = -1, selectedY = -1;
+
         public MainForm() {
             InitializeComponent();
+
+            typeof(PictureBox).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
+            | BindingFlags.Instance | BindingFlags.NonPublic, null,
+            boardPB, new object[] { true });
 
             ((Bitmap)bBishop.Image).MakeTransparent(((Bitmap)bBishop.Image).GetPixel(1, 1));
             bBishop.BackColor = System.Drawing.Color.Transparent;
@@ -78,6 +96,8 @@ namespace TCPChess {
             pbPieces.Add("WQUEEN", wQueen);
             pbPieces.Add("WROOK", wRook);
 
+            boardPB.Image = new Bitmap(420, 420);
+
             testInit();
         }
 
@@ -89,33 +109,22 @@ namespace TCPChess {
                 "PLAY,Jacob",
                 "CHOOSE,white",
                 "GET,board",
-                "MOVE,6:0,5:0",
-                "GET,board",
             };
-
-            var board = getInitialBoard();
-            board.Add(board[0].Replace("6:0:W:PAWN", "5:0:W:PAWN"));
-
-            serverResponses = new Dictionary<string, List<string>>() {
-                { "CONNECT,Kenny", new List<string>() { "OK" } },
-                { "GET,players", new List<string>() {"Players,Jacob,Chris,Kenny" } },
-                { "PLAY,Jacob",new List<string>() {"OK" } },
-                { "CHOOSE,white", new List<string>() {"OK" } },
-                { "GET,board", board },
-                { "MOVE,6:0,5:0", new List<string>() {"OK" } }
+            
+            serverResponses = new List<string[]>() {
+                new string[] { "CONNECT,Kenny", "OK"  },
+                new string[] { "GET,players", "Players,Jacob,Chris,Kenny" },
+                new string[] { "PLAY,Jacob", "OK" },
+                new string[] { "CHOOSE,white", "OK" },
             };
-        }
+        }        
 
-        private void drawBoard() {
+        private void showBoard() {
+
+            directionsLB.Visible = true;
 
             Graphics gObj = Graphics.FromImage(boardPB.Image);
 
-            Brush black = new SolidBrush(Color.DarkGray);
-            Brush white = new SolidBrush(Color.AntiqueWhite);
-
-            int margin = 10;
-            float width = 50;
-            float height = 50;
             for (int row = 0; row < 8; ++row) {
                 Brush even;
                 Brush odd;
@@ -135,91 +144,41 @@ namespace TCPChess {
                         gObj.FillRectangle(odd, column * width + margin, row * height + margin, width, height);
                     }
                 }
-            }                       
+            }                      
+        }
 
+        private void showPieces() {
+
+            Graphics gObj = Graphics.FromImage(boardPB.Image);
+            
             string[] pieces = currentBoardLayout.Split(',');
-            foreach(var piece in pieces) {
+            foreach (var piece in pieces) {
                 if (!piece.ToUpper().Equals("BOARD")) {
                     string[] info = piece.Split(':');
                     // ex layout 
                     // row:col:color:piece
                     // 1:0:B:PAWN
-                    float row = height * Convert.ToSingle(info[0]);
-                    float column = width * Convert.ToSingle(info[1]);
+                    float column = height * Convert.ToSingle(info[0]);
+                    float row = width * Convert.ToSingle(info[1]);
 
                     string key = info[2].ToUpper() + info[3].ToUpper();
                     if (pbPieces.ContainsKey(key)) {
                         gObj.DrawImage(pbPieces[key].Image, Convert.ToInt32(column) + margin, Convert.ToInt32(row) + margin, width, height);
-                    }                              
+                    }
                 }
             }
-            boardPB.Invalidate();
         }
 
         private void button1_Click(object sender, EventArgs e) {
-
-            boardPB.Image = new Bitmap(420, 420);
-
+            serverStartBTN.Enabled = false;
             startServer();
         }
 
-        private List<string> getInitialBoard() {
-            List<string> rv = new List<string>();
 
-            // Setup Black on top for now
-            rv.Add("0:0:B:ROOK");
-            rv.Add("0:1:B:KNIGHT");
-            rv.Add("0:2:B:BISHOP");
-            rv.Add("0:3:B:KING");
-            rv.Add("0:4:B:QUEEN");
-            rv.Add("0:5:B:BISHOP");
-            rv.Add("0:6:B:KNIGHT");
-            rv.Add("0:7:B:ROOK");
-
-            rv.Add("1:0:B:PAWN");
-            rv.Add("1:1:B:PAWN");
-            rv.Add("1:2:B:PAWN");
-            rv.Add("1:3:B:PAWN");
-            rv.Add("1:4:B:PAWN");
-            rv.Add("1:5:B:PAWN");
-            rv.Add("1:6:B:PAWN");
-            rv.Add("1:7:W:PAWN");
-
-            // White on the bottom
-
-            rv.Add("6:0:W:PAWN");
-            rv.Add("6:1:W:PAWN");
-            rv.Add("6:2:W:PAWN");
-            rv.Add("6:3:W:PAWN");
-            rv.Add("6:4:W:PAWN");
-            rv.Add("6:5:W:PAWN");
-            rv.Add("6:6:W:PAWN");
-            rv.Add("6:7:W:PAWN");
-
-            rv.Add("7:0:W:ROOK");
-            rv.Add("7:1:W:KNIGHT");
-            rv.Add("7:2:W:BISHOP");
-            rv.Add("7:3:W:KING");
-            rv.Add("7:4:W:QUEEN");
-            rv.Add("7:5:W:BISHOP");
-            rv.Add("7:6:W:KNIGHT");
-            rv.Add("7:7:W:ROOK");
-
-            StringBuilder sb = new StringBuilder();
-            foreach(var square in rv) {
-                sb.Append(square + ",");
-            }
-            sb.Remove(sb.Length - 1, 1);
-
-            rv.Clear();
-            rv.Add("Board,"+sb.ToString());
-
-            return rv;
-        }
 
         private async void startServer() {
             Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportServerProgress);
-            ChessServer server = new ChessServer(12345, tokenSource.Token, progress, serverResponses);
+            ChessServer server = new ChessServer(12345, serverTokenSource.Token, progress, serverResponses);
             var t = Task.Run(async() => await server.Start());
         }
 
@@ -232,13 +191,21 @@ namespace TCPChess {
         }
 
         private void button2_Click(object sender, EventArgs e) {
+            clientStartBTN.Enabled = false;
+            stopClientBTN.Enabled = true;
             startClient();
         }
 
         private async void startClient() {
             Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportClientProgress);
-            ChessClient client = new ChessClient(tokenSource.Token, progress, clientTestCommands);
-            var t = Task.Run(async () =>  await client.Start(12345) );            
+            client = new ChessClient(clientTokenSource.Token, progress, clientTestCommands);
+            var t = Task.Run(async () => {
+                await client.Start(12345);
+                clientTokenSource = new CancellationTokenSource();
+                testInit();
+                client = null;
+            });
+            
         }
 
         private void ReportClientProgress(ReportingClass src) {
@@ -247,10 +214,58 @@ namespace TCPChess {
                     clientDebugListBox.Items.Add(info);
                     if (info.ToUpper().StartsWith("BOARD,")) {
                         currentBoardLayout = info;
-                        drawBoard();
+
+                        showBoard();
+                        showPieces();
+                        boardPB.Invalidate();
                     }
                 }
             }
+        }
+
+        private void boardPB_Click(object sender, EventArgs e) {
+
+            // Reset the board
+            showBoard();            
+            float x, y;
+            
+            Point point = boardPB.PointToClient(Cursor.Position);
+            MouseEventArgs me = (MouseEventArgs)e;
+            if (me.Button == MouseButtons.Left) {
+                x = point.X - margin;
+                y = point.Y - margin;
+                selectedX = Convert.ToInt32(x) / Convert.ToInt32(width);
+                selectedY = Convert.ToInt32(y) / Convert.ToInt32(height);
+                Graphics gObj = Graphics.FromImage(boardPB.Image);
+                gObj.FillRectangle(yellow, selectedX * width + margin, selectedY * height + margin, width, height);
+            }
+            else {
+                if (selectedX != -1) {
+
+                    x = point.X - margin;
+                    y = point.Y - margin;
+
+                    int newX = 0, newY = 0;
+                    newX = Convert.ToInt32(x) / Convert.ToInt32(width);
+                    newY = Convert.ToInt32(y) / Convert.ToInt32(height);
+
+                    if (client != null) {
+                        client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString());
+                        client.getBoard();
+                    }
+                    selectedX = -1;
+                    selectedY = -1;
+                }
+            }
+            showPieces();
+            boardPB.Invalidate();
+        }
+
+        private void stopClientBTN_Click(object sender, EventArgs e) {
+            clientStartBTN.Enabled = true;
+            clientTokenSource.Cancel();
+            stopClientBTN.Enabled = false;
+            directionsLB.Visible = false;
         }
     }
 }

@@ -41,6 +41,8 @@
             this.wKnight = new System.Windows.Forms.PictureBox();
             this.wKing = new System.Windows.Forms.PictureBox();
             this.wBishop = new System.Windows.Forms.PictureBox();
+            this.stopClientBTN = new System.Windows.Forms.Button();
+            this.directionsLB = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -102,6 +104,7 @@
             this.boardPB.Size = new System.Drawing.Size(420, 420);
             this.boardPB.TabIndex = 4;
             this.boardPB.TabStop = false;
+            this.boardPB.Click += new System.EventHandler(this.boardPB_Click);
             // 
             // bBishop
             // 
@@ -235,11 +238,36 @@
             this.wBishop.TabStop = false;
             this.wBishop.Visible = false;
             // 
+            // stopClientBTN
+            // 
+            this.stopClientBTN.Enabled = false;
+            this.stopClientBTN.Location = new System.Drawing.Point(454, 258);
+            this.stopClientBTN.Name = "stopClientBTN";
+            this.stopClientBTN.Size = new System.Drawing.Size(75, 23);
+            this.stopClientBTN.TabIndex = 17;
+            this.stopClientBTN.Text = "Stop Client";
+            this.stopClientBTN.UseVisualStyleBackColor = true;
+            this.stopClientBTN.Click += new System.EventHandler(this.stopClientBTN_Click);
+            // 
+            // directionsLB
+            // 
+            this.directionsLB.AutoSize = true;
+            this.directionsLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.directionsLB.ForeColor = System.Drawing.Color.Red;
+            this.directionsLB.Location = new System.Drawing.Point(755, 437);
+            this.directionsLB.Name = "directionsLB";
+            this.directionsLB.Size = new System.Drawing.Size(438, 25);
+            this.directionsLB.TabIndex = 18;
+            this.directionsLB.Text = "Left Click to Select - Right Click to Move";
+            this.directionsLB.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1205, 487);
+            this.Controls.Add(this.directionsLB);
+            this.Controls.Add(this.stopClientBTN);
             this.Controls.Add(this.wRook);
             this.Controls.Add(this.wQueen);
             this.Controls.Add(this.wPawn);
@@ -296,6 +324,8 @@
         private System.Windows.Forms.PictureBox wKnight;
         private System.Windows.Forms.PictureBox wKing;
         private System.Windows.Forms.PictureBox wBishop;
+        private System.Windows.Forms.Button stopClientBTN;
+        private System.Windows.Forms.Label directionsLB;
     }
 }
 
