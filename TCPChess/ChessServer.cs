@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace TCPChess {
     public class ChessServer {
-
         public class PerClientGameData {
             public List<string> serverResponses = new List<string>();
             public string currentBoard = "";
@@ -109,21 +108,16 @@ namespace TCPChess {
                 if (!string.IsNullOrEmpty(dataFromClient)) {
 
                     reportingClass.addMessage(dataFromClient);
-                    
-                    if (dataFromClient.ToUpper().StartsWith("GET,BOARD")) {
-                        lock(_lock) {
+                    lock (_lock) {
+                        if (dataFromClient.ToUpper().StartsWith("GET,BOARD")) {
                             dictConnections[remoteEndPoint].serverResponses.Add("BOARD," + dictConnections[remoteEndPoint].currentBoard);
                         }
-                    }
-                    else if (dataFromClient.ToUpper().StartsWith("MOVE,")) {
-                        lock (_lock) {
+                        else if (dataFromClient.ToUpper().StartsWith("MOVE,")) {
                             string[] split = dataFromClient.Split(',');
                             dictConnections[remoteEndPoint].currentBoard = movePieceOnBoard(dictConnections[remoteEndPoint].currentBoard, split[1], split[2]);
-                            dictConnections[remoteEndPoint].serverResponses.Add("OK");    
-                        }                        
-                    }
-                    else {
-                        lock(_lock) {
+                            dictConnections[remoteEndPoint].serverResponses.Add("OK");
+                        }
+                        else {
                             dictConnections[remoteEndPoint].serverResponses.Add("OK");
                         }
                     }
