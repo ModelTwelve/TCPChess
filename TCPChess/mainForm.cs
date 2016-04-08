@@ -109,14 +109,7 @@ namespace TCPChess {
                 "PLAY,Jacob",
                 "CHOOSE,white",
                 "GET,board",
-            };
-            
-            serverResponses = new List<string[]>() {
-                new string[] { "CONNECT,Kenny", "OK"  },
-                new string[] { "GET,players", "Players,Jacob,Chris,Kenny" },
-                new string[] { "PLAY,Jacob", "OK" },
-                new string[] { "CHOOSE,white", "OK" },
-            };
+            };            
         }        
 
         private void showBoard() {
@@ -178,7 +171,7 @@ namespace TCPChess {
 
         private async void startServer() {
             Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportServerProgress);
-            ChessServer server = new ChessServer(12345, serverTokenSource.Token, progress, serverResponses);
+            ChessServer server = new ChessServer(12345, serverTokenSource.Token, progress);
             var t = Task.Run(async() => await server.Start());
         }
 

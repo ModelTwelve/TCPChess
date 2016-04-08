@@ -11,17 +11,23 @@ using System.Threading.Tasks;
 
 namespace TCPChess {
     public class ChessServer {
+
+        public class PerClientGameData {
+            public List<string> serverResponses = new List<string>();
+            public string currentBoard = "";
+        }
         private int _listeningPort;
         private CancellationToken cToken;
         private IProgress<ReportingClass> progress;
         private ReportingClass reportingClass = new ReportingClass();
-        private List<string[]> serverResponses;
+        
+        private Dictionary<string, PerClientGameData> dictConnections = new Dictionary<string, PerClientGameData>();
+        private object _lock = new object();
 
-        public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress, List<string[]> serverResponses= null) {
+        public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress) {
             _listeningPort = port;
             this.cToken = cToken;
             this.progress = progress;
-            this.serverResponses = serverResponses ?? new List<string[]>();
         }
         public async Task Start() {
             IPAddress ipAddre = IPAddress.Any;
@@ -35,7 +41,10 @@ namespace TCPChess {
                 try {
                     progress.Report(reportingClass);
                     var tcpClient = await listener.AcceptTcpClientAsync();
-                    HandleConnectionAsync(tcpClient);
+                    lock(_lock) {
+                        dictConnections.Add(tcpClient.Client.RemoteEndPoint.ToString(), new PerClientGameData() { currentBoard = getInitialBoard() });
+                    }
+                    Task.Run(() => HandleConnectionAsync(tcpClient));
                 }
                 catch (Exception exp) {
                     reportingClass.addMessage(exp.ToString());
@@ -47,34 +56,15 @@ namespace TCPChess {
             string clientInfo = tcpClient.Client.RemoteEndPoint.ToString();
             reportingClass.addMessage(string.Format("Got connection request from {0}", clientInfo));
             try {
-                string currentBoard = getInitialBoard();
-                using (var networkStream = tcpClient.GetStream())
-                using (var reader = new StreamReader(networkStream))
-                using (var writer = new StreamWriter(networkStream)) {
-                    writer.AutoFlush = true;
-                    while (true) {
-                        progress.Report(reportingClass);
-                        var dataFromClient = await reader.ReadLineAsync();
-                        if (string.IsNullOrEmpty(dataFromClient)) {
-                            break;
+                using (var networkStream = tcpClient.GetStream()) {
+                    using (var writer = new StreamWriter(networkStream)) {
+                        using (var reader = new StreamReader(networkStream)) {
+                            Task.Run(() => readTask(reader, clientInfo));
+                            Task.Run(() => writeTask(writer, clientInfo));
+                            await allDone();
                         }
-                        string responseToClient = "UNKNOWN";
-                        reportingClass.addMessage("Client " + clientInfo + " says: " + dataFromClient);
-                        if (dataFromClient.ToUpper().StartsWith("GET,BOARD")) {
-                            responseToClient = currentBoard;
-                        }
-                        else if (dataFromClient.ToUpper().StartsWith("MOVE,")) {
-                            string[] split = dataFromClient.Split(',');
-                            currentBoard = movePieceOnBoard(currentBoard, split[1], split[2]);
-                            responseToClient = currentBoard;
-                        }
-                        else {
-                            responseToClient = findAutoResponse(dataFromClient, currentBoard) ?? "UNKNOWN";
-                        }
-                        reportingClass.addMessage("Sending: " + responseToClient);
-                        await writer.WriteLineAsync(responseToClient);
                     }
-                }
+                }                
             }
             catch (Exception exp) {
                 reportingClass.addMessage(exp.Message);
@@ -87,15 +77,60 @@ namespace TCPChess {
             progress.Report(reportingClass);
 
         }
-
-        private string findAutoResponse(string dataFromClient, string currentBoard) {
-            foreach(var sa in serverResponses) {
-                if (dataFromClient.ToUpper().StartsWith(sa[0].ToUpper())) {                    
-                    return sa[1];
-                }
+        private async Task allDone() {
+            while (!cToken.IsCancellationRequested) {
+                // Give the reader one additional sec to read from the stream while data is still available
+                Task.Delay(1000).Wait();
             }
-            return null;
         }
+
+        private async Task writeTask(StreamWriter writer, string remoteEndPoint) {
+            writer.AutoFlush = true;
+            while (true) {
+                string messageToSend = null;
+                lock (_lock) {
+                    if (dictConnections[remoteEndPoint].serverResponses.Count > 0) {
+                        messageToSend = dictConnections[remoteEndPoint].serverResponses[0];
+                        reportingClass.addMessage("Sending: " + messageToSend);
+                        progress.Report(reportingClass);
+                        dictConnections[remoteEndPoint].serverResponses.RemoveAt(0);
+                    }
+                }
+                if (messageToSend != null) {
+                    await writer.WriteLineAsync(messageToSend);
+                }
+                Task.Delay(100).Wait();   
+            }
+        }
+
+        private async Task readTask(StreamReader reader, string remoteEndPoint) {
+            while (true) {
+                var dataFromClient = await reader.ReadLineAsync();
+                if (!string.IsNullOrEmpty(dataFromClient)) {
+
+                    reportingClass.addMessage(dataFromClient);
+                    
+                    if (dataFromClient.ToUpper().StartsWith("GET,BOARD")) {
+                        lock(_lock) {
+                            dictConnections[remoteEndPoint].serverResponses.Add("BOARD," + dictConnections[remoteEndPoint].currentBoard);
+                        }
+                    }
+                    else if (dataFromClient.ToUpper().StartsWith("MOVE,")) {
+                        lock (_lock) {
+                            string[] split = dataFromClient.Split(',');
+                            dictConnections[remoteEndPoint].currentBoard = movePieceOnBoard(dictConnections[remoteEndPoint].currentBoard, split[1], split[2]);
+                            dictConnections[remoteEndPoint].serverResponses.Add("OK");    
+                        }                        
+                    }
+                    else {
+                        lock(_lock) {
+                            dictConnections[remoteEndPoint].serverResponses.Add("OK");
+                        }
+                    }
+                }
+                progress.Report(reportingClass);
+            }
+        }        
 
         private string movePieceOnBoard(string currentBoard, string from, string to) {
             string[] pieces = currentBoard.Split(',');
