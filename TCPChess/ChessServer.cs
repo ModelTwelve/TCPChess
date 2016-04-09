@@ -10,10 +10,60 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace TCPChess {
-    public class ChessServer {
+    public class ChessServer {      
         public class PerClientGameData {
             public List<string> serverResponses = new List<string>();
-            public string currentBoard = "";
+            public string playersName = null;
+            public Dictionary<string, ChessPiece> chessPieces = null;
+
+            public PerClientGameData() {
+                init();
+            }
+
+            public string serializeBoard() {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Board");
+                foreach(var kvp in chessPieces) {
+                    sb.Append("," + kvp.Key + ":" + kvp.Value.Color + ":" + kvp.Value.KindOfPiece);
+                }
+                return sb.ToString();
+            }
+
+            private void init() {
+                chessPieces = new Dictionary<string, ChessPiece>();
+                chessPieces.Add("0:0", new ROOK("B"));
+                chessPieces.Add("1:0", new KNIGHT("B"));
+                chessPieces.Add("2:0", new BISHOP("B"));
+                chessPieces.Add("3:0", new KING("B"));
+                chessPieces.Add("4:0", new QUEEN("B"));
+                chessPieces.Add("5:0", new BISHOP("B"));
+                chessPieces.Add("6:0", new KNIGHT("B"));
+                chessPieces.Add("7:0", new ROOK("B"));
+                chessPieces.Add("0:1", new PAWN("B"));
+                chessPieces.Add("1:1", new PAWN("B"));
+                chessPieces.Add("2:1", new PAWN("B"));
+                chessPieces.Add("3:1", new PAWN("B"));
+                chessPieces.Add("4:1", new PAWN("B"));
+                chessPieces.Add("5:1", new PAWN("B"));
+                chessPieces.Add("6:1", new PAWN("B"));
+                chessPieces.Add("7:1", new PAWN("B"));
+                chessPieces.Add("0:6", new PAWN("W"));
+                chessPieces.Add("1:6", new PAWN("W"));
+                chessPieces.Add("2:6", new PAWN("W"));
+                chessPieces.Add("3:6", new PAWN("W"));
+                chessPieces.Add("4:6", new PAWN("W"));
+                chessPieces.Add("5:6", new PAWN("W"));
+                chessPieces.Add("6:6", new PAWN("W"));
+                chessPieces.Add("7:6", new PAWN("W"));
+                chessPieces.Add("0:7", new ROOK("W"));
+                chessPieces.Add("1:7", new KNIGHT("W"));
+                chessPieces.Add("2:7", new BISHOP("W"));
+                chessPieces.Add("3:7", new KING("W"));
+                chessPieces.Add("4:7", new QUEEN("W"));
+                chessPieces.Add("5:7", new BISHOP("W"));
+                chessPieces.Add("6:7", new KNIGHT("W"));
+                chessPieces.Add("7:7", new ROOK("W"));
+            }
         }
         private int _listeningPort;
         private CancellationToken cToken;
@@ -21,6 +71,7 @@ namespace TCPChess {
         private ReportingClass reportingClass = new ReportingClass();
         
         private Dictionary<string, PerClientGameData> dictConnections = new Dictionary<string, PerClientGameData>();
+        private Dictionary<string, string> dictPlayers = new Dictionary<string, string>();
         private object _lock = new object();
 
         public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress) {
@@ -35,13 +86,15 @@ namespace TCPChess {
             reportingClass.addMessage("Server is running");
             reportingClass.addMessage("Listening on port " + _listeningPort);
 
+            int connectionNumber = 0;
             while (true) {
-                reportingClass.addMessage("Waiting for connections...");
+                ++connectionNumber;
+                reportingClass.addMessage(String.Format("Waiting for connection {0} ...",connectionNumber.ToString()));
                 try {
                     progress.Report(reportingClass);
                     var tcpClient = await listener.AcceptTcpClientAsync();
                     lock(_lock) {
-                        dictConnections.Add(tcpClient.Client.RemoteEndPoint.ToString(), new PerClientGameData() { currentBoard = getInitialBoard() });
+                        dictConnections.Add(tcpClient.Client.RemoteEndPoint.ToString(), new PerClientGameData());
                     }
                     Task.Run(() => HandleConnectionAsync(tcpClient));
                 }
@@ -109,85 +162,85 @@ namespace TCPChess {
 
                     reportingClass.addMessage(dataFromClient);
                     lock (_lock) {
-                        if (dataFromClient.ToUpper().StartsWith("GET,BOARD")) {
-                            dictConnections[remoteEndPoint].serverResponses.Add("BOARD," + dictConnections[remoteEndPoint].currentBoard);
-                        }
-                        else if (dataFromClient.ToUpper().StartsWith("MOVE,")) {
-                            string[] split = dataFromClient.Split(',');
-                            dictConnections[remoteEndPoint].currentBoard = movePieceOnBoard(dictConnections[remoteEndPoint].currentBoard, split[1], split[2]);
-                            dictConnections[remoteEndPoint].serverResponses.Add("OK");
-                        }
-                        else {
-                            dictConnections[remoteEndPoint].serverResponses.Add("OK");
-                        }
+                        processCommand(remoteEndPoint, dataFromClient);
                     }
                 }
                 progress.Report(reportingClass);
             }
         }        
+        private void processServerTestCommand(string remoteEndPoint, string dataFromClient) {
+            string[] split = dataFromClient.ToUpper().Split(',');
 
-        private string movePieceOnBoard(string currentBoard, string from, string to) {
-            string[] pieces = currentBoard.Split(',');
+            if (split[1].StartsWith("CONNECT")) {
+                if (!dictPlayers.ContainsKey(split[2])) {
+                    // Setup a special remote endpoint for testing
+                    remoteEndPoint = "_"+split[2]+"_"+ remoteEndPoint;
+                    dictConnections.Add(remoteEndPoint,new PerClientGameData());
+                    dictPlayers.Add(split[2], remoteEndPoint);
+                    dictConnections[remoteEndPoint].playersName = split[2];
+                }
+                return;
+            }
+        }
 
-            for(int x = 0; x < pieces.Length; x++) {
-                if(pieces[x].StartsWith(from)) {
-                    pieces[x] = to + pieces[x].Remove(0, 3);
-                    break;
+        private void processCommand(string remoteEndPoint, string dataFromClient) {            
+            string upperData = dataFromClient.ToUpper();
+            string[] upperSplit = upperData.Split(','), dataSplit = dataFromClient.Split(',');
+            var clientGameData = dictConnections[remoteEndPoint];
+
+            if (upperData.StartsWith("SERVER_COMMAND,")) {
+                // Special server command used for testing only!
+                processServerTestCommand(remoteEndPoint, dataFromClient);
+                return;
+            }
+            if (upperData.StartsWith("CONNECT,")) {
+                if (!dictPlayers.ContainsKey(upperSplit[1])) {
+                    dictPlayers.Add(upperSplit[1], remoteEndPoint);
+                    clientGameData.playersName = dataSplit[1];
+                    clientGameData.serverResponses.Add("OK");
+                }
+                else {
+                    clientGameData.serverResponses.Add("ERROR,Invalid Name");
+                }
+                return;
+            }
+
+            if (upperData.StartsWith("GET,BOARD")) {
+                clientGameData.serverResponses.Add("BOARD," + clientGameData.serializeBoard());
+                return;
+            }
+
+            if (upperData.StartsWith("MOVE,")) {
+                string[] split = dataFromClient.Split(',');
+                if (movePieceOnBoard(remoteEndPoint, split[1], split[2])) {
+                    clientGameData.serverResponses.Add("OK");
+                }
+                else {
+                    clientGameData.serverResponses.Add("ERROR,You cannot move there");
+                }
+                return;
+            }
+
+            // WTH ... just say OK
+            clientGameData.serverResponses.Add("OK");
+        }
+
+        private bool movePieceOnBoard(string remoteEndPoint, string from, string to) {
+            bool rv = false;
+            // Almost always true for now ... server has only small amount of logic!
+            // dict should already be locked
+            var chessPieces = dictConnections[remoteEndPoint].chessPieces;
+            if (chessPieces.ContainsKey(from)) {
+                ChessPiece cp = chessPieces[from];
+                if (!chessPieces.ContainsKey(to)) {
+                    chessPieces.Add(to, cp);
+                    // If we moved it then it's now gone from the other location aye?
+                    chessPieces.Remove(from);
+                    return true;
                 }
             }
-            return string.Join(",", pieces);
-        }
 
-        private string getInitialBoard() {
-            List<string> rv = new List<string>();
-
-            // Setup Black on top for now
-            rv.Add("0:0:B:ROOK");
-            rv.Add("1:0:B:KNIGHT");
-            rv.Add("2:0:B:BISHOP");
-            rv.Add("3:0:B:KING");
-            rv.Add("4:0:B:QUEEN");
-            rv.Add("5:0:B:BISHOP");
-            rv.Add("6:0:B:KNIGHT");
-            rv.Add("7:0:B:ROOK");
-
-            rv.Add("0:1:B:PAWN");
-            rv.Add("1:1:B:PAWN");
-            rv.Add("2:1:B:PAWN");
-            rv.Add("3:1:B:PAWN");
-            rv.Add("4:1:B:PAWN");
-            rv.Add("5:1:B:PAWN");
-            rv.Add("6:1:B:PAWN");
-            rv.Add("7:1:B:PAWN");
-
-            // White on the bottom
-
-            rv.Add("0:6:W:PAWN");
-            rv.Add("1:6:W:PAWN");
-            rv.Add("2:6:W:PAWN");
-            rv.Add("3:6:W:PAWN");
-            rv.Add("4:6:W:PAWN");
-            rv.Add("5:6:W:PAWN");
-            rv.Add("6:6:W:PAWN");
-            rv.Add("7:6:W:PAWN");
-
-            rv.Add("0:7:W:ROOK");
-            rv.Add("1:7:W:KNIGHT");
-            rv.Add("2:7:W:BISHOP");
-            rv.Add("3:7:W:KING");
-            rv.Add("4:7:W:QUEEN");
-            rv.Add("5:7:W:BISHOP");
-            rv.Add("6:7:W:KNIGHT");
-            rv.Add("7:7:W:ROOK");
-
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Board,");
-            foreach (var square in rv) {
-                sb.Append(square + ",");
-            }
-            sb.Remove(sb.Length - 1, 1);
-
-            return sb.ToString();
-        }
+            return rv;
+        }        
     }
 }

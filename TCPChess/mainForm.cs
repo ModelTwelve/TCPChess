@@ -104,11 +104,11 @@ namespace TCPChess {
         private void testInit() {
 
             clientTestCommands = new List<string>() {
+                "Server_Command,Connect,Jacob",
                 "CONNECT,Kenny",
                 "GET,players",
-                "PLAY,Jacob",
-                "CHOOSE,white",
-                "GET,board",
+                "PLAY,Jacob,W",
+                "GET,board",                
             };            
         }        
 
