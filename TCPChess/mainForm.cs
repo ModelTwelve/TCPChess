@@ -62,8 +62,6 @@ namespace TCPChess {
             ((Bitmap)bRook.Image).MakeTransparent(((Bitmap)bRook.Image).GetPixel(1, 1));
             bRook.BackColor = System.Drawing.Color.Transparent;
 
-            //
-
             ((Bitmap)wBishop.Image).MakeTransparent(((Bitmap)wBishop.Image).GetPixel(1, 1));
             wBishop.BackColor = System.Drawing.Color.Transparent;
 
@@ -98,23 +96,27 @@ namespace TCPChess {
 
             boardPB.Image = new Bitmap(420, 420);
 
+            showBoard();
+
             testInit();
         }
 
         private void testInit() {
 
             clientTestCommands = new List<string>() {
-                "Server_Command,Connect,Jacob",
+                "Server_Command,Add,Jacob",
+                "Server_Command,Add,Chris",
+                "Server_Command,Add,Donald",
+                "Server_Command,Add,Sue",
+                "Server_Command,Match,Jacob,Sue",
                 "CONNECT,Kenny",
                 "GET,players",
-                "PLAY,Jacob,W",
-                "GET,board",                
+                //"PLAY,Donald,W",
+                //"GET,board",                
             };            
         }        
 
-        private void showBoard() {
-
-            directionsLB.Visible = true;
+        private void showBoard() {          
 
             Graphics gObj = Graphics.FromImage(boardPB.Image);
 
@@ -162,12 +164,10 @@ namespace TCPChess {
             }
         }
 
-        private void button1_Click(object sender, EventArgs e) {
+        private void serverStartBTN_Click(object sender, EventArgs e) {
             serverStartBTN.Enabled = false;
             startServer();
         }
-
-
 
         private async void startServer() {
             Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportServerProgress);
@@ -183,7 +183,7 @@ namespace TCPChess {
             }
         }
 
-        private void button2_Click(object sender, EventArgs e) {
+        private void clientStartBTN_Click(object sender, EventArgs e) {
             clientStartBTN.Enabled = false;
             stopClientBTN.Enabled = true;
             startClient();
@@ -207,17 +207,56 @@ namespace TCPChess {
                     clientDebugListBox.Items.Add(info);
                     if (info.ToUpper().StartsWith("BOARD,")) {
                         currentBoardLayout = info;
-
+                        enableGameOn();
                         showBoard();
                         showPieces();
                         boardPB.Invalidate();
+                    }
+                    else if (info.ToUpper().StartsWith("PLAYERS,")) {
+                        showPlayers(info);
+                    }
+                    else if (info.ToUpper().StartsWith("ACCEPTED,")) {
+                        showAccepted(info);
                     }
                 }
             }
         }
 
-        private void boardPB_Click(object sender, EventArgs e) {
+        private void showAccepted(string info) {
+            string[] split = info.Split(',');
+            gameLB.Text = "Playing " + split[1];
+        }
 
+        private void enableGameOn() {
+            directionsLB.Visible = true;
+            gameLB.Visible = true;
+            playMatchBTN.Enabled = false;
+        }
+
+        private void disableGameOn() {
+            directionsLB.Visible = false;
+            gameLB.Visible = false;
+
+            clientStartBTN.Enabled = true;
+            stopClientBTN.Enabled = false;
+
+            currentBoardLayout = "";
+            showBoard();
+            boardPB.Invalidate();
+        }
+
+        private void showPlayers(string info) {
+            playersListBox.Items.Clear();
+            string[] split = info.Split(',');
+            if (split.Length > 1) {
+                playMatchBTN.Enabled = true;
+                for (int x = 1; x < split.Length; x++) {
+                    playersListBox.Items.Add(split[x]);
+                }
+            }
+        }
+
+        private void boardPB_Click(object sender, EventArgs e) {
             // Reset the board
             showBoard();            
             float x, y;
@@ -254,11 +293,16 @@ namespace TCPChess {
             boardPB.Invalidate();
         }
 
-        private void stopClientBTN_Click(object sender, EventArgs e) {
-            clientStartBTN.Enabled = true;
+        private void playMatchBTN_Click(object sender, EventArgs e) {
+            if (playersListBox.SelectedIndex >= 0) {
+                string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();                
+                client.requestPlay(toPlay,whiteRB.Checked ? "W" : "B");
+            }
+        }
+
+        private void stopClientBTN_Click(object sender, EventArgs e) {            
             clientTokenSource.Cancel();
-            stopClientBTN.Enabled = false;
-            directionsLB.Visible = false;
+            disableGameOn();
         }
     }
 }

@@ -43,6 +43,13 @@
             this.wBishop = new System.Windows.Forms.PictureBox();
             this.stopClientBTN = new System.Windows.Forms.Button();
             this.directionsLB = new System.Windows.Forms.Label();
+            this.playersListBox = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.playMatchBTN = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.whiteRB = new System.Windows.Forms.RadioButton();
+            this.blackRB = new System.Windows.Forms.RadioButton();
+            this.gameLB = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -56,50 +63,51 @@
             ((System.ComponentModel.ISupportInitialize)(this.wKnight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.wKing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.wBishop)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // serverStartBTN
             // 
-            this.serverStartBTN.Location = new System.Drawing.Point(12, 254);
+            this.serverStartBTN.Location = new System.Drawing.Point(689, 258);
             this.serverStartBTN.Name = "serverStartBTN";
             this.serverStartBTN.Size = new System.Drawing.Size(75, 23);
             this.serverStartBTN.TabIndex = 0;
             this.serverStartBTN.Text = "Start Server";
             this.serverStartBTN.UseVisualStyleBackColor = true;
-            this.serverStartBTN.Click += new System.EventHandler(this.button1_Click);
+            this.serverStartBTN.Click += new System.EventHandler(this.serverStartBTN_Click);
             // 
             // clientStartBTN
             // 
-            this.clientStartBTN.Location = new System.Drawing.Point(373, 258);
+            this.clientStartBTN.Location = new System.Drawing.Point(944, 258);
             this.clientStartBTN.Name = "clientStartBTN";
             this.clientStartBTN.Size = new System.Drawing.Size(75, 23);
             this.clientStartBTN.TabIndex = 1;
             this.clientStartBTN.Text = "Start Client";
             this.clientStartBTN.UseVisualStyleBackColor = true;
-            this.clientStartBTN.Click += new System.EventHandler(this.button2_Click);
+            this.clientStartBTN.Click += new System.EventHandler(this.clientStartBTN_Click);
             // 
             // serverDebugListBox
             // 
             this.serverDebugListBox.FormattingEnabled = true;
             this.serverDebugListBox.HorizontalScrollbar = true;
-            this.serverDebugListBox.Location = new System.Drawing.Point(12, 14);
+            this.serverDebugListBox.Location = new System.Drawing.Point(689, 12);
             this.serverDebugListBox.Name = "serverDebugListBox";
-            this.serverDebugListBox.Size = new System.Drawing.Size(345, 238);
+            this.serverDebugListBox.Size = new System.Drawing.Size(249, 238);
             this.serverDebugListBox.TabIndex = 2;
             // 
             // clientDebugListBox
             // 
             this.clientDebugListBox.FormattingEnabled = true;
             this.clientDebugListBox.HorizontalScrollbar = true;
-            this.clientDebugListBox.Location = new System.Drawing.Point(373, 14);
+            this.clientDebugListBox.Location = new System.Drawing.Point(944, 12);
             this.clientDebugListBox.Name = "clientDebugListBox";
-            this.clientDebugListBox.Size = new System.Drawing.Size(345, 238);
+            this.clientDebugListBox.Size = new System.Drawing.Size(249, 238);
             this.clientDebugListBox.TabIndex = 3;
             // 
             // boardPB
             // 
             this.boardPB.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.boardPB.Location = new System.Drawing.Point(761, 14);
+            this.boardPB.Location = new System.Drawing.Point(12, 31);
             this.boardPB.Name = "boardPB";
             this.boardPB.Size = new System.Drawing.Size(420, 420);
             this.boardPB.TabIndex = 4;
@@ -109,7 +117,7 @@
             // bBishop
             // 
             this.bBishop.Image = ((System.Drawing.Image)(resources.GetObject("bBishop.Image")));
-            this.bBishop.Location = new System.Drawing.Point(103, 296);
+            this.bBishop.Location = new System.Drawing.Point(722, 328);
             this.bBishop.Name = "bBishop";
             this.bBishop.Size = new System.Drawing.Size(60, 60);
             this.bBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -120,7 +128,7 @@
             // bKing
             // 
             this.bKing.Image = ((System.Drawing.Image)(resources.GetObject("bKing.Image")));
-            this.bKing.Location = new System.Drawing.Point(182, 296);
+            this.bKing.Location = new System.Drawing.Point(801, 328);
             this.bKing.Name = "bKing";
             this.bKing.Size = new System.Drawing.Size(60, 60);
             this.bKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -131,7 +139,7 @@
             // bPawn
             // 
             this.bPawn.Image = ((System.Drawing.Image)(resources.GetObject("bPawn.Image")));
-            this.bPawn.Location = new System.Drawing.Point(337, 296);
+            this.bPawn.Location = new System.Drawing.Point(956, 328);
             this.bPawn.Name = "bPawn";
             this.bPawn.Size = new System.Drawing.Size(60, 60);
             this.bPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -142,7 +150,7 @@
             // bKnight
             // 
             this.bKnight.Image = ((System.Drawing.Image)(resources.GetObject("bKnight.Image")));
-            this.bKnight.Location = new System.Drawing.Point(258, 296);
+            this.bKnight.Location = new System.Drawing.Point(877, 328);
             this.bKnight.Name = "bKnight";
             this.bKnight.Size = new System.Drawing.Size(60, 60);
             this.bKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -153,7 +161,7 @@
             // bRook
             // 
             this.bRook.Image = ((System.Drawing.Image)(resources.GetObject("bRook.Image")));
-            this.bRook.Location = new System.Drawing.Point(491, 296);
+            this.bRook.Location = new System.Drawing.Point(1110, 328);
             this.bRook.Name = "bRook";
             this.bRook.Size = new System.Drawing.Size(60, 60);
             this.bRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -164,7 +172,7 @@
             // bQueen
             // 
             this.bQueen.Image = ((System.Drawing.Image)(resources.GetObject("bQueen.Image")));
-            this.bQueen.Location = new System.Drawing.Point(412, 296);
+            this.bQueen.Location = new System.Drawing.Point(1031, 328);
             this.bQueen.Name = "bQueen";
             this.bQueen.Size = new System.Drawing.Size(60, 60);
             this.bQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -175,7 +183,7 @@
             // wRook
             // 
             this.wRook.Image = ((System.Drawing.Image)(resources.GetObject("wRook.Image")));
-            this.wRook.Location = new System.Drawing.Point(491, 362);
+            this.wRook.Location = new System.Drawing.Point(1110, 394);
             this.wRook.Name = "wRook";
             this.wRook.Size = new System.Drawing.Size(60, 60);
             this.wRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -186,7 +194,7 @@
             // wQueen
             // 
             this.wQueen.Image = ((System.Drawing.Image)(resources.GetObject("wQueen.Image")));
-            this.wQueen.Location = new System.Drawing.Point(412, 362);
+            this.wQueen.Location = new System.Drawing.Point(1031, 394);
             this.wQueen.Name = "wQueen";
             this.wQueen.Size = new System.Drawing.Size(60, 60);
             this.wQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -197,7 +205,7 @@
             // wPawn
             // 
             this.wPawn.Image = ((System.Drawing.Image)(resources.GetObject("wPawn.Image")));
-            this.wPawn.Location = new System.Drawing.Point(337, 362);
+            this.wPawn.Location = new System.Drawing.Point(956, 394);
             this.wPawn.Name = "wPawn";
             this.wPawn.Size = new System.Drawing.Size(60, 60);
             this.wPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -208,7 +216,7 @@
             // wKnight
             // 
             this.wKnight.Image = ((System.Drawing.Image)(resources.GetObject("wKnight.Image")));
-            this.wKnight.Location = new System.Drawing.Point(258, 362);
+            this.wKnight.Location = new System.Drawing.Point(877, 394);
             this.wKnight.Name = "wKnight";
             this.wKnight.Size = new System.Drawing.Size(60, 60);
             this.wKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -219,7 +227,7 @@
             // wKing
             // 
             this.wKing.Image = ((System.Drawing.Image)(resources.GetObject("wKing.Image")));
-            this.wKing.Location = new System.Drawing.Point(182, 362);
+            this.wKing.Location = new System.Drawing.Point(801, 394);
             this.wKing.Name = "wKing";
             this.wKing.Size = new System.Drawing.Size(60, 60);
             this.wKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -230,7 +238,7 @@
             // wBishop
             // 
             this.wBishop.Image = ((System.Drawing.Image)(resources.GetObject("wBishop.Image")));
-            this.wBishop.Location = new System.Drawing.Point(103, 362);
+            this.wBishop.Location = new System.Drawing.Point(722, 394);
             this.wBishop.Name = "wBishop";
             this.wBishop.Size = new System.Drawing.Size(60, 60);
             this.wBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -241,7 +249,7 @@
             // stopClientBTN
             // 
             this.stopClientBTN.Enabled = false;
-            this.stopClientBTN.Location = new System.Drawing.Point(454, 258);
+            this.stopClientBTN.Location = new System.Drawing.Point(1025, 258);
             this.stopClientBTN.Name = "stopClientBTN";
             this.stopClientBTN.Size = new System.Drawing.Size(75, 23);
             this.stopClientBTN.TabIndex = 17;
@@ -254,18 +262,95 @@
             this.directionsLB.AutoSize = true;
             this.directionsLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.directionsLB.ForeColor = System.Drawing.Color.Red;
-            this.directionsLB.Location = new System.Drawing.Point(755, 437);
+            this.directionsLB.Location = new System.Drawing.Point(7, 454);
             this.directionsLB.Name = "directionsLB";
             this.directionsLB.Size = new System.Drawing.Size(438, 25);
             this.directionsLB.TabIndex = 18;
             this.directionsLB.Text = "Left Click to Select - Right Click to Move";
             this.directionsLB.Visible = false;
             // 
+            // playersListBox
+            // 
+            this.playersListBox.FormattingEnabled = true;
+            this.playersListBox.HorizontalScrollbar = true;
+            this.playersListBox.Location = new System.Drawing.Point(455, 31);
+            this.playersListBox.Name = "playersListBox";
+            this.playersListBox.Size = new System.Drawing.Size(211, 355);
+            this.playersListBox.TabIndex = 19;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(455, 12);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(96, 13);
+            this.label1.TabIndex = 20;
+            this.label1.Text = "Connected Players";
+            // 
+            // playMatchBTN
+            // 
+            this.playMatchBTN.Enabled = false;
+            this.playMatchBTN.Location = new System.Drawing.Point(458, 418);
+            this.playMatchBTN.Name = "playMatchBTN";
+            this.playMatchBTN.Size = new System.Drawing.Size(75, 23);
+            this.playMatchBTN.TabIndex = 21;
+            this.playMatchBTN.Text = "Play Match";
+            this.playMatchBTN.UseVisualStyleBackColor = true;
+            this.playMatchBTN.Click += new System.EventHandler(this.playMatchBTN_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.blackRB);
+            this.panel1.Controls.Add(this.whiteRB);
+            this.panel1.Location = new System.Drawing.Point(584, 404);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(82, 61);
+            this.panel1.TabIndex = 22;
+            // 
+            // whiteRB
+            // 
+            this.whiteRB.AutoSize = true;
+            this.whiteRB.Checked = true;
+            this.whiteRB.Location = new System.Drawing.Point(14, 12);
+            this.whiteRB.Name = "whiteRB";
+            this.whiteRB.Size = new System.Drawing.Size(53, 17);
+            this.whiteRB.TabIndex = 0;
+            this.whiteRB.TabStop = true;
+            this.whiteRB.Text = "White";
+            this.whiteRB.UseVisualStyleBackColor = true;
+            // 
+            // blackRB
+            // 
+            this.blackRB.AutoSize = true;
+            this.blackRB.Location = new System.Drawing.Point(15, 35);
+            this.blackRB.Name = "blackRB";
+            this.blackRB.Size = new System.Drawing.Size(52, 17);
+            this.blackRB.TabIndex = 1;
+            this.blackRB.Text = "Black";
+            this.blackRB.UseVisualStyleBackColor = true;
+            // 
+            // gameLB
+            // 
+            this.gameLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gameLB.ForeColor = System.Drawing.Color.Blue;
+            this.gameLB.Location = new System.Drawing.Point(12, 3);
+            this.gameLB.Name = "gameLB";
+            this.gameLB.Size = new System.Drawing.Size(420, 25);
+            this.gameLB.TabIndex = 23;
+            this.gameLB.Text = "Game On!";
+            this.gameLB.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.gameLB.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1205, 487);
+            this.Controls.Add(this.gameLB);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.playMatchBTN);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.playersListBox);
             this.Controls.Add(this.directionsLB);
             this.Controls.Add(this.stopClientBTN);
             this.Controls.Add(this.wRook);
@@ -300,6 +385,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.wKnight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.wKing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.wBishop)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -326,6 +413,13 @@
         private System.Windows.Forms.PictureBox wBishop;
         private System.Windows.Forms.Button stopClientBTN;
         private System.Windows.Forms.Label directionsLB;
+        private System.Windows.Forms.ListBox playersListBox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button playMatchBTN;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.RadioButton blackRB;
+        private System.Windows.Forms.RadioButton whiteRB;
+        private System.Windows.Forms.Label gameLB;
     }
 }
 
