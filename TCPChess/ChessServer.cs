@@ -94,6 +94,13 @@ namespace TCPChess {
                 chessPieces.Add("6:7", new KNIGHT("W"));
                 chessPieces.Add("7:7", new ROOK("W"));
             }
+
+            public void destroyMatch() {
+                dictPendingPlayRequests = new Dictionary<string, string>();
+                opponentsName = "";
+                opponentsRemoteEndPoint = "";
+                chessPieces = null;
+            }
         }
         private int _listeningPort;
         private CancellationToken cToken;
@@ -184,13 +191,17 @@ namespace TCPChess {
                     if (client.Key.StartsWith("_")) {
                         // This is a pretend client added to the server for testing
                         if (client.Value.serverResponses.Count > 0) {
-                            // We've got something to simulate!
-                            string messageToSend = null;
-                            messageToSend = client.Value.serverResponses[0];
-                            reportingClass.addMessage("Simulate Sending: " + messageToSend);
-                            progress.Report(reportingClass);
-                            client.Value.serverResponses.RemoveAt(0);
-                            handleREQUEST(client.Value, messageToSend.Split(','),true);
+                            lock(_lock) {
+                                // We've got something to simulate!
+                                string messageToSend = null;
+                                messageToSend = client.Value.serverResponses[0];
+                                reportingClass.addMessage("Simulate Sending: " + messageToSend);
+                                progress.Report(reportingClass);
+                                client.Value.serverResponses.RemoveAt(0);
+                                if (messageToSend.ToUpper().StartsWith("REQUEST,")) {
+                                    handleREQUEST(client.Value, messageToSend.Split(','), true);
+                                }
+                            }
                         }
                     } else {
                         // Good spot for a NOOP request and check for alive players!
@@ -305,7 +316,20 @@ namespace TCPChess {
                     clientGameData.serverResponses.Add("ERROR,Invalid Name");
                 }
                 return;
-            }            
+            }
+
+            if (upperData.StartsWith("QUIT,")) {
+                if (upperData.EndsWith("MATCH")) {
+                    quitMatch(clientGameData);
+                }
+                else if (upperData.EndsWith("GAME")) {
+                    quitGame(clientGameData);
+                }
+                else {
+                    clientGameData.serverResponses.Add("ERROR,Invalid QUIT Command");
+                }
+                return;
+            }
 
             if (upperData.StartsWith("PLAY,")) {
                 string playerName = dataSplit[1].ToUpper();
@@ -333,7 +357,7 @@ namespace TCPChess {
                 return;
             }
 
-            if (upperData.StartsWith("REQUEST,")) {                
+            if (upperData.StartsWith("REQUEST,")) {                                
                 handleREQUEST(clientGameData, dataSplit);
                 return;
             }            
@@ -344,9 +368,7 @@ namespace TCPChess {
             }
 
             if (upperData.StartsWith("GET,PLAYERS")) {
-                string listOfPlayers = serializePlayers(clientGameData.playersName);
-                // It's ok to send an empty list
-                clientGameData.serverResponses.Add("PLAYERS" + listOfPlayers);                
+                sendPlayers(clientGameData);
                 return;
             }
 
@@ -365,6 +387,31 @@ namespace TCPChess {
             clientGameData.serverResponses.Add("OK");
         }
 
+        private void sendPlayers(PerClientGameData clientGameData) {
+            string listOfPlayers = serializePlayers(clientGameData.playersName);
+            // It's ok to send an empty list
+            clientGameData.serverResponses.Add("PLAYERS" + listOfPlayers);
+        }
+
+        private void quitMatch(PerClientGameData clientGameData) {
+            var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
+            opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+            clientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+
+            clientGameData.destroyMatch();
+            opClientGameData.destroyMatch();
+
+            sendPlayers(opClientGameData);
+            sendPlayers(clientGameData);
+        }
+
+        private void quitGame(PerClientGameData clientGameData) {
+            var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
+            opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+            sendPlayers(opClientGameData);
+            clientGameData.serverResponses.Add("OK");            
+        }
+
         private void handleREQUEST(PerClientGameData clientGameData, string[] dataSplit, bool serverTest = false) {
             string playerName = dataSplit[1];
             string color = dataSplit[2];
@@ -375,7 +422,9 @@ namespace TCPChess {
                 if (serverTest) {
                     createMatchBetweenPlayers(playerName, clientGameData.playersName);
                     clientGameData.serverResponses.Add("ACCEPTED," + playerName);
+                    // In this case we're simulating the server accepting the request so the opponent is the real player!
                     opClientGameData.serverResponses.Add("ACCEPTED," + clientGameData.playersName);
+                    sendPlayers(opClientGameData);
                 }
             }
             else {

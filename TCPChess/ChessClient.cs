@@ -23,9 +23,9 @@ namespace TCPChess {
             this.clientCommands = clientCommands ?? new List<string>();
         }
 
-        public async Task Start(int port) {
+        public async Task Start(IPAddress ipAddress, int port) {
             TcpClient client = new TcpClient();
-            await client.ConnectAsync(IPAddress.Loopback, port);
+            await client.ConnectAsync(ipAddress, port);
 
             reportingClass.addMessage("Connected to Server");
             progress.Report(reportingClass);
@@ -35,10 +35,7 @@ namespace TCPChess {
                     using (var reader = new StreamReader(networkStream)) {
                         Task.Run(() => readTask(reader));
                         Task.Run(() => writeTask(writer));
-                        await allDone();
-
-                        int i = 0;
-                        ++i;
+                        await allDone();                        
                     }
                 }
             }
@@ -95,11 +92,21 @@ namespace TCPChess {
                 handleACCEPTED(dataSplit);
                 return;
             }
+
+            if (upperData.StartsWith("WINNER,")) {
+                handleWINNER(upperData);
+                return;
+            }
         }
         private void handleACCEPTED(string[] dataSplit) {
             string playerName = dataSplit[1];
             clientCommands.Add("GET,BOARD");            
         }
+        private void handleWINNER(string data) {
+            reportingClass.addMessage(data);
+            progress.Report(reportingClass);
+        }
+
         public void requestMove(string data) {
             lock (_lock) {
                 clientCommands.Add("MOVE,"+data);
@@ -116,6 +123,18 @@ namespace TCPChess {
         public void getBoard() {
             lock (_lock) {
                 clientCommands.Add("GET,board");
+            }
+        }
+
+        public void quitMatch() {
+            lock (_lock) {
+                clientCommands.Add("QUIT,MATCH");
+            }
+        }
+
+        public void quitGame(string data) {
+            lock (_lock) {
+                clientCommands.Add("QUIT,GAME");
             }
         }
     }

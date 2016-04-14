@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -186,18 +187,26 @@ namespace TCPChess {
         private void clientStartBTN_Click(object sender, EventArgs e) {
             clientStartBTN.Enabled = false;
             stopClientBTN.Enabled = true;
+            clientTestCommands = new List<string>();
             startClient();
         }
 
         private async void startClient() {
-            Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportClientProgress);
-            client = new ChessClient(clientTokenSource.Token, progress, clientTestCommands);
-            var t = Task.Run(async () => {
-                await client.Start(12345);
-                clientTokenSource = new CancellationTokenSource();
-                testInit();
-                client = null;
-            });
+            try {
+                int port = Convert.ToInt32(portTB.Text);
+                IPAddress ipAddress=IPAddress.Parse(serverIPTB.Text);
+                Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportClientProgress);
+                
+                client = new ChessClient(clientTokenSource.Token, progress, clientTestCommands);
+                var t = Task.Run(async () => {
+                    await client.Start(ipAddress, port);
+                    clientTokenSource = new CancellationTokenSource();                    
+                    client = null;
+                });
+            }
+            catch(Exception e) {
+                clientDebugListBox.Items.Add(e.Message);
+            }
             
         }
 
@@ -218,6 +227,9 @@ namespace TCPChess {
                     else if (info.ToUpper().StartsWith("ACCEPTED,")) {
                         showAccepted(info);
                     }
+                    else if (info.ToUpper().StartsWith("WINNER,")) {
+                        showWinner(info);
+                    }
                 }
             }
         }
@@ -227,10 +239,16 @@ namespace TCPChess {
             gameLB.Text = "Playing " + split[1];
         }
 
+        private void showWinner(string info) {
+            string[] split = info.Split(',');
+            gameLB.Text = "Game Over. Winner is " + split[1];
+        }
+
         private void enableGameOn() {
             directionsLB.Visible = true;
             gameLB.Visible = true;
             playMatchBTN.Enabled = false;
+            stopMatchBTN.Enabled = true;
         }
 
         private void disableGameOn() {
@@ -238,7 +256,7 @@ namespace TCPChess {
             gameLB.Visible = false;
 
             clientStartBTN.Enabled = true;
-            stopClientBTN.Enabled = false;
+            stopClientBTN.Enabled = false;            
 
             currentBoardLayout = "";
             showBoard();
@@ -298,6 +316,18 @@ namespace TCPChess {
                 string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();                
                 client.requestPlay(toPlay,whiteRB.Checked ? "W" : "B");
             }
+            else {
+                clientDebugListBox.Items.Add("No Player Selected. Please select a player!");
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e) {
+            startClient();
+            testInit();
+        }
+
+        private void stopMatchBTN_Click(object sender, EventArgs e) {
+            client.quitMatch();
         }
 
         private void stopClientBTN_Click(object sender, EventArgs e) {            
