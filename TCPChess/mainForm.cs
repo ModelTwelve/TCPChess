@@ -38,6 +38,9 @@ namespace TCPChess {
 
         private int selectedX = -1, selectedY = -1;
 
+        private string opponentPlayerName = "";
+        private Dictionary<string, string> dictRequests = new Dictionary<string, string>();
+
         public MainForm() {
             InitializeComponent();
 
@@ -224,6 +227,9 @@ namespace TCPChess {
                     else if (info.ToUpper().StartsWith("PLAYERS,")) {
                         showPlayers(info);
                     }
+                    else if (info.ToUpper().StartsWith("REQUEST,")) {
+                        showRequested(info);
+                    }
                     else if (info.ToUpper().StartsWith("ACCEPTED,")) {
                         showAccepted(info);
                     }
@@ -234,13 +240,25 @@ namespace TCPChess {
             }
         }
 
+        private void showRequested(string info) {
+            if (opponentPlayerName.Length == 0) {
+                string[] split = info.Split(',');
+                dictRequests.Add(split[1], split[2]);
+                requestsLB.Items.Add(split[1]+":"+ split[2]);
+            }
+        }
+
         private void showAccepted(string info) {
             string[] split = info.Split(',');
+            opponentPlayerName = split[1];
+            dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Playing " + split[1];
         }
 
         private void showWinner(string info) {
             string[] split = info.Split(',');
+            opponentPlayerName = "";
+            dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Game Over. Winner is " + split[1];
         }
 
@@ -316,6 +334,10 @@ namespace TCPChess {
                 string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();                
                 client.requestPlay(toPlay,whiteRB.Checked ? "W" : "B");
             }
+            else if (requestsLB.SelectedIndex >= 0) {
+                string toPlay = requestsLB.Items[requestsLB.SelectedIndex].ToString();
+                client.acceptPlay(toPlay);
+            }
             else {
                 clientDebugListBox.Items.Add("No Player Selected. Please select a player!");
             }
@@ -328,9 +350,24 @@ namespace TCPChess {
 
         private void stopMatchBTN_Click(object sender, EventArgs e) {
             client.quitMatch();
+            Task.Delay(1000).Wait();
+            opponentPlayerName = "";
+            dictRequests = new Dictionary<string, string>();
         }
 
-        private void stopClientBTN_Click(object sender, EventArgs e) {            
+        private void playersListBox_Click(object sender, EventArgs e) {
+            requestsLB.SelectedIndex = -1;
+        }
+
+        private void requestsLB_Click(object sender, EventArgs e) {
+            playersListBox.SelectedIndex = -1;
+        }
+
+        private void stopClientBTN_Click(object sender, EventArgs e) {
+            client.quitGame();
+            Task.Delay(1000).Wait();
+            opponentPlayerName = "";
+            dictRequests = new Dictionary<string, string>();
             clientTokenSource.Cancel();
             disableGameOn();
         }

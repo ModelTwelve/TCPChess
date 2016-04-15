@@ -59,6 +59,10 @@
             this.button1 = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.stopMatchBTN = new System.Windows.Forms.Button();
+            this.requestsLB = new System.Windows.Forms.ListBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.playerNameTB = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -87,11 +91,11 @@
             // 
             // clientStartBTN
             // 
-            this.clientStartBTN.Location = new System.Drawing.Point(781, 392);
+            this.clientStartBTN.Location = new System.Drawing.Point(455, 366);
             this.clientStartBTN.Name = "clientStartBTN";
             this.clientStartBTN.Size = new System.Drawing.Size(75, 23);
             this.clientStartBTN.TabIndex = 1;
-            this.clientStartBTN.Text = "Start Client";
+            this.clientStartBTN.Text = "CONNECT";
             this.clientStartBTN.UseVisualStyleBackColor = true;
             this.clientStartBTN.Click += new System.EventHandler(this.clientStartBTN_Click);
             // 
@@ -108,9 +112,9 @@
             // 
             this.clientDebugListBox.FormattingEnabled = true;
             this.clientDebugListBox.HorizontalScrollbar = true;
-            this.clientDebugListBox.Location = new System.Drawing.Point(689, 31);
+            this.clientDebugListBox.Location = new System.Drawing.Point(455, 31);
             this.clientDebugListBox.Name = "clientDebugListBox";
-            this.clientDebugListBox.Size = new System.Drawing.Size(249, 355);
+            this.clientDebugListBox.Size = new System.Drawing.Size(249, 329);
             this.clientDebugListBox.TabIndex = 3;
             // 
             // boardPB
@@ -258,11 +262,11 @@
             // stopClientBTN
             // 
             this.stopClientBTN.Enabled = false;
-            this.stopClientBTN.Location = new System.Drawing.Point(862, 392);
+            this.stopClientBTN.Location = new System.Drawing.Point(629, 366);
             this.stopClientBTN.Name = "stopClientBTN";
             this.stopClientBTN.Size = new System.Drawing.Size(75, 23);
             this.stopClientBTN.TabIndex = 17;
-            this.stopClientBTN.Text = "Stop Client";
+            this.stopClientBTN.Text = "QUIT GAME";
             this.stopClientBTN.UseVisualStyleBackColor = true;
             this.stopClientBTN.Click += new System.EventHandler(this.stopClientBTN_Click);
             // 
@@ -282,15 +286,16 @@
             // 
             this.playersListBox.FormattingEnabled = true;
             this.playersListBox.HorizontalScrollbar = true;
-            this.playersListBox.Location = new System.Drawing.Point(455, 31);
+            this.playersListBox.Location = new System.Drawing.Point(726, 31);
             this.playersListBox.Name = "playersListBox";
-            this.playersListBox.Size = new System.Drawing.Size(211, 355);
+            this.playersListBox.Size = new System.Drawing.Size(211, 186);
             this.playersListBox.TabIndex = 19;
+            this.playersListBox.Click += new System.EventHandler(this.playersListBox_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(455, 12);
+            this.label1.Location = new System.Drawing.Point(727, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(96, 13);
             this.label1.TabIndex = 20;
@@ -299,7 +304,7 @@
             // playMatchBTN
             // 
             this.playMatchBTN.Enabled = false;
-            this.playMatchBTN.Location = new System.Drawing.Point(455, 404);
+            this.playMatchBTN.Location = new System.Drawing.Point(748, 362);
             this.playMatchBTN.Name = "playMatchBTN";
             this.playMatchBTN.Size = new System.Drawing.Size(75, 23);
             this.playMatchBTN.TabIndex = 21;
@@ -311,9 +316,9 @@
             // 
             this.panel1.Controls.Add(this.blackRB);
             this.panel1.Controls.Add(this.whiteRB);
-            this.panel1.Location = new System.Drawing.Point(584, 404);
+            this.panel1.Location = new System.Drawing.Point(810, 385);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(82, 61);
+            this.panel1.Size = new System.Drawing.Size(82, 57);
             this.panel1.TabIndex = 22;
             // 
             // blackRB
@@ -330,7 +335,7 @@
             // 
             this.whiteRB.AutoSize = true;
             this.whiteRB.Checked = true;
-            this.whiteRB.Location = new System.Drawing.Point(14, 12);
+            this.whiteRB.Location = new System.Drawing.Point(15, 12);
             this.whiteRB.Name = "whiteRB";
             this.whiteRB.Size = new System.Drawing.Size(53, 17);
             this.whiteRB.TabIndex = 0;
@@ -352,7 +357,7 @@
             // 
             // serverIPTB
             // 
-            this.serverIPTB.Location = new System.Drawing.Point(781, 421);
+            this.serverIPTB.Location = new System.Drawing.Point(629, 431);
             this.serverIPTB.Name = "serverIPTB";
             this.serverIPTB.Size = new System.Drawing.Size(75, 20);
             this.serverIPTB.TabIndex = 24;
@@ -362,7 +367,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(721, 428);
+            this.label2.Location = new System.Drawing.Point(569, 434);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(54, 13);
             this.label2.TabIndex = 25;
@@ -370,7 +375,7 @@
             // 
             // portTB
             // 
-            this.portTB.Location = new System.Drawing.Point(781, 447);
+            this.portTB.Location = new System.Drawing.Point(629, 457);
             this.portTB.Name = "portTB";
             this.portTB.Size = new System.Drawing.Size(75, 20);
             this.portTB.TabIndex = 26;
@@ -380,7 +385,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(706, 450);
+            this.label3.Location = new System.Drawing.Point(554, 460);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(69, 13);
             this.label3.TabIndex = 27;
@@ -389,7 +394,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(686, 9);
+            this.label4.Location = new System.Drawing.Point(452, 9);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 13);
             this.label4.TabIndex = 28;
@@ -428,7 +433,7 @@
             // stopMatchBTN
             // 
             this.stopMatchBTN.Enabled = false;
-            this.stopMatchBTN.Location = new System.Drawing.Point(455, 433);
+            this.stopMatchBTN.Location = new System.Drawing.Point(877, 362);
             this.stopMatchBTN.Name = "stopMatchBTN";
             this.stopMatchBTN.Size = new System.Drawing.Size(75, 23);
             this.stopMatchBTN.TabIndex = 32;
@@ -436,11 +441,50 @@
             this.stopMatchBTN.UseVisualStyleBackColor = true;
             this.stopMatchBTN.Click += new System.EventHandler(this.stopMatchBTN_Click);
             // 
+            // requestsLB
+            // 
+            this.requestsLB.FormattingEnabled = true;
+            this.requestsLB.HorizontalScrollbar = true;
+            this.requestsLB.Location = new System.Drawing.Point(726, 251);
+            this.requestsLB.Name = "requestsLB";
+            this.requestsLB.Size = new System.Drawing.Size(211, 108);
+            this.requestsLB.TabIndex = 33;
+            this.requestsLB.Click += new System.EventHandler(this.requestsLB_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(723, 229);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(85, 13);
+            this.label7.TabIndex = 34;
+            this.label7.Text = "Match Requests";
+            // 
+            // playerNameTB
+            // 
+            this.playerNameTB.Location = new System.Drawing.Point(572, 405);
+            this.playerNameTB.Name = "playerNameTB";
+            this.playerNameTB.Size = new System.Drawing.Size(132, 20);
+            this.playerNameTB.TabIndex = 35;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(496, 408);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(70, 13);
+            this.label8.TabIndex = 36;
+            this.label8.Text = "Player Name:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1219, 487);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.playerNameTB);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.requestsLB);
             this.Controls.Add(this.stopMatchBTN);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.button1);
@@ -533,6 +577,10 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button stopMatchBTN;
+        private System.Windows.Forms.ListBox requestsLB;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox playerNameTB;
+        private System.Windows.Forms.Label label8;
     }
 }
 

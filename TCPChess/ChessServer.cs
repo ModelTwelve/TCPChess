@@ -199,7 +199,14 @@ namespace TCPChess {
                                 progress.Report(reportingClass);
                                 client.Value.serverResponses.RemoveAt(0);
                                 if (messageToSend.ToUpper().StartsWith("REQUEST,")) {
-                                    handleREQUEST(client.Value, messageToSend.Split(','), true);
+                                    string[] split = messageToSend.Split(',');
+                                    if (client.Value.playersName.ToUpper().Equals("DONALD")) {
+                                        handleREQUEST(client.Value, split, true);
+                                    }
+                                    else {
+                                        // Instead of accepting ... send them a request instead!
+                                        handlePLAY(new string[] { "PLAY", split[1], "W" }, client.Value, true);
+                                    }
                                 }
                             }
                         }
@@ -210,7 +217,6 @@ namespace TCPChess {
                 Task.Delay(100).Wait();
             }
         }
-
         private async Task writeTask(StreamWriter writer, string remoteEndPoint) {
             writer.AutoFlush = true;
             while (true) {
@@ -289,7 +295,7 @@ namespace TCPChess {
                     // This player is not yet initialized!
                     continue;
                 }
-                if (player.Value.playersName.ToString().Equals(playerToFind)) {
+                if (player.Value.playersName.ToUpper().ToString().Equals(playerToFind.ToUpper())) {
                     return player.Key;
                 }
             }
@@ -332,35 +338,19 @@ namespace TCPChess {
             }
 
             if (upperData.StartsWith("PLAY,")) {
-                string playerName = dataSplit[1].ToUpper();
-                string color = dataSplit[2].ToUpper();
-
-                if (!clientGameData.dictPendingPlayRequests.ContainsKey(playerName)) {                    
-                    var opRemoteEdPoint = getRemoteEndPoint(playerName);
-                    if (opRemoteEdPoint != null) {
-                        var opClientGameData = dictConnections[opRemoteEdPoint];
-                        if (opClientGameData.available) {
-                            clientGameData.dictPendingPlayRequests.Add(playerName, opRemoteEdPoint);
-                            opClientGameData.serverResponses.Add("REQUEST," + clientGameData.playersName + "," + color);
-                        }
-                        else {
-                            clientGameData.serverResponses.Add("ERROR," + playerName + " is not available");
-                        }
-                    }
-                    else {
-                        clientGameData.serverResponses.Add("ERROR,"+playerName+" does not exist");
-                    }
-                }
-                else {
-                    clientGameData.serverResponses.Add("ERROR,Already have a pending request sent to "+ playerName);
-                }
+                handlePLAY(dataSplit, clientGameData);
                 return;
             }
 
             if (upperData.StartsWith("REQUEST,")) {                                
                 handleREQUEST(clientGameData, dataSplit);
                 return;
-            }            
+            }
+
+            //if (upperData.StartsWith("ACCEPT,")) {
+            //    handleACCEPT(clientGameData, dataSplit);
+            //    return;
+            //}
 
             if (upperData.StartsWith("GET,BOARD")) {
                 clientGameData.serverResponses.Add("BOARD," + clientGameData.serializeBoard());
@@ -385,6 +375,31 @@ namespace TCPChess {
 
             // WTH ... just say OK
             clientGameData.serverResponses.Add("OK");
+        }
+
+        private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
+            string playerName = dataSplit[1].ToUpper();
+            string color = dataSplit[2].ToUpper();
+
+            if (!clientGameData.dictPendingPlayRequests.ContainsKey(playerName)) {
+                var opRemoteEdPoint = getRemoteEndPoint(playerName);
+                if (opRemoteEdPoint != null) {
+                    var opClientGameData = dictConnections[opRemoteEdPoint];
+                    if (opClientGameData.available) {
+                        clientGameData.dictPendingPlayRequests.Add(playerName, opRemoteEdPoint);
+                        opClientGameData.serverResponses.Add("REQUEST," + clientGameData.playersName + "," + color);
+                    }
+                    else {
+                        clientGameData.serverResponses.Add("ERROR," + playerName + " is not available");
+                    }
+                }
+                else {
+                    clientGameData.serverResponses.Add("ERROR," + playerName + " does not exist");
+                }
+            }
+            else {
+                clientGameData.serverResponses.Add("ERROR,Already have a pending request sent to " + playerName);
+            }
         }
 
         private void sendPlayers(PerClientGameData clientGameData) {

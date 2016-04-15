@@ -86,7 +86,7 @@ namespace TCPChess {
         }
         private void processCommand(string dataFromServer) {
             string upperData = dataFromServer.ToUpper();
-            string[] dataSplit = dataFromServer.Split(',');
+            string[] dataSplit = dataFromServer.Split(',');          
 
             if (upperData.StartsWith("ACCEPTED,")) {
                 handleACCEPTED(dataSplit);
@@ -97,7 +97,7 @@ namespace TCPChess {
                 handleWINNER(upperData);
                 return;
             }
-        }
+        }       
         private void handleACCEPTED(string[] dataSplit) {
             string playerName = dataSplit[1];
             clientCommands.Add("GET,BOARD");            
@@ -120,6 +120,14 @@ namespace TCPChess {
             }
         }
 
+        public void acceptPlay(string data) {
+            string[] split = data.Split(':');
+            lock (_lock) {
+                clientCommands.Add("ACCEPT," + split[0]);
+                clientCommands.Add("GET,BOARD");
+            }
+        }
+
         public void getBoard() {
             lock (_lock) {
                 clientCommands.Add("GET,board");
@@ -132,7 +140,7 @@ namespace TCPChess {
             }
         }
 
-        public void quitGame(string data) {
+        public void quitGame() {
             lock (_lock) {
                 clientCommands.Add("QUIT,GAME");
             }
