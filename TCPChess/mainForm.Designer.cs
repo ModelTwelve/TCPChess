@@ -45,7 +45,6 @@
             this.directionsLB = new System.Windows.Forms.Label();
             this.playersListBox = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.playMatchBTN = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.blackRB = new System.Windows.Forms.RadioButton();
             this.whiteRB = new System.Windows.Forms.RadioButton();
@@ -58,7 +57,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
-            this.stopMatchBTN = new System.Windows.Forms.Button();
             this.requestsLB = new System.Windows.Forms.ListBox();
             this.label7 = new System.Windows.Forms.Label();
             this.playerNameTB = new System.Windows.Forms.TextBox();
@@ -81,7 +79,7 @@
             // 
             // serverStartBTN
             // 
-            this.serverStartBTN.Location = new System.Drawing.Point(958, 275);
+            this.serverStartBTN.Location = new System.Drawing.Point(1076, 217);
             this.serverStartBTN.Name = "serverStartBTN";
             this.serverStartBTN.Size = new System.Drawing.Size(116, 23);
             this.serverStartBTN.TabIndex = 0;
@@ -93,8 +91,9 @@
             // 
             this.clientStartBTN.Location = new System.Drawing.Point(455, 366);
             this.clientStartBTN.Name = "clientStartBTN";
-            this.clientStartBTN.Size = new System.Drawing.Size(75, 23);
+            this.clientStartBTN.Size = new System.Drawing.Size(111, 23);
             this.clientStartBTN.TabIndex = 1;
+            this.clientStartBTN.Tag = "CONNECT";
             this.clientStartBTN.Text = "CONNECT";
             this.clientStartBTN.UseVisualStyleBackColor = true;
             this.clientStartBTN.Click += new System.EventHandler(this.clientStartBTN_Click);
@@ -103,18 +102,18 @@
             // 
             this.serverDebugListBox.FormattingEnabled = true;
             this.serverDebugListBox.HorizontalScrollbar = true;
-            this.serverDebugListBox.Location = new System.Drawing.Point(958, 31);
+            this.serverDebugListBox.Location = new System.Drawing.Point(1076, 51);
             this.serverDebugListBox.Name = "serverDebugListBox";
-            this.serverDebugListBox.Size = new System.Drawing.Size(249, 238);
+            this.serverDebugListBox.Size = new System.Drawing.Size(249, 160);
             this.serverDebugListBox.TabIndex = 2;
             // 
             // clientDebugListBox
             // 
             this.clientDebugListBox.FormattingEnabled = true;
             this.clientDebugListBox.HorizontalScrollbar = true;
-            this.clientDebugListBox.Location = new System.Drawing.Point(455, 31);
+            this.clientDebugListBox.Location = new System.Drawing.Point(1076, 267);
             this.clientDebugListBox.Name = "clientDebugListBox";
-            this.clientDebugListBox.Size = new System.Drawing.Size(249, 329);
+            this.clientDebugListBox.Size = new System.Drawing.Size(249, 212);
             this.clientDebugListBox.TabIndex = 3;
             // 
             // boardPB
@@ -130,7 +129,7 @@
             // bBishop
             // 
             this.bBishop.Image = ((System.Drawing.Image)(resources.GetObject("bBishop.Image")));
-            this.bBishop.Location = new System.Drawing.Point(1147, 420);
+            this.bBishop.Location = new System.Drawing.Point(1265, 417);
             this.bBishop.Name = "bBishop";
             this.bBishop.Size = new System.Drawing.Size(60, 60);
             this.bBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -141,7 +140,7 @@
             // bKing
             // 
             this.bKing.Image = ((System.Drawing.Image)(resources.GetObject("bKing.Image")));
-            this.bKing.Location = new System.Drawing.Point(1147, 420);
+            this.bKing.Location = new System.Drawing.Point(1265, 417);
             this.bKing.Name = "bKing";
             this.bKing.Size = new System.Drawing.Size(60, 60);
             this.bKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -152,7 +151,7 @@
             // bPawn
             // 
             this.bPawn.Image = ((System.Drawing.Image)(resources.GetObject("bPawn.Image")));
-            this.bPawn.Location = new System.Drawing.Point(1147, 420);
+            this.bPawn.Location = new System.Drawing.Point(1265, 417);
             this.bPawn.Name = "bPawn";
             this.bPawn.Size = new System.Drawing.Size(60, 60);
             this.bPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -163,7 +162,7 @@
             // bKnight
             // 
             this.bKnight.Image = ((System.Drawing.Image)(resources.GetObject("bKnight.Image")));
-            this.bKnight.Location = new System.Drawing.Point(1147, 420);
+            this.bKnight.Location = new System.Drawing.Point(1265, 417);
             this.bKnight.Name = "bKnight";
             this.bKnight.Size = new System.Drawing.Size(60, 60);
             this.bKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -174,7 +173,7 @@
             // bRook
             // 
             this.bRook.Image = ((System.Drawing.Image)(resources.GetObject("bRook.Image")));
-            this.bRook.Location = new System.Drawing.Point(1147, 418);
+            this.bRook.Location = new System.Drawing.Point(1265, 415);
             this.bRook.Name = "bRook";
             this.bRook.Size = new System.Drawing.Size(60, 60);
             this.bRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -185,7 +184,7 @@
             // bQueen
             // 
             this.bQueen.Image = ((System.Drawing.Image)(resources.GetObject("bQueen.Image")));
-            this.bQueen.Location = new System.Drawing.Point(1147, 418);
+            this.bQueen.Location = new System.Drawing.Point(1265, 415);
             this.bQueen.Name = "bQueen";
             this.bQueen.Size = new System.Drawing.Size(60, 60);
             this.bQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -196,7 +195,7 @@
             // wRook
             // 
             this.wRook.Image = ((System.Drawing.Image)(resources.GetObject("wRook.Image")));
-            this.wRook.Location = new System.Drawing.Point(1147, 418);
+            this.wRook.Location = new System.Drawing.Point(1265, 415);
             this.wRook.Name = "wRook";
             this.wRook.Size = new System.Drawing.Size(60, 60);
             this.wRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -207,7 +206,7 @@
             // wQueen
             // 
             this.wQueen.Image = ((System.Drawing.Image)(resources.GetObject("wQueen.Image")));
-            this.wQueen.Location = new System.Drawing.Point(1147, 420);
+            this.wQueen.Location = new System.Drawing.Point(1265, 417);
             this.wQueen.Name = "wQueen";
             this.wQueen.Size = new System.Drawing.Size(60, 60);
             this.wQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -218,7 +217,7 @@
             // wPawn
             // 
             this.wPawn.Image = ((System.Drawing.Image)(resources.GetObject("wPawn.Image")));
-            this.wPawn.Location = new System.Drawing.Point(1147, 420);
+            this.wPawn.Location = new System.Drawing.Point(1265, 417);
             this.wPawn.Name = "wPawn";
             this.wPawn.Size = new System.Drawing.Size(60, 60);
             this.wPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -229,7 +228,7 @@
             // wKnight
             // 
             this.wKnight.Image = ((System.Drawing.Image)(resources.GetObject("wKnight.Image")));
-            this.wKnight.Location = new System.Drawing.Point(1147, 420);
+            this.wKnight.Location = new System.Drawing.Point(1265, 417);
             this.wKnight.Name = "wKnight";
             this.wKnight.Size = new System.Drawing.Size(60, 60);
             this.wKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -240,7 +239,7 @@
             // wKing
             // 
             this.wKing.Image = ((System.Drawing.Image)(resources.GetObject("wKing.Image")));
-            this.wKing.Location = new System.Drawing.Point(1147, 420);
+            this.wKing.Location = new System.Drawing.Point(1265, 417);
             this.wKing.Name = "wKing";
             this.wKing.Size = new System.Drawing.Size(60, 60);
             this.wKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -251,7 +250,7 @@
             // wBishop
             // 
             this.wBishop.Image = ((System.Drawing.Image)(resources.GetObject("wBishop.Image")));
-            this.wBishop.Location = new System.Drawing.Point(1147, 418);
+            this.wBishop.Location = new System.Drawing.Point(1265, 415);
             this.wBishop.Name = "wBishop";
             this.wBishop.Size = new System.Drawing.Size(60, 60);
             this.wBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -262,61 +261,51 @@
             // stopClientBTN
             // 
             this.stopClientBTN.Enabled = false;
-            this.stopClientBTN.Location = new System.Drawing.Point(629, 366);
+            this.stopClientBTN.Location = new System.Drawing.Point(593, 366);
             this.stopClientBTN.Name = "stopClientBTN";
-            this.stopClientBTN.Size = new System.Drawing.Size(75, 23);
+            this.stopClientBTN.Size = new System.Drawing.Size(111, 23);
             this.stopClientBTN.TabIndex = 17;
+            this.stopClientBTN.Tag = "GAME";
             this.stopClientBTN.Text = "QUIT GAME";
             this.stopClientBTN.UseVisualStyleBackColor = true;
             this.stopClientBTN.Click += new System.EventHandler(this.stopClientBTN_Click);
             // 
             // directionsLB
             // 
-            this.directionsLB.AutoSize = true;
-            this.directionsLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.directionsLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.directionsLB.ForeColor = System.Drawing.Color.Red;
-            this.directionsLB.Location = new System.Drawing.Point(7, 454);
+            this.directionsLB.Location = new System.Drawing.Point(12, 454);
             this.directionsLB.Name = "directionsLB";
-            this.directionsLB.Size = new System.Drawing.Size(438, 25);
+            this.directionsLB.Size = new System.Drawing.Size(420, 25);
             this.directionsLB.TabIndex = 18;
             this.directionsLB.Text = "Left Click to Select - Right Click to Move";
+            this.directionsLB.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.directionsLB.Visible = false;
             // 
             // playersListBox
             // 
             this.playersListBox.FormattingEnabled = true;
             this.playersListBox.HorizontalScrollbar = true;
-            this.playersListBox.Location = new System.Drawing.Point(726, 31);
+            this.playersListBox.Location = new System.Drawing.Point(455, 25);
             this.playersListBox.Name = "playersListBox";
-            this.playersListBox.Size = new System.Drawing.Size(211, 186);
+            this.playersListBox.Size = new System.Drawing.Size(249, 186);
             this.playersListBox.TabIndex = 19;
             this.playersListBox.Click += new System.EventHandler(this.playersListBox_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(727, 9);
+            this.label1.Location = new System.Drawing.Point(455, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(96, 13);
             this.label1.TabIndex = 20;
             this.label1.Text = "Connected Players";
             // 
-            // playMatchBTN
-            // 
-            this.playMatchBTN.Enabled = false;
-            this.playMatchBTN.Location = new System.Drawing.Point(748, 362);
-            this.playMatchBTN.Name = "playMatchBTN";
-            this.playMatchBTN.Size = new System.Drawing.Size(75, 23);
-            this.playMatchBTN.TabIndex = 21;
-            this.playMatchBTN.Text = "Play Match";
-            this.playMatchBTN.UseVisualStyleBackColor = true;
-            this.playMatchBTN.Click += new System.EventHandler(this.playMatchBTN_Click);
-            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.blackRB);
             this.panel1.Controls.Add(this.whiteRB);
-            this.panel1.Location = new System.Drawing.Point(810, 385);
+            this.panel1.Location = new System.Drawing.Point(455, 422);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(82, 57);
             this.panel1.TabIndex = 22;
@@ -339,7 +328,6 @@
             this.whiteRB.Name = "whiteRB";
             this.whiteRB.Size = new System.Drawing.Size(53, 17);
             this.whiteRB.TabIndex = 0;
-            this.whiteRB.TabStop = true;
             this.whiteRB.Text = "White";
             this.whiteRB.UseVisualStyleBackColor = true;
             // 
@@ -394,7 +382,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(452, 9);
+            this.label4.Location = new System.Drawing.Point(1073, 252);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 13);
             this.label4.TabIndex = 28;
@@ -403,7 +391,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(955, 9);
+            this.label5.Location = new System.Drawing.Point(1073, 35);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(93, 13);
             this.label5.TabIndex = 29;
@@ -411,7 +399,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(1100, 275);
+            this.button1.Location = new System.Drawing.Point(1218, 217);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(107, 23);
             this.button1.TabIndex = 30;
@@ -423,38 +411,27 @@
             // 
             this.label6.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.label6.Location = new System.Drawing.Point(958, 320);
+            this.label6.Location = new System.Drawing.Point(1076, 9);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(249, 23);
             this.label6.TabIndex = 31;
-            this.label6.Text = "ABOVE IS ONLY FOR TESTING";
+            this.label6.Text = "TEST AND DEBUG";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // stopMatchBTN
-            // 
-            this.stopMatchBTN.Enabled = false;
-            this.stopMatchBTN.Location = new System.Drawing.Point(877, 362);
-            this.stopMatchBTN.Name = "stopMatchBTN";
-            this.stopMatchBTN.Size = new System.Drawing.Size(75, 23);
-            this.stopMatchBTN.TabIndex = 32;
-            this.stopMatchBTN.Text = "Stop Match";
-            this.stopMatchBTN.UseVisualStyleBackColor = true;
-            this.stopMatchBTN.Click += new System.EventHandler(this.stopMatchBTN_Click);
             // 
             // requestsLB
             // 
             this.requestsLB.FormattingEnabled = true;
             this.requestsLB.HorizontalScrollbar = true;
-            this.requestsLB.Location = new System.Drawing.Point(726, 251);
+            this.requestsLB.Location = new System.Drawing.Point(455, 252);
             this.requestsLB.Name = "requestsLB";
-            this.requestsLB.Size = new System.Drawing.Size(211, 108);
+            this.requestsLB.Size = new System.Drawing.Size(249, 108);
             this.requestsLB.TabIndex = 33;
             this.requestsLB.Click += new System.EventHandler(this.requestsLB_Click);
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(723, 229);
+            this.label7.Location = new System.Drawing.Point(455, 236);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(85, 13);
             this.label7.TabIndex = 34;
@@ -466,6 +443,7 @@
             this.playerNameTB.Name = "playerNameTB";
             this.playerNameTB.Size = new System.Drawing.Size(132, 20);
             this.playerNameTB.TabIndex = 35;
+            this.playerNameTB.Text = "Sue";
             // 
             // label8
             // 
@@ -480,12 +458,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1219, 487);
+            this.ClientSize = new System.Drawing.Size(1337, 487);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.playerNameTB);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.requestsLB);
-            this.Controls.Add(this.stopMatchBTN);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label5);
@@ -496,7 +473,6 @@
             this.Controls.Add(this.serverIPTB);
             this.Controls.Add(this.gameLB);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.playMatchBTN);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.playersListBox);
             this.Controls.Add(this.directionsLB);
@@ -563,7 +539,6 @@
         private System.Windows.Forms.Label directionsLB;
         private System.Windows.Forms.ListBox playersListBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button playMatchBTN;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.RadioButton blackRB;
         private System.Windows.Forms.RadioButton whiteRB;
@@ -576,7 +551,6 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Button stopMatchBTN;
         private System.Windows.Forms.ListBox requestsLB;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox playerNameTB;

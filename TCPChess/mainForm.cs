@@ -43,6 +43,23 @@ namespace TCPChess {
 
         public MainForm() {
             InitializeComponent();
+            
+            foreach (var control in Controls.OfType<Button>()) {
+                control.TabStop = false;
+            }
+            foreach (var control in Controls.OfType<ListBox>()) {
+                control.TabStop = false;
+            }
+            foreach (var control in Controls.OfType<Label>()) {
+                control.TabStop = false;
+            }
+            whiteRB.TabStop = false;
+
+            playerNameTB.TabIndex = 0;
+            serverIPTB.TabIndex = 1;
+            portTB.TabIndex = 2;
+            clientStartBTN.TabStop = true;
+            clientStartBTN.TabIndex = 3;
 
             typeof(PictureBox).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
             | BindingFlags.Instance | BindingFlags.NonPublic, null,
@@ -100,23 +117,20 @@ namespace TCPChess {
 
             boardPB.Image = new Bitmap(420, 420);
 
-            showBoard();
-
-            testInit();
+            showBoard();            
         }
 
         private void testInit() {
 
+            // PLAYERS,Donald:Lobby,David:Playing Jacob,Chris:Lobby,Jacob:Playing David,Joe:Lobby
             clientTestCommands = new List<string>() {
+                "Server_Command,Add,Donald,ACCEPT", // When asked to PLAY Donald will ACCEPT
+                "Server_Command,Add,David",
+                "Server_Command,Add,Chris", // When asked to PLAY Chris will not respond
                 "Server_Command,Add,Jacob",
-                "Server_Command,Add,Chris",
-                "Server_Command,Add,Donald",
-                "Server_Command,Add,Sue",
-                "Server_Command,Match,Jacob,Sue",
-                "CONNECT,Kenny",
-                "GET,players",
-                //"PLAY,Donald,W",
-                //"GET,board",                
+                "Server_Command,Add,Joe,REFUSE", // When asked to PLAY Joe will REFUSE
+                "Server_Command,Match,David,Jacob",
+                "Server_Command,Add,George,REQUEST", // When asked to PLAY George will send you a REQUEST instead
             };            
         }        
 
@@ -187,11 +201,38 @@ namespace TCPChess {
             }
         }
 
-        private void clientStartBTN_Click(object sender, EventArgs e) {
+        private void whenConnectPushed() {
+            clientStartBTN.Text = "PLAY MATCH";
+            clientStartBTN.Tag = "PLAY";
             clientStartBTN.Enabled = false;
             stopClientBTN.Enabled = true;
             clientTestCommands = new List<string>();
-            startClient();
+        }
+
+        private void clientStartBTN_Click(object sender, EventArgs e) {
+            switch(clientStartBTN.Tag.ToString()) {
+                case "CONNECT":
+                    whenConnectPushed();
+                    startClient();
+                    break;
+                case "PLAY":
+                    if (playersListBox.SelectedIndex >= 0) {
+                        string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();
+                        client.requestPlay(toPlay, whiteRB.Checked ? "W" : "B");                        
+                    }
+                    else if (requestsLB.SelectedIndex >= 0) {
+                        string toPlay = requestsLB.Items[requestsLB.SelectedIndex].ToString();
+                        client.acceptPlay(toPlay);
+                        stopClientBTN.Tag = "MATCH";
+                        stopClientBTN.Text = "QUIT MATCH";
+                    }
+                    else {
+                        stopClientBTN.Tag = "GAME";
+                        stopClientBTN.Text = "QUIT GAME";
+                        clientDebugListBox.Items.Add("No Player Selected. Please select a player!");
+                    }
+                    break;
+            }             
         }
 
         private async void startClient() {
@@ -202,7 +243,7 @@ namespace TCPChess {
                 
                 client = new ChessClient(clientTokenSource.Token, progress, clientTestCommands);
                 var t = Task.Run(async () => {
-                    await client.Start(ipAddress, port);
+                    await client.Start(ipAddress, port, playerNameTB.Text);
                     clientTokenSource = new CancellationTokenSource();                    
                     client = null;
                 });
@@ -220,9 +261,10 @@ namespace TCPChess {
                     if (info.ToUpper().StartsWith("BOARD,")) {
                         currentBoardLayout = info;
                         enableGameOn();
-                        showBoard();
+                        showBoard();                        
                         showPieces();
                         boardPB.Invalidate();
+                        client.requestGetPlayers();
                     }
                     else if (info.ToUpper().StartsWith("PLAYERS,")) {
                         showPlayers(info);
@@ -263,32 +305,25 @@ namespace TCPChess {
         }
 
         private void enableGameOn() {
+            dictRequests.Clear();
             directionsLB.Visible = true;
             gameLB.Visible = true;
-            playMatchBTN.Enabled = false;
-            stopMatchBTN.Enabled = true;
-        }
-
-        private void disableGameOn() {
-            directionsLB.Visible = false;
-            gameLB.Visible = false;
-
-            clientStartBTN.Enabled = true;
-            stopClientBTN.Enabled = false;            
-
-            currentBoardLayout = "";
-            showBoard();
-            boardPB.Invalidate();
-        }
+            stopClientBTN.Tag = "MATCH";
+            stopClientBTN.Text = "QUIT MATCH";
+            clientStartBTN.Enabled= false;
+        }      
 
         private void showPlayers(string info) {
             playersListBox.Items.Clear();
             string[] split = info.Split(',');
             if (split.Length > 1) {
-                playMatchBTN.Enabled = true;
+                clientStartBTN.Enabled = true;
                 for (int x = 1; x < split.Length; x++) {
                     playersListBox.Items.Add(split[x]);
                 }
+            }
+            else {
+                clientStartBTN.Enabled = false;
             }
         }
 
@@ -327,32 +362,12 @@ namespace TCPChess {
             }
             showPieces();
             boardPB.Invalidate();
-        }
-
-        private void playMatchBTN_Click(object sender, EventArgs e) {
-            if (playersListBox.SelectedIndex >= 0) {
-                string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();                
-                client.requestPlay(toPlay,whiteRB.Checked ? "W" : "B");
-            }
-            else if (requestsLB.SelectedIndex >= 0) {
-                string toPlay = requestsLB.Items[requestsLB.SelectedIndex].ToString();
-                client.acceptPlay(toPlay);
-            }
-            else {
-                clientDebugListBox.Items.Add("No Player Selected. Please select a player!");
-            }
-        }
+        }   
 
         private void button1_Click(object sender, EventArgs e) {
-            startClient();
+            whenConnectPushed();
             testInit();
-        }
-
-        private void stopMatchBTN_Click(object sender, EventArgs e) {
-            client.quitMatch();
-            Task.Delay(1000).Wait();
-            opponentPlayerName = "";
-            dictRequests = new Dictionary<string, string>();
+            startClient();            
         }
 
         private void playersListBox_Click(object sender, EventArgs e) {
@@ -364,12 +379,42 @@ namespace TCPChess {
         }
 
         private void stopClientBTN_Click(object sender, EventArgs e) {
-            client.quitGame();
+
+            switch (stopClientBTN.Tag.ToString()) {
+                case "MATCH":
+                    stopClientBTN.Tag = "GAME";
+                    stopClientBTN.Text = "QUIT GAME";
+                    clientStartBTN.Enabled = true;
+                    clientStartBTN.Text = "PLAY MATCH";
+                    client.quitMatch();
+                    opponentPlayerName = "";
+                    dictRequests = new Dictionary<string, string>();
+                    break;
+                case "GAME":
+                    stopClientBTN.Tag = "";
+                    client.quitGame();
+                    opponentPlayerName = "";
+                    dictRequests = new Dictionary<string, string>();
+                    clientTokenSource.Cancel();
+
+                    clientStartBTN.Text = "CONNECT";
+                    clientStartBTN.Tag = "CONNECT";
+
+                    directionsLB.Visible = false;
+                    gameLB.Visible = false;
+
+                    clientStartBTN.Enabled = true;
+                    stopClientBTN.Enabled = false;
+
+                    currentBoardLayout = "";
+                    showBoard();
+                    boardPB.Invalidate();
+                    break;
+                default:
+                    break;
+            }
+
             Task.Delay(1000).Wait();
-            opponentPlayerName = "";
-            dictRequests = new Dictionary<string, string>();
-            clientTokenSource.Cancel();
-            disableGameOn();
         }
     }
 }

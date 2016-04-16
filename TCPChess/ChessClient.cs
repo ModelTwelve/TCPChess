@@ -16,6 +16,7 @@ namespace TCPChess {
         private IProgress<ReportingClass> progress;
         private ReportingClass reportingClass = new ReportingClass();
         private List<string> clientCommands;
+        private string playerName = "";
 
         public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands = null) {
             this.cToken = cToken;
@@ -23,7 +24,13 @@ namespace TCPChess {
             this.clientCommands = clientCommands ?? new List<string>();
         }
 
-        public async Task Start(IPAddress ipAddress, int port) {
+        public async Task Start(IPAddress ipAddress, int port, string playerName) {
+            this.playerName = playerName;
+
+            // Let's get the party started!
+            clientCommands.Add("CONNECT," + playerName);
+            clientCommands.Add("GET,players");
+
             TcpClient client = new TcpClient();
             await client.ConnectAsync(ipAddress, port);
 
@@ -35,7 +42,7 @@ namespace TCPChess {
                     using (var reader = new StreamReader(networkStream)) {
                         Task.Run(() => readTask(reader));
                         Task.Run(() => writeTask(writer));
-                        await allDone();                        
+                        await connectionMonitor();                        
                     }
                 }
             }
@@ -45,7 +52,7 @@ namespace TCPChess {
             progress.Report(reportingClass);
         }
 
-        private async Task allDone() {
+        private async Task connectionMonitor() {
             while (!cToken.IsCancellationRequested) {
                 // Give the reader one additional sec to read from the stream while data is still available
                 Task.Delay(1000).Wait();
@@ -110,6 +117,12 @@ namespace TCPChess {
         public void requestMove(string data) {
             lock (_lock) {
                 clientCommands.Add("MOVE,"+data);
+            }
+        }
+
+        public void requestGetPlayers() {
+            lock (_lock) {
+                clientCommands.Add("GET,Players");
             }
         }
 

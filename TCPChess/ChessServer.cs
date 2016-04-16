@@ -19,6 +19,8 @@ namespace TCPChess {
             public Dictionary<string, ChessPiece> chessPieces = null;
             // ToPlayername and ColorRequested
             public Dictionary<string,string> dictPendingPlayRequests;
+            public string serverTestAutoResponseOnPlayRequest = "";
+            public bool quitGAME = false;
 
             public string status {
                 get {
@@ -151,7 +153,7 @@ namespace TCPChess {
                         using (var reader = new StreamReader(networkStream)) {
                             Task.Run(() => readTask(reader, clientInfo));
                             Task.Run(() => writeTask(writer, clientInfo));
-                            await allDone(writer);
+                            await connectionMonitor(writer, clientInfo);
                             lock (_lock) {
                                 dictConnections.Remove(clientInfo);
                             }
@@ -170,12 +172,13 @@ namespace TCPChess {
             progress.Report(reportingClass);
 
         }
-        private async Task allDone(StreamWriter writer) {
+        private async Task connectionMonitor(StreamWriter writer, string clientInfo) {
             bool disco = false;
             while ( (!disco) & (!cToken.IsCancellationRequested) ) {
                 // Give the reader one additional sec to read from the stream while data is still available
                 try {
-                    writer.WriteLine("NOOP");
+                    //writer.WriteLine("NOOP");
+                    disco = dictConnections[clientInfo].quitGAME;
                     Task.Delay(1000).Wait();
                 }
                 catch(Exception e) {
@@ -190,8 +193,8 @@ namespace TCPChess {
                 foreach (var client in dictConnections) {
                     if (client.Key.StartsWith("_")) {
                         // This is a pretend client added to the server for testing
-                        if (client.Value.serverResponses.Count > 0) {
-                            lock(_lock) {
+                        lock (_lock) {
+                            if (client.Value.serverResponses.Count > 0) {                            
                                 // We've got something to simulate!
                                 string messageToSend = null;
                                 messageToSend = client.Value.serverResponses[0];
@@ -200,13 +203,19 @@ namespace TCPChess {
                                 client.Value.serverResponses.RemoveAt(0);
                                 if (messageToSend.ToUpper().StartsWith("REQUEST,")) {
                                     string[] split = messageToSend.Split(',');
-                                    if (client.Value.playersName.ToUpper().Equals("DONALD")) {
-                                        handleREQUEST(client.Value, split, true);
-                                    }
-                                    else {
-                                        // Instead of accepting ... send them a request instead!
-                                        handlePLAY(new string[] { "PLAY", split[1], "W" }, client.Value, true);
-                                    }
+                                    string simAction = client.Value.serverTestAutoResponseOnPlayRequest.ToUpper();
+                                    switch(simAction) {
+                                        case "ACCEPT":
+                                            server_Command_handleWithAccept(client.Value, split);
+                                            break;
+                                        case "REQUEST":
+                                            // Instead of accepting ... send them a request instead!
+                                            handlePLAY(new string[] { "PLAY", split[1], "W" }, client.Value, true);
+                                            break;
+                                        default:
+                                            // Do nothing
+                                            break;
+                                    }                                    
                                 }
                             }
                         }
@@ -217,6 +226,22 @@ namespace TCPChess {
                 Task.Delay(100).Wait();
             }
         }
+        private void server_Command_handleWithAccept(PerClientGameData clientGameData, string[] dataSplit) {
+            // In this case we're simulating the server accepting the request so the opponent is the real player!
+            // Tell bothsides the match is not underway!
+            string playerName = dataSplit[1];
+            string color = dataSplit[2];
+            var opRemoteEdPoint = getRemoteEndPoint(playerName);
+            if (opRemoteEdPoint != null) {
+                var opClientGameData = dictConnections[opRemoteEdPoint];
+                handleACCEPT(clientGameData, opClientGameData);
+            }
+            else {
+                // A request from a player that no longer exists?
+                // Just don't do anything about it!
+            }
+        }
+
         private async Task writeTask(StreamWriter writer, string remoteEndPoint) {
             writer.AutoFlush = true;
             while (true) {
@@ -260,6 +285,9 @@ namespace TCPChess {
                     remoteEndPoint = "_"+ playerName + "_"+ remoteEndPoint;
                     dictConnections.Add(remoteEndPoint,new PerClientGameData());
                     dictConnections[remoteEndPoint].playersName = playerName;
+                    if (split.Length>=4) {
+                        dictConnections[remoteEndPoint].serverTestAutoResponseOnPlayRequest = split[3];
+                    }
                 }
                 return true;
             }
@@ -312,45 +340,38 @@ namespace TCPChess {
                 processServerTestCommand(remoteEndPoint, dataFromClient);
                 return;
             }
+
             if (upperData.StartsWith("CONNECT,")) {                
                 string playerName = dataSplit[1];
                 if (getRemoteEndPoint(playerName) == null) {
                     clientGameData.playersName = playerName;
                     clientGameData.serverResponses.Add("OK");
+                    //sendPlayers(clientGameData);
                 }
                 else {
                     clientGameData.serverResponses.Add("ERROR,Invalid Name");
                 }
                 return;
-            }
-
-            if (upperData.StartsWith("QUIT,")) {
-                if (upperData.EndsWith("MATCH")) {
-                    quitMatch(clientGameData);
-                }
-                else if (upperData.EndsWith("GAME")) {
-                    quitGame(clientGameData);
-                }
-                else {
-                    clientGameData.serverResponses.Add("ERROR,Invalid QUIT Command");
-                }
-                return;
-            }
+            }            
 
             if (upperData.StartsWith("PLAY,")) {
                 handlePLAY(dataSplit, clientGameData);
                 return;
             }
 
-            if (upperData.StartsWith("REQUEST,")) {                                
-                handleREQUEST(clientGameData, dataSplit);
+            if (upperData.StartsWith("ACCEPT,")) {
+                string playerName = dataSplit[1];
+                var opRemoteEdPoint = getRemoteEndPoint(playerName);
+                if (opRemoteEdPoint != null) {
+                    var opClientGameData = dictConnections[opRemoteEdPoint];
+                    handleACCEPT(clientGameData, opClientGameData);
+                }
+                else {
+                    // A request from a player that no longer exists?
+                    // Just don't do anything about it!
+                }
                 return;
             }
-
-            //if (upperData.StartsWith("ACCEPT,")) {
-            //    handleACCEPT(clientGameData, dataSplit);
-            //    return;
-            //}
 
             if (upperData.StartsWith("GET,BOARD")) {
                 clientGameData.serverResponses.Add("BOARD," + clientGameData.serializeBoard());
@@ -369,6 +390,19 @@ namespace TCPChess {
                 }
                 else {
                     clientGameData.serverResponses.Add("ERROR,You cannot move there");
+                }
+                return;
+            }
+
+            if (upperData.StartsWith("QUIT,")) {
+                if (upperData.EndsWith("MATCH")) {
+                    quitMatch(clientGameData);
+                }
+                else if (upperData.EndsWith("GAME")) {
+                    quitGame(clientGameData);
+                }
+                else {
+                    clientGameData.serverResponses.Add("ERROR,Invalid QUIT Command");
                 }
                 return;
             }
@@ -400,54 +434,18 @@ namespace TCPChess {
             else {
                 clientGameData.serverResponses.Add("ERROR,Already have a pending request sent to " + playerName);
             }
+        }   
+        private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData) {
+            createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
+            clientGameData.serverResponses.Add("ACCEPTED," + opClientGameData.playersName);            
+            opClientGameData.serverResponses.Add("ACCEPTED," + clientGameData.playersName);
+            sendPlayers(opClientGameData);
         }
-
         private void sendPlayers(PerClientGameData clientGameData) {
             string listOfPlayers = serializePlayers(clientGameData.playersName);
             // It's ok to send an empty list
             clientGameData.serverResponses.Add("PLAYERS" + listOfPlayers);
         }
-
-        private void quitMatch(PerClientGameData clientGameData) {
-            var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
-            opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
-            clientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
-
-            clientGameData.destroyMatch();
-            opClientGameData.destroyMatch();
-
-            sendPlayers(opClientGameData);
-            sendPlayers(clientGameData);
-        }
-
-        private void quitGame(PerClientGameData clientGameData) {
-            var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
-            opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
-            sendPlayers(opClientGameData);
-            clientGameData.serverResponses.Add("OK");            
-        }
-
-        private void handleREQUEST(PerClientGameData clientGameData, string[] dataSplit, bool serverTest = false) {
-            string playerName = dataSplit[1];
-            string color = dataSplit[2];
-            var opRemoteEdPoint = getRemoteEndPoint(playerName);
-            if (opRemoteEdPoint != null) {                
-                var opClientGameData = dictConnections[opRemoteEdPoint];
-                // Tell bothsides the match is not underway!
-                if (serverTest) {
-                    createMatchBetweenPlayers(playerName, clientGameData.playersName);
-                    clientGameData.serverResponses.Add("ACCEPTED," + playerName);
-                    // In this case we're simulating the server accepting the request so the opponent is the real player!
-                    opClientGameData.serverResponses.Add("ACCEPTED," + clientGameData.playersName);
-                    sendPlayers(opClientGameData);
-                }
-            }
-            else {
-                // A request from a player that no longer exists?
-                // Just don't do anything about it!
-            }       
-        }
-
         private string serializePlayers(string currentPlayerName) {
             StringBuilder sb = new StringBuilder();
             foreach(var client in dictConnections) {
@@ -477,6 +475,35 @@ namespace TCPChess {
             }
 
             return rv;
-        }        
+        }
+        private void quitMatch(PerClientGameData clientGameData) {
+            if (dictConnections.ContainsKey(clientGameData.opponentsRemoteEndPoint)) {
+                var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
+                opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+                clientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+
+                clientGameData.destroyMatch();
+                opClientGameData.destroyMatch();
+
+                sendPlayers(opClientGameData);                
+            }
+            // Regardless of the circumstances ... let's send a new player list
+            sendPlayers(clientGameData);
+        }
+
+        private void quitGame(PerClientGameData clientGameData) {
+            if (dictConnections.ContainsKey(clientGameData.opponentsRemoteEndPoint)) {
+                var opClientGameData = dictConnections[clientGameData.opponentsRemoteEndPoint];
+                opClientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+                clientGameData.serverResponses.Add("WINNER," + clientGameData.opponentsName);
+
+                clientGameData.destroyMatch();
+                opClientGameData.destroyMatch();
+
+                sendPlayers(opClientGameData);                
+            }
+            clientGameData.serverResponses.Add("OK");
+            clientGameData.quitGAME = true;
+        }
     }
 }
