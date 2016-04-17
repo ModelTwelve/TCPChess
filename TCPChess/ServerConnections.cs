@@ -41,9 +41,10 @@ namespace TCPChess {
                     if (playersColor.Equals(turnsColor)){
                         rv = currentPlayer.movePiece(from, to);                        
                         if (rv) {
-                            // This was a successful move ... update the opponents data
+                            // This was a successful move ... send back an OK 
+                            currentPlayer.addServerResponse("OK");
+                            // Now update the opponents data
                             opponentPlayer.movePiece(from, to);
-
                             // Now send out some new boards
                             currentPlayer.addServerResponse(currentPlayer.serializeBoard());
                             opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
@@ -154,6 +155,17 @@ namespace TCPChess {
                         messageToSend = GetServerResponse(client.Key);
                         if (messageToSend != null) {
                             actingClient = client.Value;
+                            break;
+                        }
+                    }
+
+                    // Check to see if clients engaged in a match are still alive after NOOPs
+                    if (client.Value.opponentsRemoteEndPoint.Length>0) {
+                        // We think we're playing someone ... see if they still exist
+                        if (!dictConnections.ContainsKey(client.Value.opponentsRemoteEndPoint)) {
+                            // They're gone ... send the client a WINNER!
+                            client.Value.addServerResponse("WINNER," + client.Value.playersName);
+                            client.Value.destroyMatch();
                             break;
                         }
                     }

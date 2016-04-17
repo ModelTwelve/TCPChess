@@ -77,10 +77,16 @@ namespace TCPChess {
         }
         private async Task connectionMonitor(StreamWriter writer, string clientInfo) {
             bool disco = false;
+            int x = 0;
             while ( (!disco) & (!cToken.IsCancellationRequested) ) {
                 // Give the reader one additional sec to read from the stream while data is still available
                 try {
-                    //writer.WriteLine("NOOP");
+                    ++x;
+                    if (x > 20) {
+                        // Every so many seconds send out a NOOP to make sure this client is still alive!
+                        x = 0;
+                        writer.WriteLine("NOOP");
+                    }
                     var client = serverConnections.GetClientGameData(clientInfo);
                     disco = client.quitGAME;
                     Task.Delay(1000).Wait();
@@ -110,6 +116,10 @@ namespace TCPChess {
                                 // Instead of accepting ... send them a request instead!
                                 handlePLAY(new string[] { "PLAY", split[1], "W" }, client, true);
                                 break;
+                            case "REFUSE":
+                                // Instead of accepting ... send them a refuse instead!
+                                handleREFUSE(new string[] { "REFUSE", split[1] }, client, true);
+                                break;
                             default:
                                 // Do nothing
                                 break;
@@ -128,7 +138,7 @@ namespace TCPChess {
             var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
             if (opRemoteEdPoint != null) {
                 var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                handleACCEPT(clientGameData, opClientGameData,color);
+                handleACCEPTED(clientGameData, opClientGameData,color);
             }
             else {
                 // A request from a player that no longer exists?
@@ -233,13 +243,13 @@ namespace TCPChess {
                 return;
             }
 
-            if (upperData.StartsWith("ACCEPT,")) {
+            if (upperData.StartsWith("ACCEPTED,")) {
                 string playerName = dataSplit[1];
                 string color = dataSplit[2];
                 var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
                 if (opRemoteEdPoint != null) {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                    handleACCEPT(clientGameData, opClientGameData, color);
+                    handleACCEPTED(clientGameData, opClientGameData, color);
                 }
                 else {
                     // A request from a player that no longer exists?
@@ -291,6 +301,21 @@ namespace TCPChess {
             clientGameData.addServerResponse("OK");
         }
 
+        private void handleREFUSE(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
+            string playerName = dataSplit[1].ToUpper();
+            if (!clientGameData.CheckPlayRequests(playerName)) {
+                var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
+                if (opRemoteEndPoint != null) {
+                    var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
+                    if (opClientGameData.available) {
+                        opClientGameData.RemoveRequests(clientGameData.playersName);
+                        //opClientGameData.addServerResponse("REQUEST," + clientGameData.playersName + "," + color);
+                    }                    
+                }
+            }
+            // No else conditions needed ... just don't repond back
+        }
+
         private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
             string playerName = dataSplit[1].ToUpper();
             string color = dataSplit[2].ToUpper();
@@ -315,16 +340,19 @@ namespace TCPChess {
                 clientGameData.addServerResponse("ERROR,Already have a pending request sent to " + playerName);
             }
         }   
-        private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color) {
-            // Right here I need to check the ACCEPT to make sure it has a valid request
+        private void handleACCEPTED(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color) {
+            // Right here I need to check the ACCEPTED to make sure it has a valid request
             // Basically ... does the opponent have this exact request in their dict?
             if (!opClientGameData.CheckPlayRequestAndColor(clientGameData.playersName, color)) {
                 clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you with the color "+color);
                 return;
             }
             createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
-            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + ","+ opClientGameData.playersColor);            
+
+            clientGameData.addServerResponse("OK");
+            //clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
+            
             sendPlayers(opClientGameData);
             if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn)) {
                 sendTurn(clientGameData);

@@ -276,11 +276,14 @@ namespace TCPChess {
                     else if (info.ToUpper().StartsWith("REQUEST,")) {
                         showRequested(info);
                     }
-                    else if (info.ToUpper().StartsWith("ACCEPTED,")) {
+                    else if (info.ToUpper().StartsWith("ACCEPTED,")) {                        
                         showAccepted(info);
                     }
-                    else if (info.ToUpper().StartsWith("WINNER,")) {
+                    else if (info.ToUpper().StartsWith("WINNER,")) {                        
                         showWinner(info);
+                    }
+                    else if (info.ToUpper().StartsWith("REFUSED,")) {
+                        showRefused(info);
                     }
                 }
             }
@@ -294,7 +297,19 @@ namespace TCPChess {
             }
         }
 
+        private void showRefused(string info) {
+            if (opponentPlayerName.Length == 0) {
+                string[] split = info.Split(',');
+                string[] playerData = split[1].Split(':');
+                if (dictRequests.ContainsKey(playerData[0])) {
+                    dictRequests.Remove(playerData[0]);
+                    requestsLB.Items.Remove(split[1]);
+                }
+            }
+        }
+
         private void showAccepted(string info) {
+            requestsLB.Items.Clear();
             string[] split = info.Split(',');
             opponentPlayerName = split[1];
             string color = split[2].ToUpper();

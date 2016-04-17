@@ -17,6 +17,7 @@ namespace TCPChess {
         private ReportingClass reportingClass = new ReportingClass();
         private OutBoundMessageQueue responseQueue;
         private string playerName = "";
+        private string sendACCEPTED = "";
 
         public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands) {
             this.cToken = cToken;
@@ -106,6 +107,20 @@ namespace TCPChess {
                 handleTURN(upperData);
                 return;
             }
+
+            if ( (sendACCEPTED.Length>0)&& (upperData.StartsWith("OK")) ) {
+                string[] split = sendACCEPTED.Split(':');
+                sendACCEPTED = "";
+                // The the frontend what's happening
+                reportingClass.addMessage("ACCEPTED,"+ split[0]+","+split[1]);
+            }
+
+            if ((sendACCEPTED.Length > 0) && (upperData.StartsWith("ERROR,"))) {
+                // The the frontend what's happening
+                reportingClass.addMessage("REFUSED," + sendACCEPTED);
+                // Refused or not available anymore or something bad happened
+                sendACCEPTED = "";                
+            }
         }
         private void handleACCEPTED(string[] dataSplit) {
             string playerName = dataSplit[1];
@@ -146,8 +161,10 @@ namespace TCPChess {
         }
 
         public void acceptPlay(string data) {
+            // Remember who we're trying to ACCEPT
+            sendACCEPTED = data;
             string[] split = data.Split(':');
-            addMessage("ACCEPT," + split[0] +","+ split[1]);
+            addMessage("ACCEPTED," + split[0] +","+ split[1]);
             addMessage("GET,BOARD");
         }
 

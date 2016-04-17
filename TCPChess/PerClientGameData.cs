@@ -71,6 +71,23 @@ namespace TCPChess {
                 dictPendingPlayRequests.Add(playerName.ToUpper(), new PlayRequest(opRemoteEdPoint, myRequestedColor));
             }
         }
+        public void RemoveRequests(string playerName) {
+            lock (_lock) {
+                playerName = playerName.ToUpper();
+                List<string> toRemove = new List<string>();
+                foreach (var player in dictPendingPlayRequests) {
+                    if (player.Key.ToUpper().StartsWith(playerName + ":")) { 
+                        toRemove.Add(playerName + ":");
+                    }
+                    if (player.Key.ToUpper().Equals(playerName)) { 
+                        toRemove.Add(playerName);
+                    }
+                }
+                foreach(var item in toRemove) {
+                    dictPendingPlayRequests.Remove(item);
+                }
+            }
+        }
 
         public string serializeBoard() {
             StringBuilder sb = new StringBuilder();
