@@ -15,7 +15,7 @@ namespace TCPChess {
         private CancellationToken cToken;
         private IProgress<ReportingClass> progress;
         private ReportingClass reportingClass = new ReportingClass();
-        private ServerConnections serverConnections = new ServerConnections();       
+        private ServerConnections serverConnections = new ServerConnections();
 
         public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress) {
             _listeningPort = port;
@@ -179,20 +179,26 @@ namespace TCPChess {
             }
 
             if (split[1].StartsWith("MATCH")) {
-                string playerName1 = split[2];
-                string playerName2 = split[3];
-                createMatchBetweenPlayers(playerName1, playerName2);
+                string[] player1 = split[2].Split(':');
+                string[] player2 = split[3].Split(':');
+
+                string playerName1 = player1[0];
+                string playerName2 = player2[0];
+                string playerColor1 = player1[1];
+                string playerColor2 = player2[1];
+                createMatchBetweenPlayers(playerName1, playerName2, playerColor1, playerColor2);
                 return true;
             }
             return false;
         }
 
-        public bool createMatchBetweenPlayers(string playerName1, string playerName2) {
+        public bool createMatchBetweenPlayers(string playerName1, string playerName2, string playerColor1=null, string playerColor2=null) {
+            // Preassigned colors must be coming from a server test!
             string remoteEndPoint1 = serverConnections.GetRemoteEndPoint(playerName1);
             string remoteEndPoint2 = serverConnections.GetRemoteEndPoint(playerName2);
 
             if ((remoteEndPoint1!=null)&&(remoteEndPoint2!= null)) {
-                return serverConnections.InitializeMatch(remoteEndPoint1, remoteEndPoint2);
+                return serverConnections.InitializeMatch(remoteEndPoint1, remoteEndPoint2, playerColor1, playerColor2);
             }
             return false;
         }
@@ -213,6 +219,7 @@ namespace TCPChess {
                 if (serverConnections.GetRemoteEndPoint(playerName) == null) {
                     clientGameData.playersName = playerName;
                     clientGameData.addServerResponse("OK");
+                    serverConnections.RefreshAllPlayers();
                     //sendPlayers(clientGameData);
                 }
                 else {
@@ -247,6 +254,11 @@ namespace TCPChess {
 
             if (upperData.StartsWith("GET,PLAYERS")) {
                 sendPlayers(clientGameData);
+                return;
+            }
+
+            if (upperData.StartsWith("GET,TURN")) {
+                sendTurn(clientGameData);
                 return;
             }
 
@@ -305,10 +317,20 @@ namespace TCPChess {
         }   
         private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData) {
             createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
-            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName);            
-            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName);
+            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + ","+ clientGameData.playersColor);            
+            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + opClientGameData.playersColor);
             sendPlayers(opClientGameData);
+            if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn)) {
+                sendTurn(clientGameData);
+            } else {
+                sendTurn(opClientGameData);
+            }
         }
+
+        private void sendTurn(PerClientGameData clientGameData) {
+            clientGameData.addServerResponse("GO,"+ clientGameData.currentColorsTurn);
+        }
+
         private void sendPlayers(PerClientGameData clientGameData) {
             string listOfPlayers = serverConnections.SerializePlayers(clientGameData.playersName);
             // It's ok to send an empty list

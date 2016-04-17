@@ -129,7 +129,7 @@ namespace TCPChess {
                 "Server_Command,Add,Chris", // When asked to PLAY Chris will not respond
                 "Server_Command,Add,Jacob",
                 "Server_Command,Add,Joe,REFUSE", // When asked to PLAY Joe will REFUSE
-                "Server_Command,Match,David,Jacob",
+                "Server_Command,Match,David:W,Jacob:B",
                 "Server_Command,Add,George,REQUEST", // When asked to PLAY George will send you a REQUEST instead
             };            
         }        
@@ -297,6 +297,14 @@ namespace TCPChess {
         private void showAccepted(string info) {
             string[] split = info.Split(',');
             opponentPlayerName = split[1];
+            string color = split[2].ToUpper();
+            if (color.Equals("W")) {
+                whiteRB.Checked = true;
+            }
+            else {
+                blackRB.Checked = true;
+            }
+            colorPanel.Enabled = false;
             dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Playing " + split[1];
         }
@@ -358,7 +366,7 @@ namespace TCPChess {
 
                     if (client != null) {
                         client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString());
-                        client.getBoard();
+                        //client.getBoard();
                     }
                     selectedX = -1;
                     selectedY = -1;
@@ -389,16 +397,20 @@ namespace TCPChess {
                     stopClientBTN.Tag = "GAME";
                     stopClientBTN.Text = "QUIT GAME";
                     clientStartBTN.Enabled = true;
+                    colorPanel.Enabled = true;
                     clientStartBTN.Text = "PLAY MATCH";
                     client.quitMatch();
                     opponentPlayerName = "";
                     dictRequests = new Dictionary<string, string>();
+                    requestsLB.Items.Clear();
                     break;
                 case "GAME":
                     stopClientBTN.Tag = "";
                     client.quitGame();
                     opponentPlayerName = "";
+                    colorPanel.Enabled = true;
                     dictRequests = new Dictionary<string, string>();
+                    requestsLB.Items.Clear();
                     clientTokenSource.Cancel();
 
                     clientStartBTN.Text = "CONNECT";

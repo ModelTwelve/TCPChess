@@ -45,7 +45,7 @@
             this.directionsLB = new System.Windows.Forms.Label();
             this.playersLB = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.colorPanel = new System.Windows.Forms.Panel();
             this.blackRB = new System.Windows.Forms.RadioButton();
             this.whiteRB = new System.Windows.Forms.RadioButton();
             this.gameLB = new System.Windows.Forms.Label();
@@ -74,7 +74,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.wKnight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.wKing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.wBishop)).BeginInit();
-            this.panel1.SuspendLayout();
+            this.colorPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // serverStartBTN
@@ -303,12 +303,12 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.blackRB);
-            this.panel1.Controls.Add(this.whiteRB);
-            this.panel1.Location = new System.Drawing.Point(455, 422);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(82, 57);
-            this.panel1.TabIndex = 22;
+            this.colorPanel.Controls.Add(this.blackRB);
+            this.colorPanel.Controls.Add(this.whiteRB);
+            this.colorPanel.Location = new System.Drawing.Point(455, 422);
+            this.colorPanel.Name = "panel1";
+            this.colorPanel.Size = new System.Drawing.Size(82, 57);
+            this.colorPanel.TabIndex = 22;
             // 
             // blackRB
             // 
@@ -473,7 +473,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.serverIPTB);
             this.Controls.Add(this.gameLB);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.colorPanel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.playersLB);
             this.Controls.Add(this.directionsLB);
@@ -510,8 +510,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.wKnight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.wKing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.wBishop)).EndInit();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.colorPanel.ResumeLayout(false);
+            this.colorPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -540,7 +540,7 @@
         private System.Windows.Forms.Label directionsLB;
         private System.Windows.Forms.ListBox playersLB;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel colorPanel;
         private System.Windows.Forms.RadioButton blackRB;
         private System.Windows.Forms.RadioButton whiteRB;
         private System.Windows.Forms.Label gameLB;

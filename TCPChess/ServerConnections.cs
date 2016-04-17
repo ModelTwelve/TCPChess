@@ -34,10 +34,33 @@ namespace TCPChess {
             bool rv = false;
             lock (_lock) {
                 if (dictConnections.ContainsKey(remoteEndPoint)) {
-                    return dictConnections[remoteEndPoint].movePiece(from, to);
+                    var currentPlayer = dictConnections[remoteEndPoint];
+                    var opponentPlayer = dictConnections[currentPlayer.opponentsRemoteEndPoint];
+                    string playersColor = currentPlayer.playersColor;
+                    string turnsColor = currentPlayer.currentColorsTurn;
+                    if (playersColor.Equals(turnsColor)){
+                        rv = currentPlayer.movePiece(from, to);                        
+                        if (rv) {
+                            // This was a successful move ... update the opponents data
+                            opponentPlayer.movePiece(from, to);
+
+                            // Now send out some new boards
+                            currentPlayer.addServerResponse(currentPlayer.serializeBoard());
+                            opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
+                        }
+                    }
                 }
             }
             return rv;
+        }
+
+        public void RefreshAllPlayers() {
+            lock (_lock) {
+                foreach (var client in dictConnections) {
+                    string players = SerializePlayers(client.Value.playersName);
+                    client.Value.addServerResponse("PLAYERS" + players);
+                }
+            }
         }
 
         public string SerializePlayers(string PlayerName) {
@@ -75,13 +98,16 @@ namespace TCPChess {
             return true;
         }
 
-        public bool InitializeMatch(string RemoteEndPoint1, string RemoteEndPoint2) {
+        public bool InitializeMatch(string RemoteEndPoint1, string RemoteEndPoint2, string playerColor1=null, string playerColor2=null) {
+            // Preassigned colors must be coming from a server test!
             // Put these two in a match                
             var playerData1 = dictConnections[RemoteEndPoint1];
             var playerData2 = dictConnections[RemoteEndPoint2];
 
-            playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2);
-            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint2);
+            playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, playerColor1);
+            playerColor2 = playerData1.playersColor.Equals("W") ? "B" : "W";
+            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, playerColor2);            
+            
             return true;
         }
 

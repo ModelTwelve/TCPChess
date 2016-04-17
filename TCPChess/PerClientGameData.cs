@@ -11,7 +11,9 @@ namespace TCPChess {
         public string playersColor { get; set; }
         public string opponentsName { get; set; }
         public string opponentsRemoteEndPoint { get; set; }
-    
+
+        public string currentColorsTurn { get; set; }
+
         private Dictionary<string, ChessPiece> chessPieces = null;
         // ToPlayername and ColorRequested
         private Dictionary<string, PlayRequest> dictPendingPlayRequests;
@@ -50,12 +52,12 @@ namespace TCPChess {
 
         public bool CheckPlayRequests(string playerName) {
             lock (_lock) {
-                return dictPendingPlayRequests.ContainsKey(playerName);
+                return dictPendingPlayRequests.ContainsKey(playerName.ToUpper());
             }
         }
-        public void AddPlayRequest(string playerName, string requestedColor, string opRemoteEdPoint) {
+        public void AddPlayRequest(string playerName, string opponentColor, string opRemoteEdPoint) {
             lock (_lock) {
-                dictPendingPlayRequests.Add(playerName, new PlayRequest(opRemoteEdPoint, opRemoteEdPoint));
+                dictPendingPlayRequests.Add(playerName.ToUpper(), new PlayRequest(opRemoteEdPoint, opponentColor));
             }
         }
 
@@ -77,6 +79,10 @@ namespace TCPChess {
                         chessPieces.Add(to, cp);
                         // If we moved it then it's now gone from the other location aye?
                         chessPieces.Remove(from);
+
+                        // All is good ... now flip flop turn colors
+                        currentColorsTurn = currentColorsTurn.Equals("W") ? "B" : "W";
+
                         return true;
                     }
                 }
@@ -93,11 +99,23 @@ namespace TCPChess {
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
         }
 
-        public void initializeMatch(string opName, string opRemoteEndPoint) {
-            dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
-
+        public void initializeMatch(string opName, string opRemoteEndPoint, string forcedColor=null) {
+            
             opponentsName = opName;
             opponentsRemoteEndPoint = opRemoteEndPoint;
+
+            currentColorsTurn = "W";
+
+            // forcedColor is only possible from a server test or if you're the player that accepted the play request!
+            if (forcedColor == null) {
+                var playRequest = dictPendingPlayRequests[opName.ToUpper()];
+                playersColor = playRequest.Color.Equals("W") ? "B" : "W";
+            }
+            else {
+                playersColor = forcedColor;
+            }
+
+            dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
 
             chessPieces = new Dictionary<string, ChessPiece>();
             chessPieces.Add("0:0", new ROOK("B"));

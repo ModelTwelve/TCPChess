@@ -101,12 +101,21 @@ namespace TCPChess {
                 handleWINNER(upperData);
                 return;
             }
+
+            if (upperData.StartsWith("GO,")) {
+                handleTURN(upperData);
+                return;
+            }
         }
         private void handleACCEPTED(string[] dataSplit) {
             string playerName = dataSplit[1];
             addMessage("GET,BOARD");
         }
         private void handleWINNER(string data) {
+            reportingClass.addMessage(data);
+            progress.Report(reportingClass);
+        }
+        private void handleTURN(string data) {
             reportingClass.addMessage(data);
             progress.Report(reportingClass);
         }
