@@ -128,7 +128,7 @@ namespace TCPChess {
             var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
             if (opRemoteEdPoint != null) {
                 var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                handleACCEPT(clientGameData, opClientGameData);
+                handleACCEPT(clientGameData, opClientGameData,color);
             }
             else {
                 // A request from a player that no longer exists?
@@ -235,14 +235,15 @@ namespace TCPChess {
 
             if (upperData.StartsWith("ACCEPT,")) {
                 string playerName = dataSplit[1];
+                string color = dataSplit[2];
                 var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
                 if (opRemoteEdPoint != null) {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                    handleACCEPT(clientGameData, opClientGameData);
+                    handleACCEPT(clientGameData, opClientGameData, color);
                 }
                 else {
                     // A request from a player that no longer exists?
-                    // Just don't do anything about it!
+                    clientGameData.addServerResponse("ERROR," + playerName + " does not exist");
                 }
                 return;
             }
@@ -293,14 +294,13 @@ namespace TCPChess {
         private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
             string playerName = dataSplit[1].ToUpper();
             string color = dataSplit[2].ToUpper();
-            string oppositeColor = color.Equals("W") ? "B" : "W";
 
             if (!clientGameData.CheckPlayRequests(playerName)) {
                 var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
                 if (opRemoteEdPoint != null) {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
                     if (opClientGameData.available) {
-                        clientGameData.AddPlayRequest(playerName, oppositeColor, opRemoteEdPoint);
+                        clientGameData.AddPlayRequest(playerName, color, opRemoteEdPoint);
                         opClientGameData.addServerResponse("REQUEST," + clientGameData.playersName + "," + color);
                     }
                     else {
@@ -315,7 +315,13 @@ namespace TCPChess {
                 clientGameData.addServerResponse("ERROR,Already have a pending request sent to " + playerName);
             }
         }   
-        private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData) {
+        private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color) {
+            // Right here I need to check the ACCEPT to make sure it has a valid request
+            // Basically ... does the opponent have this exact request in their dict?
+            if (!opClientGameData.CheckPlayRequestAndColor(clientGameData.playersName, color)) {
+                clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you with the color "+color);
+                return;
+            }
             createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + ","+ opClientGameData.playersColor);            
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);

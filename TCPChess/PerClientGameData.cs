@@ -55,9 +55,20 @@ namespace TCPChess {
                 return dictPendingPlayRequests.ContainsKey(playerName.ToUpper());
             }
         }
-        public void AddPlayRequest(string playerName, string opponentColor, string opRemoteEdPoint) {
+        public bool CheckPlayRequestAndColor(string playerName, string color) {
             lock (_lock) {
-                dictPendingPlayRequests.Add(playerName.ToUpper(), new PlayRequest(opRemoteEdPoint, opponentColor));
+                // Did I request to play this person as this color?
+                if (dictPendingPlayRequests.ContainsKey(playerName.ToUpper())) {
+                    var request = dictPendingPlayRequests[playerName.ToUpper()];
+                    // What color did I want to be?
+                    return color.Equals(request.Color);
+                }
+            }
+            return false;
+        }
+        public void AddPlayRequest(string playerName, string myRequestedColor, string opRemoteEdPoint) {
+            lock (_lock) {
+                dictPendingPlayRequests.Add(playerName.ToUpper(), new PlayRequest(opRemoteEdPoint, myRequestedColor));
             }
         }
 
@@ -109,7 +120,7 @@ namespace TCPChess {
             // forcedColor is only possible from a server test or if you're the player that accepted the play request!
             if (forcedColor == null) {
                 var playRequest = dictPendingPlayRequests[opName.ToUpper()];
-                playersColor = playRequest.Color.Equals("W") ? "B" : "W";
+                playersColor = playRequest.Color;
             }
             else {
                 playersColor = forcedColor;
