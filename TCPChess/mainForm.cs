@@ -130,7 +130,7 @@ namespace TCPChess {
                 "Server_Command,Add,Jacob",
                 "Server_Command,Add,Joe,REFUSE", // When asked to PLAY Joe will REFUSE
                 "Server_Command,Match,David:W,Jacob:B",
-                "Server_Command,Add,George,REQUEST", // When asked to PLAY George will send you a REQUEST instead
+                "Server_Command,Add,George,REQUESTW", // When asked to PLAY George will send you a REQUEST instead
             };            
         }        
 

@@ -112,13 +112,19 @@ namespace TCPChess {
                             case "ACCEPT":
                                 server_Command_handleWithAccept(client, split);
                                 break;
-                            case "REQUEST":
+                            case "REQUESTW":
                                 // Instead of accepting ... send them a request instead!
                                 handlePLAY(new string[] { "PLAY", split[1], "W" }, client, true);
+                                break;
+                            case "REQUESTB":
+                                // Instead of accepting ... send them a request instead!
+                                handlePLAY(new string[] { "PLAY", split[1], "B" }, client, true);
                                 break;
                             case "REFUSE":
                                 // Instead of accepting ... send them a refuse instead!
                                 handleREFUSE(new string[] { "REFUSE", split[1] }, client, true);
+                                // Next time let's request Black
+                                client.serverTestAutoResponseOnPlayRequest = "REQUESTB";
                                 break;
                             default:
                                 // Do nothing
