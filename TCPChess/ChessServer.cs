@@ -317,8 +317,8 @@ namespace TCPChess {
         }   
         private void handleACCEPT(PerClientGameData clientGameData, PerClientGameData opClientGameData) {
             createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
-            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + ","+ clientGameData.playersColor);            
-            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + opClientGameData.playersColor);
+            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + ","+ opClientGameData.playersColor);            
+            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
             sendPlayers(opClientGameData);
             if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn)) {
                 sendTurn(clientGameData);

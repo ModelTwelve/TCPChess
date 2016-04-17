@@ -147,7 +147,7 @@ namespace TCPChess {
 
         public void acceptPlay(string data) {
             string[] split = data.Split(':');
-            addMessage("ACCEPT," + split[0]);
+            addMessage("ACCEPT," + split[0] +","+ split[1]);
             addMessage("GET,BOARD");
         }
 

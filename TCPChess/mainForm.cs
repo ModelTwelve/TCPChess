@@ -299,10 +299,12 @@ namespace TCPChess {
             opponentPlayerName = split[1];
             string color = split[2].ToUpper();
             if (color.Equals("W")) {
-                whiteRB.Checked = true;
+                // If your opponent is white you must be black
+                blackRB.Checked = true;                
             }
             else {
-                blackRB.Checked = true;
+                // If your opponent is black you must be white
+                whiteRB.Checked = true;
             }
             colorPanel.Enabled = false;
             dictRequests = new Dictionary<string, string>();
