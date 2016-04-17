@@ -15,21 +15,24 @@ namespace TCPChess {
         private CancellationToken cToken;
         private IProgress<ReportingClass> progress;
         private ReportingClass reportingClass = new ReportingClass();
-        private List<string> clientCommands;
+        private OutBoundMessageQueue responseQueue;
         private string playerName = "";
 
-        public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands = null) {
+        public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands) {
             this.cToken = cToken;
             this.progress = progress;
-            this.clientCommands = clientCommands ?? new List<string>();
+            this.responseQueue = new OutBoundMessageQueue();
+            foreach(var message in clientCommands) {
+                responseQueue.AddMessage(message);
+            }            
         }
 
         public async Task Start(IPAddress ipAddress, int port, string playerName) {
             this.playerName = playerName;
 
             // Let's get the party started!
-            clientCommands.Add("CONNECT," + playerName);
-            clientCommands.Add("GET,players");
+            addMessage("CONNECT," + playerName);
+            addMessage("GET,players");
 
             TcpClient client = new TcpClient();
             await client.ConnectAsync(ipAddress, port);
@@ -42,7 +45,7 @@ namespace TCPChess {
                     using (var reader = new StreamReader(networkStream)) {
                         Task.Run(() => readTask(reader));
                         Task.Run(() => writeTask(writer));
-                        await connectionMonitor();                        
+                        await connectionMonitor();
                     }
                 }
             }
@@ -62,15 +65,11 @@ namespace TCPChess {
         private async Task writeTask(StreamWriter writer) {
             writer.AutoFlush = true;
             while (true) {
-                string messageToSend = null;
-                if (clientCommands.Count > 0) {
-                    lock (_lock) {
-                        messageToSend = clientCommands[0];
+                string messageToSend = removeMessage();
+                if (messageToSend != null) {    
+                    reportingClass.addMessage("Sending: " + messageToSend);
+                    progress.Report(reportingClass);
 
-                        reportingClass.addMessage("Sending: " + messageToSend);
-                        progress.Report(reportingClass);
-                        clientCommands.RemoveAt(0);
-                    }
                     await writer.WriteLineAsync(messageToSend);
                 }
                 Task.Delay(100).Wait();
@@ -83,9 +82,7 @@ namespace TCPChess {
                 if (!string.IsNullOrEmpty(dataFromServer)) {
                     if (!dataFromServer.ToUpper().Equals("NOOP")) {
                         reportingClass.addMessage(dataFromServer);
-                        lock (_lock) {
-                            processCommand(dataFromServer);
-                        }
+                        processCommand(dataFromServer);
                     }
                 }
                 progress.Report(reportingClass);
@@ -93,7 +90,7 @@ namespace TCPChess {
         }
         private void processCommand(string dataFromServer) {
             string upperData = dataFromServer.ToUpper();
-            string[] dataSplit = dataFromServer.Split(',');          
+            string[] dataSplit = dataFromServer.Split(',');
 
             if (upperData.StartsWith("ACCEPTED,")) {
                 handleACCEPTED(dataSplit);
@@ -104,59 +101,57 @@ namespace TCPChess {
                 handleWINNER(upperData);
                 return;
             }
-        }       
+        }
         private void handleACCEPTED(string[] dataSplit) {
             string playerName = dataSplit[1];
-            clientCommands.Add("GET,BOARD");            
+            addMessage("GET,BOARD");
         }
         private void handleWINNER(string data) {
             reportingClass.addMessage(data);
             progress.Report(reportingClass);
         }
 
-        public void requestMove(string data) {
+        private void addMessage(string data) {
             lock (_lock) {
-                clientCommands.Add("MOVE,"+data);
+                responseQueue.AddMessage(data);
             }
+        }
+        private string removeMessage() {
+            string messageToSend = null;
+            lock (_lock) {
+                messageToSend = responseQueue.RemoveMessage();
+            }
+            return messageToSend;
+        }
+        public void requestMove(string data) {
+            addMessage("MOVE,"+data);            
         }
 
         public void requestGetPlayers() {
-            lock (_lock) {
-                clientCommands.Add("GET,Players");
-            }
+            addMessage("GET,Players");
         }
 
         public void requestPlay(string data, string color) {
             string[] split = data.Split(':');
-            lock (_lock) {
-                clientCommands.Add("PLAY," + split[0]+","+color);
-            }
+            addMessage("PLAY," + split[0]+","+color);
         }
 
         public void acceptPlay(string data) {
             string[] split = data.Split(':');
-            lock (_lock) {
-                clientCommands.Add("ACCEPT," + split[0]);
-                clientCommands.Add("GET,BOARD");
-            }
+            addMessage("ACCEPT," + split[0]);
+            addMessage("GET,BOARD");
         }
 
         public void getBoard() {
-            lock (_lock) {
-                clientCommands.Add("GET,board");
-            }
+            addMessage("GET,board");
         }
 
         public void quitMatch() {
-            lock (_lock) {
-                clientCommands.Add("QUIT,MATCH");
-            }
+            addMessage("QUIT,MATCH");
         }
 
         public void quitGame() {
-            lock (_lock) {
-                clientCommands.Add("QUIT,GAME");
-            }
+            addMessage("QUIT,GAME");
         }
     }
 }

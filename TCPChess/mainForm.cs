@@ -193,10 +193,14 @@ namespace TCPChess {
             var t = Task.Run(async() => await server.Start());
         }
 
+        private void addToListBox(ListBox lb, string info) {
+            lb.Items.Insert(0, DateTime.Now.ToString("H:mm:ss.ffff")+": "+info);
+        }
+
         private void ReportServerProgress(ReportingClass src) {
             lock(_serverLock) {
                 foreach(var info in src.getMessages()) {
-                    serverDebugListBox.Items.Add(info);
+                    addToListBox(serverDebugListBox, info);
                 }
             }
         }
@@ -216,8 +220,8 @@ namespace TCPChess {
                     startClient();
                     break;
                 case "PLAY":
-                    if (playersListBox.SelectedIndex >= 0) {
-                        string toPlay = playersListBox.Items[playersListBox.SelectedIndex].ToString();
+                    if (playersLB.SelectedIndex >= 0) {
+                        string toPlay = playersLB.Items[playersLB.SelectedIndex].ToString();
                         client.requestPlay(toPlay, whiteRB.Checked ? "W" : "B");                        
                     }
                     else if (requestsLB.SelectedIndex >= 0) {
@@ -229,7 +233,7 @@ namespace TCPChess {
                     else {
                         stopClientBTN.Tag = "GAME";
                         stopClientBTN.Text = "QUIT GAME";
-                        clientDebugListBox.Items.Add("No Player Selected. Please select a player!");
+                        addToListBox(clientDebugListBox,"No Player Selected. Please select a player!");
                     }
                     break;
             }             
@@ -249,7 +253,7 @@ namespace TCPChess {
                 });
             }
             catch(Exception e) {
-                clientDebugListBox.Items.Add(e.Message);
+                addToListBox(clientDebugListBox,e.Message);
             }
             
         }
@@ -257,7 +261,7 @@ namespace TCPChess {
         private void ReportClientProgress(ReportingClass src) {
             lock (_clientLock) {
                 foreach (var info in src.getMessages()) {
-                    clientDebugListBox.Items.Add(info);
+                    addToListBox(clientDebugListBox,info);
                     if (info.ToUpper().StartsWith("BOARD,")) {
                         currentBoardLayout = info;
                         enableGameOn();
@@ -314,12 +318,12 @@ namespace TCPChess {
         }      
 
         private void showPlayers(string info) {
-            playersListBox.Items.Clear();
+            playersLB.Items.Clear();
             string[] split = info.Split(',');
             if (split.Length > 1) {
                 clientStartBTN.Enabled = true;
                 for (int x = 1; x < split.Length; x++) {
-                    playersListBox.Items.Add(split[x]);
+                    playersLB.Items.Add(split[x]);
                 }
             }
             else {
@@ -375,7 +379,7 @@ namespace TCPChess {
         }
 
         private void requestsLB_Click(object sender, EventArgs e) {
-            playersListBox.SelectedIndex = -1;
+            playersLB.SelectedIndex = -1;
         }
 
         private void stopClientBTN_Click(object sender, EventArgs e) {

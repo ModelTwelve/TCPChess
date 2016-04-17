@@ -43,7 +43,7 @@
             this.wBishop = new System.Windows.Forms.PictureBox();
             this.stopClientBTN = new System.Windows.Forms.Button();
             this.directionsLB = new System.Windows.Forms.Label();
-            this.playersListBox = new System.Windows.Forms.ListBox();
+            this.playersLB = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.blackRB = new System.Windows.Forms.RadioButton();
@@ -282,15 +282,15 @@
             this.directionsLB.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.directionsLB.Visible = false;
             // 
-            // playersListBox
+            // playersLB
             // 
-            this.playersListBox.FormattingEnabled = true;
-            this.playersListBox.HorizontalScrollbar = true;
-            this.playersListBox.Location = new System.Drawing.Point(455, 25);
-            this.playersListBox.Name = "playersListBox";
-            this.playersListBox.Size = new System.Drawing.Size(249, 186);
-            this.playersListBox.TabIndex = 19;
-            this.playersListBox.Click += new System.EventHandler(this.playersListBox_Click);
+            this.playersLB.FormattingEnabled = true;
+            this.playersLB.HorizontalScrollbar = true;
+            this.playersLB.Location = new System.Drawing.Point(455, 25);
+            this.playersLB.Name = "playersLB";
+            this.playersLB.Size = new System.Drawing.Size(249, 186);
+            this.playersLB.TabIndex = 19;
+            this.playersLB.Click += new System.EventHandler(this.playersListBox_Click);
             // 
             // label1
             // 
@@ -328,6 +328,7 @@
             this.whiteRB.Name = "whiteRB";
             this.whiteRB.Size = new System.Drawing.Size(53, 17);
             this.whiteRB.TabIndex = 0;
+            this.whiteRB.TabStop = true;
             this.whiteRB.Text = "White";
             this.whiteRB.UseVisualStyleBackColor = true;
             // 
@@ -474,7 +475,7 @@
             this.Controls.Add(this.gameLB);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.playersListBox);
+            this.Controls.Add(this.playersLB);
             this.Controls.Add(this.directionsLB);
             this.Controls.Add(this.stopClientBTN);
             this.Controls.Add(this.wRook);
@@ -537,7 +538,7 @@
         private System.Windows.Forms.PictureBox wBishop;
         private System.Windows.Forms.Button stopClientBTN;
         private System.Windows.Forms.Label directionsLB;
-        private System.Windows.Forms.ListBox playersListBox;
+        private System.Windows.Forms.ListBox playersLB;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.RadioButton blackRB;
