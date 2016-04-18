@@ -11,10 +11,14 @@ namespace TCPChess {
         public string playersColor { get; set; }
         public string opponentsName { get; set; }
         public string opponentsRemoteEndPoint { get; set; }
+        public string currentColorsTurn {
+            get {
+                return chessBoard.currentColorsTurn;
+            }
+        }
 
-        public string currentColorsTurn { get; set; }
-
-        private Dictionary<string, ChessPiece> chessPieces = null;
+        private ChessBoard chessBoard = null;
+        
         // ToPlayername and ColorRequested
         private Dictionary<string, PlayRequest> dictPendingPlayRequests;
         public string serverTestAutoResponseOnPlayRequest = "";
@@ -23,12 +27,12 @@ namespace TCPChess {
 
         public string status {
             get {
-                return chessPieces == null ? "Available In the Lobby" : "Playing " + opponentsName;
+                return chessBoard == null ? "Available In the Lobby" : "Playing " + opponentsName;
             }
         }
         public bool available {
             get {
-                return chessPieces == null;
+                return chessBoard == null;
             }
         }
 
@@ -87,52 +91,31 @@ namespace TCPChess {
                     dictPendingPlayRequests.Remove(item);
                 }
             }
+        }        
+
+        public bool movePiece(string from, string to, out string errorMessage) {            
+           return chessBoard.movePiece(playersColor, from, to, out errorMessage);
         }
 
         public string serializeBoard() {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Board");
-            foreach (var kvp in chessPieces) {
-                sb.Append("," + kvp.Key + ":" + kvp.Value.Color + ":" + kvp.Value.KindOfPiece);
-            }
-            return sb.ToString();
-        }
-
-        public bool movePiece(string from, string to) {
-            bool rv = false;            
-            lock(_lock) {
-                if (chessPieces.ContainsKey(from)) {
-                    ChessPiece cp = chessPieces[from];
-                    if (!chessPieces.ContainsKey(to)) {
-                        chessPieces.Add(to, cp);
-                        // If we moved it then it's now gone from the other location aye?
-                        chessPieces.Remove(from);
-
-                        // All is good ... now flip flop turn colors
-                        currentColorsTurn = currentColorsTurn.Equals("W") ? "B" : "W";
-
-                        return true;
-                    }
-                }
-            }
-            return rv;
+            return chessBoard.serializeBoard();
         }
 
         private void init() {
             responseQueue = new OutBoundMessageQueue();
             playersName = null;
-            chessPieces = null;
+            chessBoard = null;
             opponentsName = "";
             opponentsRemoteEndPoint = "";
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
         }
 
-        public void initializeMatch(string opName, string opRemoteEndPoint, string forcedColor=null) {
+        public ChessBoard initializeMatch(string opName, string opRemoteEndPoint, ChessBoard opponentsChessBoard=null, string forcedColor =null) {
             
             opponentsName = opName;
             opponentsRemoteEndPoint = opRemoteEndPoint;
 
-            currentColorsTurn = "W";
+            chessBoard = opponentsChessBoard ?? new ChessBoard();            
 
             // forcedColor is only possible from a server test or if you're the player that accepted the play request!
             if (forcedColor == null) {
@@ -145,46 +128,14 @@ namespace TCPChess {
 
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
 
-            chessPieces = new Dictionary<string, ChessPiece>();
-            chessPieces.Add("0:0", new ROOK("B"));
-            chessPieces.Add("1:0", new KNIGHT("B"));
-            chessPieces.Add("2:0", new BISHOP("B"));
-            chessPieces.Add("3:0", new KING("B"));
-            chessPieces.Add("4:0", new QUEEN("B"));
-            chessPieces.Add("5:0", new BISHOP("B"));
-            chessPieces.Add("6:0", new KNIGHT("B"));
-            chessPieces.Add("7:0", new ROOK("B"));
-            chessPieces.Add("0:1", new PAWN("B"));
-            chessPieces.Add("1:1", new PAWN("B"));
-            chessPieces.Add("2:1", new PAWN("B"));
-            chessPieces.Add("3:1", new PAWN("B"));
-            chessPieces.Add("4:1", new PAWN("B"));
-            chessPieces.Add("5:1", new PAWN("B"));
-            chessPieces.Add("6:1", new PAWN("B"));
-            chessPieces.Add("7:1", new PAWN("B"));
-            chessPieces.Add("0:6", new PAWN("W"));
-            chessPieces.Add("1:6", new PAWN("W"));
-            chessPieces.Add("2:6", new PAWN("W"));
-            chessPieces.Add("3:6", new PAWN("W"));
-            chessPieces.Add("4:6", new PAWN("W"));
-            chessPieces.Add("5:6", new PAWN("W"));
-            chessPieces.Add("6:6", new PAWN("W"));
-            chessPieces.Add("7:6", new PAWN("W"));
-            chessPieces.Add("0:7", new ROOK("W"));
-            chessPieces.Add("1:7", new KNIGHT("W"));
-            chessPieces.Add("2:7", new BISHOP("W"));
-            chessPieces.Add("3:7", new KING("W"));
-            chessPieces.Add("4:7", new QUEEN("W"));
-            chessPieces.Add("5:7", new BISHOP("W"));
-            chessPieces.Add("6:7", new KNIGHT("W"));
-            chessPieces.Add("7:7", new ROOK("W"));
+            return chessBoard;
         }
 
         public void destroyMatch() {
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
             opponentsName = "";
             opponentsRemoteEndPoint = "";
-            chessPieces = null;
+            chessBoard = null;
         }
     }
 }

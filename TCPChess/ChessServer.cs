@@ -281,11 +281,12 @@ namespace TCPChess {
 
             if (upperData.StartsWith("MOVE,")) {
                 string[] split = dataFromClient.Split(',');
-                if (movePieceOnBoard(remoteEndPoint, split[1], split[2])) {
+                string errorMessage;
+                if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], out errorMessage)) {
                     clientGameData.addServerResponse("OK");
                 }
                 else {
-                    clientGameData.addServerResponse("ERROR,You cannot move there");
+                    clientGameData.addServerResponse("ERROR,"+ errorMessage);
                 }
                 return;
             }
@@ -377,10 +378,7 @@ namespace TCPChess {
             clientGameData.addServerResponse("PLAYERS" + listOfPlayers);
         }
         
-
-        private bool movePieceOnBoard(string remoteEndPoint, string from, string to) {
-            return serverConnections.MoveChessPiece(remoteEndPoint, from, to);
-        }
+              
         private void quitMatch(PerClientGameData clientGameData) {
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
             if (opClientGameData!=null) {

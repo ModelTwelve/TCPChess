@@ -30,30 +30,20 @@ namespace TCPChess {
             return null;
         }
 
-        public bool MoveChessPiece(string remoteEndPoint, string from, string to) {
-            bool rv = false;
-            lock (_lock) {
-                if (dictConnections.ContainsKey(remoteEndPoint)) {
-                    var currentPlayer = dictConnections[remoteEndPoint];
-                    var opponentPlayer = dictConnections[currentPlayer.opponentsRemoteEndPoint];
-                    string playersColor = currentPlayer.playersColor;
-                    string turnsColor = currentPlayer.currentColorsTurn;
-                    if (playersColor.Equals(turnsColor)){
-                        rv = currentPlayer.movePiece(from, to);                        
-                        if (rv) {
-                            // This was a successful move ... send back an OK 
-                            currentPlayer.addServerResponse("OK");
-                            // Now update the opponents data
-                            opponentPlayer.movePiece(from, to);
-                            // Now send out some new boards
-                            currentPlayer.addServerResponse(currentPlayer.serializeBoard());
-                            opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
-                        }
-                    }
+        public bool MoveChessPiece(PerClientGameData currentPlayerGameData, string from, string to, out string errorMessage) {            
+            lock (_lock) {                
+                if (currentPlayerGameData.movePiece(from, to, out errorMessage)) {
+                    // This was a successful move ... send back an OK 
+                    currentPlayerGameData.addServerResponse("OK");
+                    // Now send out some new boards
+                    currentPlayerGameData.addServerResponse(currentPlayerGameData.serializeBoard());
+                    var opponentPlayer = dictConnections[currentPlayerGameData.opponentsRemoteEndPoint];
+                    opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
+                    return true;
                 }
             }
-            return rv;
-        }
+            return false;
+        }        
 
         public void RefreshAllPlayers() {
             lock (_lock) {
@@ -105,9 +95,9 @@ namespace TCPChess {
             var playerData1 = dictConnections[RemoteEndPoint1];
             var playerData2 = dictConnections[RemoteEndPoint2];
 
-            playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, playerColor1);
+            ChessBoard chessBoard = playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, null, playerColor1);
             playerColor2 = playerData1.playersColor.Equals("W") ? "B" : "W";
-            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, playerColor2);            
+            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, chessBoard, playerColor2);            
             
             return true;
         }

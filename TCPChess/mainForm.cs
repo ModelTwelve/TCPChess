@@ -55,6 +55,7 @@ namespace TCPChess {
             }
             whiteRB.TabStop = false;
 
+            playerNameTB.Text = "Player" + DateTime.Now.ToString("fffff");
             playerNameTB.TabIndex = 0;
             serverIPTB.TabIndex = 1;
             portTB.TabIndex = 2;
