@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TCPChess {
+namespace ChessHelpers {
     public class PerClientGameData {
         private OutBoundMessageQueue responseQueue;
         public string playersName { get; set; }

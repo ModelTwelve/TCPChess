@@ -10,22 +10,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ChessHelpers;
 
-namespace TCPChess {
+namespace ChessClient {
     public partial class MainForm : Form {
-
         private List<string> clientTestCommands = null;
-        private List<string[]> serverResponses = null;
-
-        private Dictionary<string, PictureBox> pbPieces = new Dictionary<string, PictureBox>();
-
-        private CancellationTokenSource serverTokenSource = new CancellationTokenSource();
-        private CancellationTokenSource clientTokenSource = new CancellationTokenSource();
-        private object _serverLock = new object();
+        private Dictionary<string, PictureBox> pbPieces = new Dictionary<string, PictureBox>();        
+        private CancellationTokenSource clientTokenSource = new CancellationTokenSource();        
         private object _clientLock = new object();
-
         private string currentBoardLayout = "";
-
         private Brush black = new SolidBrush(Color.DarkGray);
         private Brush white = new SolidBrush(Color.AntiqueWhite);
         private Brush yellow = new SolidBrush(Color.Yellow);
@@ -160,7 +153,6 @@ namespace TCPChess {
                 }
             }                      
         }
-
         private void showPieces() {
 
             Graphics gObj = Graphics.FromImage(boardPB.Image);
@@ -181,31 +173,10 @@ namespace TCPChess {
                     }
                 }
             }
-        }
-
-        private void serverStartBTN_Click(object sender, EventArgs e) {
-            serverStartBTN.Enabled = false;
-            startServer();
-        }
-
-        private async void startServer() {
-            Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportServerProgress);
-            ChessServer server = new ChessServer(12345, serverTokenSource.Token, progress);
-            var t = Task.Run(async() => await server.Start());
-        }
-
+        }        
         private void addToListBox(ListBox lb, string info) {
             lb.Items.Insert(0, DateTime.Now.ToString("H:mm:ss.ffff")+": "+info);
-        }
-
-        private void ReportServerProgress(ReportingClass src) {
-            lock(_serverLock) {
-                foreach(var info in src.getMessages()) {
-                    addToListBox(serverDebugListBox, info);
-                }
-            }
-        }
-
+        }        
         private void whenConnectPushed() {
             clientStartBTN.Text = "PLAY MATCH";
             clientStartBTN.Tag = "PLAY";
@@ -213,7 +184,6 @@ namespace TCPChess {
             stopClientBTN.Enabled = true;
             clientTestCommands = new List<string>();
         }
-
         private void clientStartBTN_Click(object sender, EventArgs e) {
             switch(clientStartBTN.Tag.ToString()) {
                 case "CONNECT":
@@ -239,7 +209,6 @@ namespace TCPChess {
                     break;
             }             
         }
-
         private async void startClient() {
             try {
                 int port = Convert.ToInt32(portTB.Text);
@@ -255,10 +224,8 @@ namespace TCPChess {
             }
             catch(Exception e) {
                 addToListBox(clientDebugListBox,e.Message);
-            }
-            
+            }            
         }
-
         private void ReportClientProgress(ReportingClass src) {
             lock (_clientLock) {
                 foreach (var info in src.getMessages()) {
@@ -289,7 +256,6 @@ namespace TCPChess {
                 }
             }
         }
-
         private void showRequested(string info) {
             if (opponentPlayerName.Length == 0) {
                 string[] split = info.Split(',');
@@ -297,7 +263,6 @@ namespace TCPChess {
                 requestsLB.Items.Add(split[1]+":"+ split[2]);
             }
         }
-
         private void showRefused(string info) {
             if (opponentPlayerName.Length == 0) {
                 string[] split = info.Split(',');
@@ -308,7 +273,6 @@ namespace TCPChess {
                 }
             }
         }
-
         private void showAccepted(string info) {
             requestsLB.Items.Clear();
             string[] split = info.Split(',');
@@ -326,14 +290,12 @@ namespace TCPChess {
             dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Playing " + split[1];
         }
-
         private void showWinner(string info) {
             string[] split = info.Split(',');
             opponentPlayerName = "";
             dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Game Over. Winner is " + split[1];
         }
-
         private void enableGameOn() {
             dictRequests.Clear();
             directionsLB.Visible = true;
@@ -341,8 +303,7 @@ namespace TCPChess {
             stopClientBTN.Tag = "MATCH";
             stopClientBTN.Text = "QUIT MATCH";
             clientStartBTN.Enabled= false;
-        }      
-
+        }
         private void showPlayers(string info) {
             playersLB.Items.Clear();
             string[] split = info.Split(',');
@@ -356,7 +317,6 @@ namespace TCPChess {
                 clientStartBTN.Enabled = false;
             }
         }
-
         private void boardPB_Click(object sender, EventArgs e) {
             // Reset the board
             showBoard();            
@@ -392,22 +352,18 @@ namespace TCPChess {
             }
             showPieces();
             boardPB.Invalidate();
-        }   
-
+        }
         private void button1_Click(object sender, EventArgs e) {
             whenConnectPushed();
             testInit();
             startClient();            
         }
-
         private void playersListBox_Click(object sender, EventArgs e) {
             requestsLB.SelectedIndex = -1;
         }
-
         private void requestsLB_Click(object sender, EventArgs e) {
             playersLB.SelectedIndex = -1;
         }
-
         private void stopClientBTN_Click(object sender, EventArgs e) {
 
             switch (stopClientBTN.Tag.ToString()) {
@@ -447,7 +403,6 @@ namespace TCPChess {
                 default:
                     break;
             }
-
             Task.Delay(1000).Wait();
         }
     }

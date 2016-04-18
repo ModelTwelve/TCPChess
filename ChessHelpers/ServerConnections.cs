@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TCPChess {
+namespace ChessHelpers {
     public class ServerConnections {
         private Dictionary<string, PerClientGameData> dictConnections = new Dictionary<string, PerClientGameData>();
         private object _lock = new object();

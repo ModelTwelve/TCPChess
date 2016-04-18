@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Text;
+using ChessHelpers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TCPChess {
+namespace ServerForm {
     public class ChessServer {
         private int _listeningPort;
         private CancellationToken cToken;

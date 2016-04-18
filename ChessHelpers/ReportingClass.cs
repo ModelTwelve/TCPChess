@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TCPChess {
+namespace ChessHelpers {
     public class ReportingClass {
         public object _lock = new object();
         private List<string> messages = new List<string>();

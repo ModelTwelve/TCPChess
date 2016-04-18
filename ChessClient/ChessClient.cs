@@ -8,8 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ChessHelpers;
 
-namespace TCPChess {
+namespace ChessClient {
     public class ChessClient {
         private object _lock = new object();
         private CancellationToken cToken;

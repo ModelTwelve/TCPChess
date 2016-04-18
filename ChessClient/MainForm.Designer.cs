@@ -1,4 +1,4 @@
-﻿namespace TCPChess {
+﻿namespace ChessClient {
     partial class MainForm {
         /// <summary>
         /// Required designer variable.
@@ -24,9 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.serverStartBTN = new System.Windows.Forms.Button();
             this.clientStartBTN = new System.Windows.Forms.Button();
-            this.serverDebugListBox = new System.Windows.Forms.ListBox();
             this.clientDebugListBox = new System.Windows.Forms.ListBox();
             this.boardPB = new System.Windows.Forms.PictureBox();
             this.bBishop = new System.Windows.Forms.PictureBox();
@@ -54,8 +52,7 @@
             this.portTB = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.ClientTestBTN = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.requestsLB = new System.Windows.Forms.ListBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -77,16 +74,6 @@
             this.colorPanel.SuspendLayout();
             this.SuspendLayout();
             // 
-            // serverStartBTN
-            // 
-            this.serverStartBTN.Location = new System.Drawing.Point(1076, 217);
-            this.serverStartBTN.Name = "serverStartBTN";
-            this.serverStartBTN.Size = new System.Drawing.Size(116, 23);
-            this.serverStartBTN.TabIndex = 0;
-            this.serverStartBTN.Text = "Start Server Test";
-            this.serverStartBTN.UseVisualStyleBackColor = true;
-            this.serverStartBTN.Click += new System.EventHandler(this.serverStartBTN_Click);
-            // 
             // clientStartBTN
             // 
             this.clientStartBTN.Location = new System.Drawing.Point(455, 366);
@@ -98,22 +85,13 @@
             this.clientStartBTN.UseVisualStyleBackColor = true;
             this.clientStartBTN.Click += new System.EventHandler(this.clientStartBTN_Click);
             // 
-            // serverDebugListBox
-            // 
-            this.serverDebugListBox.FormattingEnabled = true;
-            this.serverDebugListBox.HorizontalScrollbar = true;
-            this.serverDebugListBox.Location = new System.Drawing.Point(1076, 51);
-            this.serverDebugListBox.Name = "serverDebugListBox";
-            this.serverDebugListBox.Size = new System.Drawing.Size(249, 160);
-            this.serverDebugListBox.TabIndex = 2;
-            // 
             // clientDebugListBox
             // 
             this.clientDebugListBox.FormattingEnabled = true;
             this.clientDebugListBox.HorizontalScrollbar = true;
-            this.clientDebugListBox.Location = new System.Drawing.Point(1076, 267);
+            this.clientDebugListBox.Location = new System.Drawing.Point(726, 18);
             this.clientDebugListBox.Name = "clientDebugListBox";
-            this.clientDebugListBox.Size = new System.Drawing.Size(249, 212);
+            this.clientDebugListBox.Size = new System.Drawing.Size(249, 342);
             this.clientDebugListBox.TabIndex = 3;
             // 
             // boardPB
@@ -129,7 +107,7 @@
             // bBishop
             // 
             this.bBishop.Image = ((System.Drawing.Image)(resources.GetObject("bBishop.Image")));
-            this.bBishop.Location = new System.Drawing.Point(1265, 417);
+            this.bBishop.Location = new System.Drawing.Point(915, 415);
             this.bBishop.Name = "bBishop";
             this.bBishop.Size = new System.Drawing.Size(60, 60);
             this.bBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -140,7 +118,7 @@
             // bKing
             // 
             this.bKing.Image = ((System.Drawing.Image)(resources.GetObject("bKing.Image")));
-            this.bKing.Location = new System.Drawing.Point(1265, 417);
+            this.bKing.Location = new System.Drawing.Point(915, 415);
             this.bKing.Name = "bKing";
             this.bKing.Size = new System.Drawing.Size(60, 60);
             this.bKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -151,7 +129,7 @@
             // bPawn
             // 
             this.bPawn.Image = ((System.Drawing.Image)(resources.GetObject("bPawn.Image")));
-            this.bPawn.Location = new System.Drawing.Point(1265, 417);
+            this.bPawn.Location = new System.Drawing.Point(915, 415);
             this.bPawn.Name = "bPawn";
             this.bPawn.Size = new System.Drawing.Size(60, 60);
             this.bPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -162,7 +140,7 @@
             // bKnight
             // 
             this.bKnight.Image = ((System.Drawing.Image)(resources.GetObject("bKnight.Image")));
-            this.bKnight.Location = new System.Drawing.Point(1265, 417);
+            this.bKnight.Location = new System.Drawing.Point(915, 415);
             this.bKnight.Name = "bKnight";
             this.bKnight.Size = new System.Drawing.Size(60, 60);
             this.bKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -173,7 +151,7 @@
             // bRook
             // 
             this.bRook.Image = ((System.Drawing.Image)(resources.GetObject("bRook.Image")));
-            this.bRook.Location = new System.Drawing.Point(1265, 415);
+            this.bRook.Location = new System.Drawing.Point(915, 413);
             this.bRook.Name = "bRook";
             this.bRook.Size = new System.Drawing.Size(60, 60);
             this.bRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -184,7 +162,7 @@
             // bQueen
             // 
             this.bQueen.Image = ((System.Drawing.Image)(resources.GetObject("bQueen.Image")));
-            this.bQueen.Location = new System.Drawing.Point(1265, 415);
+            this.bQueen.Location = new System.Drawing.Point(915, 413);
             this.bQueen.Name = "bQueen";
             this.bQueen.Size = new System.Drawing.Size(60, 60);
             this.bQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -195,7 +173,7 @@
             // wRook
             // 
             this.wRook.Image = ((System.Drawing.Image)(resources.GetObject("wRook.Image")));
-            this.wRook.Location = new System.Drawing.Point(1265, 415);
+            this.wRook.Location = new System.Drawing.Point(915, 413);
             this.wRook.Name = "wRook";
             this.wRook.Size = new System.Drawing.Size(60, 60);
             this.wRook.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -206,7 +184,7 @@
             // wQueen
             // 
             this.wQueen.Image = ((System.Drawing.Image)(resources.GetObject("wQueen.Image")));
-            this.wQueen.Location = new System.Drawing.Point(1265, 417);
+            this.wQueen.Location = new System.Drawing.Point(915, 415);
             this.wQueen.Name = "wQueen";
             this.wQueen.Size = new System.Drawing.Size(60, 60);
             this.wQueen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -217,7 +195,7 @@
             // wPawn
             // 
             this.wPawn.Image = ((System.Drawing.Image)(resources.GetObject("wPawn.Image")));
-            this.wPawn.Location = new System.Drawing.Point(1265, 417);
+            this.wPawn.Location = new System.Drawing.Point(915, 415);
             this.wPawn.Name = "wPawn";
             this.wPawn.Size = new System.Drawing.Size(60, 60);
             this.wPawn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -228,7 +206,7 @@
             // wKnight
             // 
             this.wKnight.Image = ((System.Drawing.Image)(resources.GetObject("wKnight.Image")));
-            this.wKnight.Location = new System.Drawing.Point(1265, 417);
+            this.wKnight.Location = new System.Drawing.Point(915, 415);
             this.wKnight.Name = "wKnight";
             this.wKnight.Size = new System.Drawing.Size(60, 60);
             this.wKnight.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -239,7 +217,7 @@
             // wKing
             // 
             this.wKing.Image = ((System.Drawing.Image)(resources.GetObject("wKing.Image")));
-            this.wKing.Location = new System.Drawing.Point(1265, 417);
+            this.wKing.Location = new System.Drawing.Point(915, 415);
             this.wKing.Name = "wKing";
             this.wKing.Size = new System.Drawing.Size(60, 60);
             this.wKing.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -250,7 +228,7 @@
             // wBishop
             // 
             this.wBishop.Image = ((System.Drawing.Image)(resources.GetObject("wBishop.Image")));
-            this.wBishop.Location = new System.Drawing.Point(1265, 415);
+            this.wBishop.Location = new System.Drawing.Point(915, 413);
             this.wBishop.Name = "wBishop";
             this.wBishop.Size = new System.Drawing.Size(60, 60);
             this.wBishop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -301,12 +279,12 @@
             this.label1.TabIndex = 20;
             this.label1.Text = "Connected Players";
             // 
-            // panel1
+            // colorPanel
             // 
             this.colorPanel.Controls.Add(this.blackRB);
             this.colorPanel.Controls.Add(this.whiteRB);
             this.colorPanel.Location = new System.Drawing.Point(455, 422);
-            this.colorPanel.Name = "panel1";
+            this.colorPanel.Name = "colorPanel";
             this.colorPanel.Size = new System.Drawing.Size(82, 57);
             this.colorPanel.TabIndex = 22;
             // 
@@ -383,38 +361,29 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(1073, 252);
+            this.label4.Location = new System.Drawing.Point(723, 9);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 13);
             this.label4.TabIndex = 28;
             this.label4.Text = "Client Information";
             // 
-            // label5
+            // ClientTestBTN
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(1073, 35);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(93, 13);
-            this.label5.TabIndex = 29;
-            this.label5.Text = "Server Information";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(1218, 217);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(107, 23);
-            this.button1.TabIndex = 30;
-            this.button1.Text = "Start Client Test";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.ClientTestBTN.Location = new System.Drawing.Point(894, 366);
+            this.ClientTestBTN.Name = "ClientTestBTN";
+            this.ClientTestBTN.Size = new System.Drawing.Size(81, 23);
+            this.ClientTestBTN.TabIndex = 30;
+            this.ClientTestBTN.Text = "Client Test";
+            this.ClientTestBTN.UseVisualStyleBackColor = true;
+            this.ClientTestBTN.Click += new System.EventHandler(this.button1_Click);
             // 
             // label6
             // 
             this.label6.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.label6.Location = new System.Drawing.Point(1076, 9);
+            this.label6.Location = new System.Drawing.Point(722, 366);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(249, 23);
+            this.label6.Size = new System.Drawing.Size(166, 23);
             this.label6.TabIndex = 31;
             this.label6.Text = "TEST AND DEBUG";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -459,14 +428,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1337, 487);
+            this.ClientSize = new System.Drawing.Size(996, 487);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.playerNameTB);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.requestsLB);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.ClientTestBTN);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.portTB);
@@ -492,9 +460,7 @@
             this.Controls.Add(this.bBishop);
             this.Controls.Add(this.boardPB);
             this.Controls.Add(this.clientDebugListBox);
-            this.Controls.Add(this.serverDebugListBox);
             this.Controls.Add(this.clientStartBTN);
-            this.Controls.Add(this.serverStartBTN);
             this.Name = "MainForm";
             this.Text = "COSC636: TCP Chess";
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).EndInit();
@@ -518,10 +484,7 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button serverStartBTN;
         private System.Windows.Forms.Button clientStartBTN;
-        private System.Windows.Forms.ListBox serverDebugListBox;
         private System.Windows.Forms.ListBox clientDebugListBox;
         private System.Windows.Forms.PictureBox boardPB;
         private System.Windows.Forms.PictureBox bBishop;
@@ -549,8 +512,7 @@
         private System.Windows.Forms.TextBox portTB;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button ClientTestBTN;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ListBox requestsLB;
         private System.Windows.Forms.Label label7;

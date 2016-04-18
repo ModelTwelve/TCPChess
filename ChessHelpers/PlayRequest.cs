@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TCPChess {
+namespace ChessHelpers {
     public class PlayRequest {
         public string RemoteEndPoint { get; set; }
         public string Color { get; set; }
