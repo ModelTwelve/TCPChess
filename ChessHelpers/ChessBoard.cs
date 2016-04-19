@@ -62,13 +62,13 @@ namespace ChessHelpers {
                 // If we moved it then it's now gone from the other location aye?
                 chessPieces.Remove(from);
                 // All is good ... now flip flop turn colors
-                currentColorsTurn = flipFlopColor();
+                currentColorsTurn = FlipFlopColor(currentColorsTurn);
                 return true;
             }
         }
 
-        private string flipFlopColor() {
-            return currentColorsTurn.Equals("W") ? "B" : "W";
+        public static string FlipFlopColor(string color) {
+            return color.Equals("W") ? "B" : "W";
         }
 
         private void initializeBoard() {

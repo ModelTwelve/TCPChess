@@ -96,7 +96,7 @@ namespace ChessHelpers {
             var playerData2 = dictConnections[RemoteEndPoint2];
 
             ChessBoard chessBoard = playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, null, playerColor1);
-            playerColor2 = playerData1.playersColor.Equals("W") ? "B" : "W";
+            playerColor2 = ChessBoard.FlipFlopColor(playerData1.playersColor);
             playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, chessBoard, playerColor2);            
             
             return true;
