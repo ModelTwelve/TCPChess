@@ -30,13 +30,13 @@ namespace ChessHelpers {
             return null;
         }
 
-        public bool MoveChessPiece(PerClientGameData currentPlayerGameData, string from, string to, out string errorMessage) {            
+        public bool MoveChessPiece(PerClientGameData currentPlayerGameData, string from, string to, string promotedPiece, out string errorMessage) {            
             lock (_lock) {                
-                if (currentPlayerGameData.movePiece(from, to, out errorMessage)) {
+                if (currentPlayerGameData.movePiece(from, to, promotedPiece, out errorMessage)) {
                     // This was a successful move ... send back an OK 
                     currentPlayerGameData.addServerResponse("OK");
                     // Now send out some new boards
-                    currentPlayerGameData.addServerResponse(currentPlayerGameData.serializeBoard());
+                    //currentPlayerGameData.addServerResponse(currentPlayerGameData.serializeBoard());
                     var opponentPlayer = dictConnections[currentPlayerGameData.opponentsRemoteEndPoint];
                     opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
                     return true;
@@ -89,15 +89,14 @@ namespace ChessHelpers {
             return true;
         }
 
-        public bool InitializeMatch(string RemoteEndPoint1, string RemoteEndPoint2, string playerColor1=null, string playerColor2=null) {
+        public bool InitializeMatch(string RemoteEndPoint1, string RemoteEndPoint2, string playerColor1, string playerColor2) {
             // Preassigned colors must be coming from a server test!
             // Put these two in a match                
             var playerData1 = dictConnections[RemoteEndPoint1];
             var playerData2 = dictConnections[RemoteEndPoint2];
 
-            ChessBoard chessBoard = playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, null, playerColor1);
-            playerColor2 = ChessBoard.FlipFlopColor(playerData1.playersColor);
-            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, chessBoard, playerColor2);            
+            ChessBoard chessBoard = playerData1.initializeMatch(playerData2.playersName, RemoteEndPoint2, playerColor1, null);
+            playerData2.initializeMatch(playerData1.playersName, RemoteEndPoint1, playerColor2, chessBoard);            
             
             return true;
         }

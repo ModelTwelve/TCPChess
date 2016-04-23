@@ -17,16 +17,24 @@ namespace ChessHelpers {
 
         public string serializeBoard() {
             StringBuilder sb = new StringBuilder();
-            sb.Append("Board");
+            sb.Append("BOARD");
             foreach (var kvp in chessPieces) {
                 sb.Append("," + kvp.Key + ":" + kvp.Value.Color + ":" + kvp.Value.KindOfPiece);
             }
             return sb.ToString();
         }
 
-        public bool movePiece(string playerColorAttemptingToMove, string from, string to, out string errorMessage) {
+        public bool movePiece(string playerColorAttemptingToMove, string from, string to, string promotedPiece, out string errorMessage) {
             // Start out with no error message            
             lock (_lock) {
+                string[] split = to.Split(':');
+                int toX = Convert.ToInt32(split[0]);
+                int toY = Convert.ToInt32(split[1]);
+
+                split = from.Split(':');
+                int fromX = Convert.ToInt32(split[0]);
+                int fromY = Convert.ToInt32(split[1]);
+
                 errorMessage = "";
                 if (!playerColorAttemptingToMove.Equals(currentColorsTurn)) {
                     errorMessage = "It is not your turn";
@@ -47,11 +55,39 @@ namespace ChessHelpers {
                     errorMessage = "You cannot move ontop of your own piece";
                     return false;
                 }
+                if (
+                    (chessPieces.ContainsKey(to)) &&
+                    (chessPieces[from].KindOfPiece.Equals("PAWN")) &&
+                    (fromX==toX)
+                    ) {
+                    errorMessage = "A pawn cannot kill moving forward";
+                    return false;
+                }
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
+                ChessPiece copyOfPieceToMove = chessPieces[from];                
+                    
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN")) {
+                    if ((toY == 0) || (toY == 7)) {
+                        errorMessage = promotePawn(promotedPiece, from);
+                        if (errorMessage.Length>0) {
+                            return false;
+                        }
+                        // Redo copy with new promoted piece
+                        copyOfPieceToMove = chessPieces[from];
+                    }
+                    else {
+                        int numSpaces = Math.Abs(fromY - toY);
+                        if (numSpaces == 2) {
+                            ((PAWN)copyOfPieceToMove).lastMoveWasTwoSpaces = true;
+                        }
+                        else {
+                            checkForEnPassant(toX, toY, fromY, copyOfPieceToMove);
+                        }
+                    }
+                }
 
-                ChessPiece copyOfPieceToMove = chessPieces[from];
                 // Ok ... from here on out I assume all is well.
                 if (chessPieces.ContainsKey(to)) {
                     // This piece needs removed from the board
@@ -64,6 +100,65 @@ namespace ChessHelpers {
                 // All is good ... now flip flop turn colors
                 currentColorsTurn = FlipFlopColor(currentColorsTurn);
                 return true;
+            }
+        }
+
+        private string promotePawn(string promotedPiece, string from) {
+            if (promotedPiece != null) {
+                switch (promotedPiece) {
+                    case "QUEEN":
+                        chessPieces[from] = new QUEEN(currentColorsTurn);
+                        break;
+                    case "ROOK":
+                        chessPieces[from] = new ROOK(currentColorsTurn);
+                        break;
+                    case "KNIGHT":
+                        chessPieces[from] = new KNIGHT(currentColorsTurn);
+                        break;
+                    case "BISHOP":
+                        chessPieces[from] = new BISHOP(currentColorsTurn);
+                        break;
+                    default:
+                        return "Unknown promotion piece type";
+                }                
+            }
+            else {
+                // We have to have a promoted piece!
+                return "You cannot move a PAWN to the final row without specifying a promotion piece type";
+            }
+
+            return "";
+        }
+
+        private void checkForEnPassant(int toX, int toY, int fromY, ChessPiece copyOfPieceToMove) {
+
+            // Possible En passant?
+            // The only way En passant can be is if we're moving a pawn to the 2 or 5 row
+            // as that is the only row behind a pawn that jumped two spaces
+            string testX = "X", testY = "Y";
+            switch (toY) {
+                case 2:
+                    // See if 3 is a pawn that just finished jumping two spaces
+                    testX = toX.ToString();
+                    testY = "3";
+                    break;
+                case 5:
+                    // See if 6 is a pawn that just finished jumping two spaces
+                    testX = toX.ToString();
+                    testY = "4";
+                    break;
+                default:
+                    break;
+            }
+            string testLocation = testX + ":" + testY;
+            if (chessPieces.ContainsKey(testLocation)) {
+                var enpassantCheck = chessPieces[testLocation];
+                if (enpassantCheck.KindOfPiece.Equals("PAWN")) {
+                    if (((PAWN)enpassantCheck).lastMoveWasTwoSpaces) {
+                        // This was it!
+                        chessPieces.Remove(testLocation);
+                    }
+                }
             }
         }
 

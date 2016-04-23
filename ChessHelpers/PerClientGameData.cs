@@ -19,7 +19,6 @@ namespace ChessHelpers {
 
         private ChessBoard chessBoard = null;
         
-        // ToPlayername and ColorRequested
         private Dictionary<string, PlayRequest> dictPendingPlayRequests;
         public string serverTestAutoResponseOnPlayRequest = "";
         public bool quitGAME = false;
@@ -59,17 +58,30 @@ namespace ChessHelpers {
                 return dictPendingPlayRequests.ContainsKey(playerName.ToUpper());
             }
         }
-        public bool CheckPlayRequestAndColor(string playerName, string color) {
+        public bool CheckPlayRequest(string playerName) {
             lock (_lock) {
-                // Did I request to play this person as this color?
-                if (dictPendingPlayRequests.ContainsKey(playerName.ToUpper())) {
-                    var request = dictPendingPlayRequests[playerName.ToUpper()];
-                    // What color did I want to be?
-                    return color.Equals(request.Color);
+                // Did I request to play this person?
+                if (dictPendingPlayRequests.ContainsKey(playerName.ToUpper())) {                    
+                    return true;
                 }
             }
             return false;
         }
+        public bool CheckPlayRequestColor(string playerName, string color) {
+            lock (_lock) {
+                // Did I request to play this person as this color?
+                if (dictPendingPlayRequests.ContainsKey(playerName.ToUpper())) {
+                    var request = dictPendingPlayRequests[playerName.ToUpper()];
+                    // What color did I want to be?   
+                    // request.Color is my color ... so if this request matches my color then
+                    // the opponent wants to be the same color.
+                    // Return false and the server will have to randomize it                 
+                    return ! color.Equals(request.Color);
+                }
+            }
+            return false;
+        }
+
         public void AddPlayRequest(string playerName, string myRequestedColor, string opRemoteEdPoint) {
             lock (_lock) {
                 dictPendingPlayRequests.Add(playerName.ToUpper(), new PlayRequest(opRemoteEdPoint, myRequestedColor));
@@ -79,10 +91,7 @@ namespace ChessHelpers {
             lock (_lock) {
                 playerName = playerName.ToUpper();
                 List<string> toRemove = new List<string>();
-                foreach (var player in dictPendingPlayRequests) {
-                    if (player.Key.ToUpper().StartsWith(playerName + ":")) { 
-                        toRemove.Add(playerName + ":");
-                    }
+                foreach (var player in dictPendingPlayRequests) {                    
                     if (player.Key.ToUpper().Equals(playerName)) { 
                         toRemove.Add(playerName);
                     }
@@ -93,8 +102,8 @@ namespace ChessHelpers {
             }
         }        
 
-        public bool movePiece(string from, string to, out string errorMessage) {            
-           return chessBoard.movePiece(playersColor, from, to, out errorMessage);
+        public bool movePiece(string from, string to, string promotedPiece, out string errorMessage) {            
+           return chessBoard.movePiece(playersColor, from, to, promotedPiece, out errorMessage);
         }
 
         public string serializeBoard() {
@@ -110,21 +119,14 @@ namespace ChessHelpers {
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
         }
 
-        public ChessBoard initializeMatch(string opName, string opRemoteEndPoint, ChessBoard opponentsChessBoard=null, string forcedColor =null) {
+        public ChessBoard initializeMatch(string opName, string opRemoteEndPoint, string forcedColor, ChessBoard opponentsChessBoard=null) {
             
             opponentsName = opName;
             opponentsRemoteEndPoint = opRemoteEndPoint;
 
             chessBoard = opponentsChessBoard ?? new ChessBoard();            
 
-            // forcedColor is only possible from a server test or if you're the player that accepted the play request!
-            if (forcedColor == null) {
-                var playRequest = dictPendingPlayRequests[opName.ToUpper()];
-                playersColor = playRequest.Color;
-            }
-            else {
-                playersColor = forcedColor;
-            }
+            playersColor = forcedColor;
 
             dictPendingPlayRequests = new Dictionary<string, PlayRequest>();
 

@@ -106,7 +106,7 @@ namespace ServerForm {
                         string[] split = messageToSend.Split(',');
                         string simAction = client.serverTestAutoResponseOnPlayRequest.ToUpper();
                         switch (simAction) {
-                            case "ACCEPT":
+                            case "ACCEPTED":
                                 server_Command_handleWithAccept(client, split);
                                 break;
                             case "REQUESTW":
@@ -137,11 +137,12 @@ namespace ServerForm {
             // In this case we're simulating the server accepting the request so the opponent is the real player!
             // Tell bothsides the match is not underway!
             string playerName = dataSplit[1];
-            string color = dataSplit[2];
+            // Whomever I'm pretending to accept will choose the opposite color
+            string color = ChessBoard.FlipFlopColor(dataSplit[2]);
             var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
             if (opRemoteEdPoint != null) {
                 var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                handleACCEPTED(clientGameData, opClientGameData,color);
+                handleACCEPTED(clientGameData, opClientGameData, color);
             }
             else {
                 // A request from a player that no longer exists?
@@ -205,7 +206,7 @@ namespace ServerForm {
             return false;
         }
 
-        public bool createMatchBetweenPlayers(string playerName1, string playerName2, string playerColor1=null, string playerColor2=null) {
+        public bool createMatchBetweenPlayers(string playerName1, string playerName2, string playerColor1, string playerColor2) {
             // Preassigned colors must be coming from a server test!
             string remoteEndPoint1 = serverConnections.GetRemoteEndPoint(playerName1);
             string remoteEndPoint2 = serverConnections.GetRemoteEndPoint(playerName2);
@@ -262,7 +263,7 @@ namespace ServerForm {
             }
 
             if (upperData.StartsWith("GET,BOARD")) {
-                clientGameData.addServerResponse("BOARD," + clientGameData.serializeBoard());
+                clientGameData.addServerResponse(clientGameData.serializeBoard());
                 return;
             }
 
@@ -276,10 +277,15 @@ namespace ServerForm {
                 return;
             }
 
+            if (upperData.StartsWith("REFUSE,")) {
+                handleREFUSE(dataSplit, clientGameData);
+                return;
+            }
+
             if (upperData.StartsWith("MOVE,")) {
                 string[] split = dataFromClient.Split(',');
                 string errorMessage;
-                if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], out errorMessage)) {
+                if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length>3 ? split[3] : null,out errorMessage)) {
                     clientGameData.addServerResponse("OK");
                 }
                 else {
@@ -301,8 +307,8 @@ namespace ServerForm {
                 return;
             }
 
-            // WTH ... just say OK
-            clientGameData.addServerResponse("OK");
+            // WTH ... just say ERROR
+            clientGameData.addServerResponse("ERROR,Unknown Action");
         }
 
         private void handleREFUSE(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
@@ -313,7 +319,7 @@ namespace ServerForm {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
                     if (opClientGameData.available) {
                         opClientGameData.RemoveRequests(clientGameData.playersName);
-                        //opClientGameData.addServerResponse("REQUEST," + clientGameData.playersName + "," + color);
+                        opClientGameData.addServerResponse("ERROR," + clientGameData.playersName + " Refused");
                     }                    
                 }
             }
@@ -345,16 +351,25 @@ namespace ServerForm {
             }
         }   
         private void handleACCEPTED(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color) {
-            // Right here I need to check the ACCEPTED to make sure it has a valid request
-            // Basically ... does the opponent have this exact request in their dict?
-            if (!opClientGameData.CheckPlayRequestAndColor(clientGameData.playersName, color)) {
-                clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you with the color "+color);
+            // Does the opponent have this request in their dict?
+            if (!opClientGameData.CheckPlayRequest(clientGameData.playersName)) {
+                clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you");
                 return;
             }
-            createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName);
-
-            clientGameData.addServerResponse("OK");
-            //clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
+            string playerColor1, playerColor2;
+            if (!opClientGameData.CheckPlayRequestColor(clientGameData.playersName,color)) {
+                // Dang ... both players want to be the same color
+                Random r = new Random();
+                if (r.Next(0,2)==0) {
+                    color = ChessBoard.FlipFlopColor(color);
+                }
+            }
+            // This is the color we've choosen for the player that issued the ACCEPT
+            playerColor2 = color;
+            playerColor1 = ChessBoard.FlipFlopColor(playerColor2);
+            createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName, playerColor1, playerColor2);
+            
+            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
             
             sendPlayers(opClientGameData);
@@ -366,7 +381,7 @@ namespace ServerForm {
         }
 
         private void sendTurn(PerClientGameData clientGameData) {
-            clientGameData.addServerResponse("GO,"+ clientGameData.currentColorsTurn);
+            clientGameData.addServerResponse("GO,"+ clientGameData.playersName);
         }
 
         private void sendPlayers(PerClientGameData clientGameData) {

@@ -58,6 +58,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.playerNameTB = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.promoteLB = new System.Windows.Forms.ListBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -413,7 +415,7 @@
             this.playerNameTB.Name = "playerNameTB";
             this.playerNameTB.Size = new System.Drawing.Size(132, 20);
             this.playerNameTB.TabIndex = 35;
-            this.playerNameTB.Text = "Sue";
+            this.playerNameTB.Text = "PLAYER";
             // 
             // label8
             // 
@@ -424,11 +426,35 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Player Name:";
             // 
+            // promoteLB
+            // 
+            this.promoteLB.FormattingEnabled = true;
+            this.promoteLB.Items.AddRange(new object[] {
+            "QUEEN",
+            "ROOK",
+            "KNIGHT",
+            "BISHOP"});
+            this.promoteLB.Location = new System.Drawing.Point(726, 418);
+            this.promoteLB.Name = "promoteLB";
+            this.promoteLB.Size = new System.Drawing.Size(125, 56);
+            this.promoteLB.TabIndex = 37;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(723, 402);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(106, 13);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Promote Pawn Piece";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(996, 487);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.promoteLB);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.playerNameTB);
             this.Controls.Add(this.label7);
@@ -518,6 +544,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox playerNameTB;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ListBox promoteLB;
+        private System.Windows.Forms.Label label5;
     }
 }
 
