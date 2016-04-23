@@ -56,6 +56,13 @@ namespace ChessHelpers {
                     return false;
                 }
                 if (
+                    (chessPieces.ContainsKey(from)) &&
+                    (!chessPieces[from].Color.Equals(playerColorAttemptingToMove))
+                    ) {
+                    errorMessage = "You cannot move your opponents piece";
+                    return false;
+                }
+                if (
                     (chessPieces.ContainsKey(to)) &&
                     (chessPieces[from].KindOfPiece.Equals("PAWN")) &&
                     (fromX==toX)
