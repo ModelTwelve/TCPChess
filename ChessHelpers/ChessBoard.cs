@@ -80,7 +80,7 @@ namespace ChessHelpers {
                     else {
                         int numSpaces = Math.Abs(fromY - toY);
                         if (numSpaces == 2) {
-                            ((PAWN)copyOfPieceToMove).lastMoveWasTwoSpaces = true;
+                            ((PAWN)copyOfPieceToMove).allowEnPassant = true;
                         }
                         else {
                             checkForEnPassant(toX, toY, fromY, copyOfPieceToMove);
@@ -93,10 +93,21 @@ namespace ChessHelpers {
                     // This piece needs removed from the board
                     chessPieces.Remove(to);
                 }
-                // Now add our piece at the new location
-                chessPieces.Add(to, copyOfPieceToMove);
                 // If we moved it then it's now gone from the other location aye?
                 chessPieces.Remove(from);
+
+                // The copyOfPieceToMove is now "detached" from the board so we
+                // are safe to cycle over the pieces and reset any PAWN lastMoveWasTwoSpaces
+                foreach(var piece in chessPieces) {
+                    if (piece.Value.KindOfPiece.Equals("PAWN")) {
+                        // Any remaining pawns need EnPassant disabled
+                        ((PAWN)piece.Value).allowEnPassant = false;
+                    }
+                }                
+
+                // Now add our piece at the new location
+                chessPieces.Add(to, copyOfPieceToMove);
+                
                 // All is good ... now flip flop turn colors
                 currentColorsTurn = FlipFlopColor(currentColorsTurn);
                 return true;
@@ -154,7 +165,7 @@ namespace ChessHelpers {
             if (chessPieces.ContainsKey(testLocation)) {
                 var enpassantCheck = chessPieces[testLocation];
                 if (enpassantCheck.KindOfPiece.Equals("PAWN")) {
-                    if (((PAWN)enpassantCheck).lastMoveWasTwoSpaces) {
+                    if (((PAWN)enpassantCheck).allowEnPassant) {
                         // This was it!
                         chessPieces.Remove(testLocation);
                     }

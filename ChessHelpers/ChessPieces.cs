@@ -44,7 +44,7 @@ namespace ChessHelpers {
         }
     }
     public class PAWN : ChessPiece {
-        public bool lastMoveWasTwoSpaces = false;
+        public bool allowEnPassant = false;
         public PAWN(string color) {
             KindOfPiece = "PAWN";
             Color = color;
