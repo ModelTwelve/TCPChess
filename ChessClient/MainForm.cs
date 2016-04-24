@@ -48,12 +48,13 @@ namespace ChessClient {
             }
             whiteRB.TabStop = false;
 
-            playerNameTB.Text = "Player" + DateTime.Now.ToString("fffff");
+            playerNameTB.Text = "PLAYER" + DateTime.Now.ToString("fffff");
             playerNameTB.TabIndex = 0;
             serverIPTB.TabIndex = 1;
             portTB.TabIndex = 2;
             clientStartBTN.TabStop = true;
             clientStartBTN.TabIndex = 3;
+            promoteLB.SelectedIndex = 0;
 
             typeof(PictureBox).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
             | BindingFlags.Instance | BindingFlags.NonPublic, null,
@@ -118,7 +119,7 @@ namespace ChessClient {
 
             // PLAYERS,Donald:Lobby,David:Playing Jacob,Chris:Lobby,Jacob:Playing David,Joe:Lobby
             clientTestCommands = new List<string>() {
-                "Server_Command,Add,Donald,ACCEPT", // When asked to PLAY Donald will ACCEPT
+                "Server_Command,Add,Donald,ACCEPTED", // When asked to PLAY Donald will ACCEPT
                 "Server_Command,Add,David",
                 "Server_Command,Add,Chris", // When asked to PLAY Chris will not respond
                 "Server_Command,Add,Jacob",
@@ -197,6 +198,9 @@ namespace ChessClient {
                     }
                     else if (requestsLB.SelectedIndex >= 0) {
                         string toPlay = requestsLB.Items[requestsLB.SelectedIndex].ToString();
+                        // Split this and then send back the color we'd like to play as
+                        string[] split = toPlay.Split(':');
+                        toPlay = split[0] + ":" + (whiteRB.Checked ? "W" : "B");
                         client.acceptPlay(toPlay);
                         stopClientBTN.Tag = "MATCH";
                         stopClientBTN.Text = "QUIT MATCH";
@@ -211,6 +215,11 @@ namespace ChessClient {
         }
         private async void startClient() {
             try {
+                if (client!=null) {
+                    // Try a reconnect!
+                    client.connect(playerNameTB.Text);
+                    return;
+                }
                 int port = Convert.ToInt32(portTB.Text);
                 IPAddress ipAddress=IPAddress.Parse(serverIPTB.Text);
                 Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportClientProgress);
@@ -230,7 +239,14 @@ namespace ChessClient {
             lock (_clientLock) {
                 foreach (var info in src.getMessages()) {
                     addToListBox(clientDebugListBox,info);
-                    if (info.ToUpper().StartsWith("BOARD,")) {
+
+                    string infoUpper = info.ToUpper();
+                    if (infoUpper.Equals("CONNECT,ERROR")) {
+                        clientStartBTN.Text = "CONNECT";
+                        clientStartBTN.Tag = "CONNECT";
+                        clientStartBTN.Enabled = true;
+                    }                    
+                    else if (infoUpper.StartsWith("BOARD,")) {
                         currentBoardLayout = info;
                         enableGameOn();
                         showBoard();                        
@@ -238,19 +254,19 @@ namespace ChessClient {
                         boardPB.Invalidate();
                         client.requestGetPlayers();
                     }
-                    else if (info.ToUpper().StartsWith("PLAYERS,")) {
+                    else if (infoUpper.StartsWith("PLAYERS,")) {
                         showPlayers(info);
                     }
-                    else if (info.ToUpper().StartsWith("REQUEST,")) {
+                    else if (infoUpper.StartsWith("REQUEST,")) {
                         showRequested(info);
                     }
-                    else if (info.ToUpper().StartsWith("ACCEPTED,")) {                        
-                        showAccepted(info);
+                    else if (info.ToUpper().StartsWith("GAMEON,")) {                        
+                        showGameON(info);
                     }
-                    else if (info.ToUpper().StartsWith("WINNER,")) {                        
+                    else if (infoUpper.StartsWith("WINNER,")) {                        
                         showWinner(info);
                     }
-                    else if (info.ToUpper().StartsWith("REFUSED,")) {
+                    else if (infoUpper.StartsWith("REFUSED,")) {
                         showRefused(info);
                     }
                 }
@@ -273,7 +289,7 @@ namespace ChessClient {
                 }
             }
         }
-        private void showAccepted(string info) {
+        private void showGameON(string info) {
             requestsLB.Items.Clear();
             string[] split = info.Split(',');
             opponentPlayerName = split[1];
@@ -292,9 +308,8 @@ namespace ChessClient {
         }
         private void showWinner(string info) {
             string[] split = info.Split(',');
-            opponentPlayerName = "";
-            dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Game Over. Winner is " + split[1];
+            matchOver();
         }
         private void enableGameOn() {
             dictRequests.Clear();
@@ -343,8 +358,16 @@ namespace ChessClient {
                     newY = Convert.ToInt32(y) / Convert.ToInt32(height);
 
                     if (client != null) {
-                        client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString());
-                        //client.getBoard();
+                        string promotedPiece = "";
+                        if ( (newY==0) || (newY==7) ) {
+                            if (pieceType(selectedX, selectedY).Equals("PAWN")) {
+                                // A PAWN just moved into the final row ... add promote piece to move
+                                promotedPiece = "," + this.promoteLB.Items[this.promoteLB.SelectedIndex];
+                            }
+                        }
+                        client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString()+ promotedPiece);
+                        // Make sure we get the new board!
+                        client.getBoard();
                     }
                     selectedX = -1;
                     selectedY = -1;
@@ -353,6 +376,27 @@ namespace ChessClient {
             showPieces();
             boardPB.Invalidate();
         }
+
+        private string pieceType(int x, int y) {
+            string rv = "";
+            string[] pieces = currentBoardLayout.Split(',');
+
+            foreach (var piece in pieces) {
+                if (!piece.ToUpper().Equals("BOARD")) {
+                    string[] info = piece.Split(':');
+                    // ex layout 
+                    // row:col:color:piece
+                    // 1:0:B:PAWN
+                    int column = Convert.ToInt32(info[0]);
+                    int row = Convert.ToInt32(info[1]);
+                    if ( (x==column)&&(y==row) ) {
+                        return info[3];
+                    }
+                }
+            }
+            return rv;
+        }
+
         private void button1_Click(object sender, EventArgs e) {
             whenConnectPushed();
             testInit();
@@ -364,22 +408,25 @@ namespace ChessClient {
         private void requestsLB_Click(object sender, EventArgs e) {
             playersLB.SelectedIndex = -1;
         }
+        private void matchOver() {
+            stopClientBTN.Tag = "GAME";
+            stopClientBTN.Text = "QUIT GAME";
+            clientStartBTN.Enabled = true;
+            colorPanel.Enabled = true;
+            clientStartBTN.Text = "PLAY MATCH";            
+            opponentPlayerName = "";
+            dictRequests = new Dictionary<string, string>();
+            requestsLB.Items.Clear();
+        }
         private void stopClientBTN_Click(object sender, EventArgs e) {
 
             switch (stopClientBTN.Tag.ToString()) {
                 case "MATCH":
-                    stopClientBTN.Tag = "GAME";
-                    stopClientBTN.Text = "QUIT GAME";
-                    clientStartBTN.Enabled = true;
-                    colorPanel.Enabled = true;
-                    clientStartBTN.Text = "PLAY MATCH";
                     client.quitMatch();
-                    opponentPlayerName = "";
-                    dictRequests = new Dictionary<string, string>();
-                    requestsLB.Items.Clear();
+                    matchOver();
                     break;
                 case "GAME":
-                    stopClientBTN.Tag = "";
+                    stopClientBTN.Tag = "GAME";
                     client.quitGame();
                     opponentPlayerName = "";
                     colorPanel.Enabled = true;

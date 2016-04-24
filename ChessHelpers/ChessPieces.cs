@@ -12,7 +12,6 @@ namespace ChessHelpers {
     public abstract class ChessPiece : IChessPiece {
         public string KindOfPiece { get; protected set; }
         public string Color { get; protected set; }
-        public bool IsMoved { get; protected set; }
     }
     public class ROOK : ChessPiece {
         public ROOK(string color) {
@@ -45,6 +44,7 @@ namespace ChessHelpers {
         }
     }
     public class PAWN : ChessPiece {
+        public bool allowEnPassant = false;
         public PAWN(string color) {
             KindOfPiece = "PAWN";
             Color = color;

@@ -18,7 +18,7 @@ namespace ChessClient {
         private ReportingClass reportingClass = new ReportingClass();
         private OutBoundMessageQueue responseQueue;
         private string playerName = "";
-        private string sendACCEPTED = "";
+        private bool connectOK = false;
 
         public ChessClient(CancellationToken cToken, IProgress<ReportingClass> progress, List<string> clientCommands) {
             this.cToken = cToken;
@@ -30,11 +30,7 @@ namespace ChessClient {
         }
 
         public async Task Start(IPAddress ipAddress, int port, string playerName) {
-            this.playerName = playerName;
-
-            // Let's get the party started!
-            addMessage("CONNECT," + playerName);
-            addMessage("GET,players");
+            connect(playerName);           
 
             TcpClient client = new TcpClient();
             await client.ConnectAsync(ipAddress, port);
@@ -93,6 +89,21 @@ namespace ChessClient {
         private void processCommand(string dataFromServer) {
             string upperData = dataFromServer.ToUpper();
             string[] dataSplit = dataFromServer.Split(',');
+            
+            // If name not yet allowed from the server then the only commands we're looking for are OK and ERROR
+            if (!connectOK) {
+                if (upperData.StartsWith("OK")) {
+                    // Tell the frontend the name was good
+                    reportingClass.addMessage("CONNECT,OK");
+                    connectOK = true;
+                    addMessage("GET,players");
+                }
+                else if (upperData.StartsWith("ERROR,")) {
+                    // Tell the frontend the name was bad
+                    reportingClass.addMessage("CONNECT,ERROR");
+                }
+                return;
+            }
 
             if (upperData.StartsWith("ACCEPTED,")) {
                 handleACCEPTED(dataSplit);
@@ -107,32 +118,17 @@ namespace ChessClient {
             if (upperData.StartsWith("GO,")) {
                 handleTURN(upperData);
                 return;
-            }
-
-            if ( (sendACCEPTED.Length>0)&& (upperData.StartsWith("OK")) ) {
-                string[] split = sendACCEPTED.Split(':');
-                sendACCEPTED = "";
-                // The the frontend what's happening
-                reportingClass.addMessage("ACCEPTED,"+ split[0]+","+split[1]);
-            }
-
-            if ((sendACCEPTED.Length > 0) && (upperData.StartsWith("ERROR,"))) {
-                // The the frontend what's happening
-                reportingClass.addMessage("REFUSED," + sendACCEPTED);
-                // Refused or not available anymore or something bad happened
-                sendACCEPTED = "";                
-            }
+            }            
         }
         private void handleACCEPTED(string[] dataSplit) {
-            string playerName = dataSplit[1];
+            // The the frontend what's happening
+            reportingClass.addMessage("GAMEON," + dataSplit[1] + "," + dataSplit[2]);
             addMessage("GET,BOARD");
         }
         private void handleWINNER(string data) {
-            reportingClass.addMessage(data);
             progress.Report(reportingClass);
         }
         private void handleTURN(string data) {
-            reportingClass.addMessage(data);
             progress.Report(reportingClass);
         }
 
@@ -162,15 +158,13 @@ namespace ChessClient {
         }
 
         public void acceptPlay(string data) {
-            // Remember who we're trying to ACCEPT
-            sendACCEPTED = data;
             string[] split = data.Split(':');
             addMessage("ACCEPTED," + split[0] +","+ split[1]);
             addMessage("GET,BOARD");
         }
 
         public void getBoard() {
-            addMessage("GET,board");
+            addMessage("GET,BOARD");
         }
 
         public void quitMatch() {
@@ -179,6 +173,10 @@ namespace ChessClient {
 
         public void quitGame() {
             addMessage("QUIT,GAME");
+        }
+        public void connect(string playerName) {
+            this.playerName = playerName.ToUpper();
+            addMessage("CONNECT,"+ playerName.ToUpper());
         }
     }
 }
