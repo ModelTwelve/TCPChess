@@ -12,11 +12,18 @@ namespace ChessHelpers {
     public abstract class ChessPiece : IChessPiece {
         public string KindOfPiece { get; protected set; }
         public string Color { get; protected set; }
+        public bool hasMoved { get; internal set; }
+        abstract public LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece);
     }
     public class ROOK : ChessPiece {
         public ROOK(string color) {
             KindOfPiece = "ROOK";
             Color = color;
+        }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
         }
     }
     public class KNIGHT : ChessPiece {
@@ -24,11 +31,21 @@ namespace ChessHelpers {
             KindOfPiece = "KNIGHT";
             Color = color;
         }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
+        }
     }
     public class BISHOP : ChessPiece {
         public BISHOP(string color) {
             KindOfPiece = "BISHOP";
             Color = color;
+        }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
         }
     }
     public class KING : ChessPiece {
@@ -36,11 +53,21 @@ namespace ChessHelpers {
             KindOfPiece = "KING";
             Color = color;
         }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
+        }
     }
     public class QUEEN : ChessPiece {
         public QUEEN(string color) {
             KindOfPiece = "QUEEN";
             Color = color;
+        }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
         }
     }
     public class PAWN : ChessPiece {
@@ -48,6 +75,11 @@ namespace ChessHelpers {
         public PAWN(string color) {
             KindOfPiece = "PAWN";
             Color = color;
+        }
+
+        public override LinkedList<ChessPiece> generatePossibleMoves(ChessPiece piece)
+        {
+            throw new NotImplementedException();
         }
     }
 }

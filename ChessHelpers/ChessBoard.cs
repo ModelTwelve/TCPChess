@@ -96,6 +96,7 @@ namespace ChessHelpers {
                 }
 
                 // Ok ... from here on out I assume all is well.
+                copyOfPieceToMove.hasMoved = true;
                 if (chessPieces.ContainsKey(to)) {
                     // This piece needs removed from the board
                     chessPieces.Remove(to);
