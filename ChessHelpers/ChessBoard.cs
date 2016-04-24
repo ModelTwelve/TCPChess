@@ -70,6 +70,17 @@ namespace ChessHelpers {
                     errorMessage = "A pawn cannot kill moving forward";
                     return false;
                 }
+
+                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                {
+                    ChessPiece pawncheck = chessPieces[from];
+                    LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
+                    if (!check.Contains(to))
+                    {
+                        errorMessage = "A pawn cant move there!";
+                        return false;
+                    }
+                }
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
@@ -221,6 +232,11 @@ namespace ChessHelpers {
             chessPieces.Add("5:7", new BISHOP("W"));
             chessPieces.Add("6:7", new KNIGHT("W"));
             chessPieces.Add("7:7", new ROOK("W"));
+        }
+
+        public Dictionary<string, ChessPiece> getChessPieces()
+        {
+            return chessPieces;
         }
     }
 }
