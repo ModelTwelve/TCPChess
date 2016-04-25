@@ -130,6 +130,9 @@ namespace ChessHelpers {
                 if (dictConnections.ContainsKey(RemoteEndPoint)) {
                     rv = dictConnections[RemoteEndPoint].removeFirstServerResponse();
                 }
+                else {
+                    throw new Exception("RemoteEndPoint NOT Found");
+                }
             }
             return rv;
         }
