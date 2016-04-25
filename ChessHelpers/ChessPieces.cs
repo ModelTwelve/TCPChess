@@ -225,10 +225,109 @@ namespace ChessHelpers {
             hasMoved = false;
         }
 
-        
+
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
-            throw new NotImplementedException();
+            LinkedList<String> moveList = new LinkedList<string>();
+            String color = this.Color;
+            //convert to int
+            string[] split = from.Split(':');
+            int fromX = Convert.ToInt32(split[0]);
+            int fromY = Convert.ToInt32(split[1]);
+            //where it will be going
+            String goTo;
+            
+            int rightX = fromX, leftX = fromX;
+            int downY = fromY, upY = fromY;
+            
+            int rightFrontX = fromX, leftFrontX = fromX, rightBackX = fromX, leftBackX = fromX;
+            int rightFrontY = fromY, leftFrontY = fromY, rightBackY = fromY, leftBackY = fromY;
+
+            //get horizontal moves
+            int i = 0;
+            while (i<1)
+            {
+                    goTo = "" + (++rightX) + ":" + (fromY);
+
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightX <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+                      
+                    goTo = "" + (--leftX) + ":" + (fromY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftX >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+              
+                    goTo = "" + (fromX) + ":" + (++downY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (downY <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                   
+                
+                    goTo = "" + (fromX) + ":" + (--upY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (upY >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+                ++i;
+
+            }
+
+            //getting diagonal moves
+            i = 0;
+            while (i<1)
+            {
+                //chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())
+               
+                    goTo = "" + (++rightFrontX) + ":" + (--rightFrontY);
+
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightFrontX <= 7 && rightFrontY >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+                
+                    goTo = "" + (--leftFrontX) + ":" + (--leftFrontY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftFrontX >= 0 && leftFrontY >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+               
+                    goTo = "" + (++rightBackX) + ":" + (++rightBackY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightBackX <= 7 && rightBackY <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    
+                
+                    goTo = "" + (--leftBackX) + ":" + (++leftBackY);
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftBackX >= 0 && leftBackY <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                ++i;
+                  
+
+            }
+            return moveList;
+
+
+        }
+
+        public String oppositeColor()
+        {
+            if (this.Color.Equals("W"))
+            {
+                return "B";
+            }
+            return "W";
         }
     }
     public class QUEEN : ChessPiece {
