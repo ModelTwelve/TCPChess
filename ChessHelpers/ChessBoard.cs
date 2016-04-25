@@ -71,16 +71,15 @@ namespace ChessHelpers {
                     return false;
                 }
 
-                if (chessPieces[from].KindOfPiece.Equals("KING"))
+                //checks to see all valid moves for a piece
+                ChessPiece pawncheck = chessPieces[from];
+                LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
+                if (!check.Contains(to))
                 {
-                    ChessPiece pawncheck = chessPieces[from];
-                    LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
-                    if (!check.Contains(to))
-                    {
-                        errorMessage = "A KING cant move there!";
-                        return false;
-                    }
+                 errorMessage = "A "+ chessPieces[from].KindOfPiece + " cant move there!";
+                 return false;
                 }
+                
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************

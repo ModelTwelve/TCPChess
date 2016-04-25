@@ -119,9 +119,84 @@ namespace ChessHelpers {
 
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
-            throw new NotImplementedException();
+            LinkedList<String> moveList = new LinkedList<string>();
+            String color = this.Color;
+            //convert to int
+            string[] split = from.Split(':');
+            int fromX = Convert.ToInt32(split[0]);
+            int fromY = Convert.ToInt32(split[1]);
+            //where it will be going
+            String goTo;
+            
+            //2 up 1 right
+            goTo = "" + (fromX + 1) + ":" + (fromY + 2);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX + 1) <= 7 && (fromY + 2) <= 7))
+            {
+                moveList.AddLast(goTo);
+            }
+            //2 up 1 left
+            goTo = "" + (fromX - 1) + ":" + (fromY + 2);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX - 1) >= 0 && (fromY + 2) <= 7))
+            {
+                moveList.AddLast(goTo);
+            }
+            //1 up 2 right
+            goTo = "" + (fromX + 2) + ":" + (fromY + 1);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX + 2) <= 7 && (fromY + 1) <= 7))
+            {
+                moveList.AddLast(goTo);
+            }
+            //1 up 2 left
+            goTo = "" + (fromX - 2) + ":" + (fromY + 1);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX - 2) >= 0 && (fromY + 1) <= 7))
+            {
+                moveList.AddLast(goTo);
+            }
+            //2 down 1 right
+            goTo = "" + (fromX + 1) + ":" + (fromY - 2);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX + 1) <= 7 && (fromY - 2) >= 0))
+            {
+                moveList.AddLast(goTo);
+            }
+            //2 down 1 left
+            goTo = "" + (fromX - 1) + ":" + (fromY - 2);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX - 1) >= 0 && (fromY - 2) >= 0))
+            {
+                moveList.AddLast(goTo);
+            }
+            //1 down 2 right
+            goTo = "" + (fromX + 2) + ":" + (fromY - 1);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX + 2) <= 7 && (fromY - 1) >= 0))
+            {
+                moveList.AddLast(goTo);
+            }
+            //1 down 2 left
+            goTo = "" + (fromX - 2) + ":" + (fromY - 1);
+
+            if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && ((fromX - 2) >= 0 && (fromY - 1) >= 0))
+            {
+                moveList.AddLast(goTo);
+            }
+
+            return moveList;
         }
-        
+
+        public String oppositeColor()
+        {
+            if (this.Color.Equals("W"))
+            {
+                return "B";
+            }
+            return "W";
+        }
+
     }
 
     public class BISHOP : ChessPiece {
