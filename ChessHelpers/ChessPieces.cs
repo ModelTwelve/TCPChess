@@ -14,18 +14,12 @@ namespace ChessHelpers {
         public string Color { get; protected set; }
         public bool hasMoved { get; internal set; }
         abstract public LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from);
-        abstract public String formatMoves(int toX, int toY);
     }
     public class ROOK : ChessPiece {
         public ROOK(string color) {
             KindOfPiece = "ROOK";
             Color = color;
             hasMoved = false;
-        }
-
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
         }
 
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
@@ -40,11 +34,7 @@ namespace ChessHelpers {
             hasMoved = false;
         }
 
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
             throw new NotImplementedException();
@@ -57,15 +47,92 @@ namespace ChessHelpers {
             hasMoved = false;
         }
 
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
-        }
 
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
-            throw new NotImplementedException();
+            LinkedList<String> moveList = new LinkedList<string>();
+            String color = this.Color;
+            //convert to int
+            string[] split = from.Split(':');
+            int fromX = Convert.ToInt32(split[0]);
+            int fromY = Convert.ToInt32(split[1]);
+            //where it will be going
+            String goTo;
+            bool rightFrontDiag = true;
+            bool leftFrontDiag = true;
+            bool rightBackDiag = true;
+            bool leftBackDiag = true;
+
+            int rightFrontX = fromX, leftFrontX = fromX, rightBackX = fromX, leftBackX = fromX;
+            int rightFrontY = fromY, leftFrontY = fromY, rightBackY = fromY, leftBackY = fromY;
+            while (rightBackDiag || leftBackDiag || leftFrontDiag || rightFrontDiag)
+            {
+                //chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())
+                if (rightFrontDiag == true)
+                {
+                    goTo = "" + (++rightFrontX) + ":" + (--rightFrontY);
+                   
+                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (rightFrontX <= 7 && rightFrontY >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }else
+                    {
+                        rightFrontDiag = false;
+                    }
+
+                }
+                if (leftFrontDiag == true)
+                {
+                    goTo = "" + (--leftFrontX) + ":" + (--leftFrontY);
+                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (leftFrontX >= 0 && leftFrontY >= 0))
+                    {
+                        moveList.AddLast(goTo);
+                    }else
+                    {
+                        leftFrontDiag = false;
+                    }
+
+                }
+                if (rightBackDiag == true)
+                {
+                    goTo = "" + (++rightBackX) + ":" + (++rightBackY);
+                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (rightBackX <= 7 && rightBackY <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }
+                    else
+                    {
+                        rightBackDiag = false;
+                    }
+                }
+                if (leftBackDiag == true)
+                {
+                    goTo = "" + (--leftBackX) + ":" + (++leftBackY);
+                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (leftBackX >= 0 && leftBackY <= 7))
+                    {
+                        moveList.AddLast(goTo);
+                    }else
+                    {
+                        leftBackDiag = false;
+                    }
+                }
+
+            }
+
+            return moveList;
+            
+            
         }
+
+        public String oppositeColor()
+        {
+            if (this.Color.Equals("W"))
+            {
+                return "B";
+            }
+            return "W";
+        }
+
     }
     public class KING : ChessPiece {
         public KING(string color) {
@@ -74,11 +141,7 @@ namespace ChessHelpers {
             hasMoved = false;
         }
 
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
             throw new NotImplementedException();
@@ -91,11 +154,7 @@ namespace ChessHelpers {
             hasMoved = false;
         }
 
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
 
@@ -108,11 +167,6 @@ namespace ChessHelpers {
             KindOfPiece = "PAWN";
             Color = color;
             hasMoved = false;
-        }
-
-        public override string formatMoves(int toX, int toY)
-        {
-            throw new NotImplementedException();
         }
 
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)

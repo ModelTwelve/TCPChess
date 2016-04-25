@@ -71,13 +71,13 @@ namespace ChessHelpers {
                     return false;
                 }
 
-                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                if (chessPieces[from].KindOfPiece.Equals("BISHOP"))
                 {
                     ChessPiece pawncheck = chessPieces[from];
                     LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
                     if (!check.Contains(to))
                     {
-                        errorMessage = "A pawn cant move there!";
+                        errorMessage = "A BISHOP cant move there!";
                         return false;
                     }
                 }
