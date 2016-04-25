@@ -71,13 +71,13 @@ namespace ChessHelpers {
                     return false;
                 }
 
-                if (chessPieces[from].KindOfPiece.Equals("BISHOP"))
+                if (chessPieces[from].KindOfPiece.Equals("QUEEN"))
                 {
                     ChessPiece pawncheck = chessPieces[from];
                     LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
                     if (!check.Contains(to))
                     {
-                        errorMessage = "A BISHOP cant move there!";
+                        errorMessage = "A QUEEN cant move there!";
                         return false;
                     }
                 }
@@ -227,8 +227,8 @@ namespace ChessHelpers {
             chessPieces.Add("0:7", new ROOK("W"));
             chessPieces.Add("1:7", new KNIGHT("W"));
             chessPieces.Add("2:7", new BISHOP("W"));
-            chessPieces.Add("3:7", new KING("W"));
-            chessPieces.Add("4:7", new QUEEN("W"));
+            chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("3:7", new QUEEN("W"));
             chessPieces.Add("5:7", new BISHOP("W"));
             chessPieces.Add("6:7", new KNIGHT("W"));
             chessPieces.Add("7:7", new ROOK("W"));
