@@ -202,8 +202,8 @@ namespace ChessHelpers {
             chessPieces.Add("0:0", new ROOK("B"));
             chessPieces.Add("1:0", new KNIGHT("B"));
             chessPieces.Add("2:0", new BISHOP("B"));
-            chessPieces.Add("3:0", new KING("B"));
-            chessPieces.Add("4:0", new QUEEN("B"));
+            chessPieces.Add("4:0", new KING("B"));
+            chessPieces.Add("3:0", new QUEEN("B"));
             chessPieces.Add("5:0", new BISHOP("B"));
             chessPieces.Add("6:0", new KNIGHT("B"));
             chessPieces.Add("7:0", new ROOK("B"));
