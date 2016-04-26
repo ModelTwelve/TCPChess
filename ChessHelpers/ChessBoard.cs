@@ -72,14 +72,22 @@ namespace ChessHelpers {
                 }
 
                 //checks to see all valid moves for a piece
-                ChessPiece pawncheck = chessPieces[from];
-                LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
+                ChessPiece checkMoves = chessPieces[from];
+                LinkedList<String> check = checkMoves.generatePossibleMoves(this, from);
+                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                {
+                    int numSpaces = Math.Abs(fromY - toY);
+                    if (numSpaces == 2)
+                    {
+                        ((PAWN)chessPieces[from]).allowEnPassant = true;
+                    }
+                }
                 if (!check.Contains(to))
                 {
-                 errorMessage = "A "+ chessPieces[from].KindOfPiece + " cant move there!";
-                 return false;
+                    errorMessage = "A " + chessPieces[from].KindOfPiece + " cant move there!";
+                    return false;
                 }
-                
+
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************

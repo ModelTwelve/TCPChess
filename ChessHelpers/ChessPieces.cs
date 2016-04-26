@@ -586,11 +586,66 @@ namespace ChessHelpers {
             int fromY = Convert.ToInt32(split[1]);
             //where it will be going
             String goTo;
+            try
+            {
+                if (this.Color.Equals("B"))
+                {
+                    //If pawn directly right 
+                    goTo = "" + (fromX + 1) + ":" + (fromY);
+                    var pieces = chessBoard.getChessPieces();
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                    {
+                        //check en passant
 
+
+                        moveList.AddLast("" + (fromX + 1) + ":" + (fromY + 1));
+
+                    }
+                    //If pawn directly left 
+                    goTo = "" + (fromX - 1) + ":" + (fromY);
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                    {
+                        //check en passant
+                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
+                        //{
+                        moveList.AddLast("" + (fromX - 1) + ":" + (fromY + 1));
+                        //}
+                    }
+                }
+                else
+                {
+                    //is white
+                    //If pawn directly right 
+                    goTo = "" + (fromX + 1) + ":" + (fromY);
+                    var pieces = chessBoard.getChessPieces();
+                    if ( (pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant) )
+                    {
+                        //check en passant
+                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
+                        //{
+                        moveList.AddLast("" + (fromX + 1) + ":" + (fromY - 1));
+                        //}
+                    }
+                    //If pawn directly left 
+                    goTo = "" + (fromX - 1) + ":" + (fromY);
+                    if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant) )
+                    {
+                        //check en passant
+                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
+                        //{
+                        moveList.AddLast("" + (fromX - 1) + ":" + (fromY - 1));
+                        //}
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                return new LinkedList<string>();
+            }
             
-                //subtract Y axis for white
-                //check if enemy piece at diagonal right
-                if (color.Equals("W")){ goTo = "" + (fromX + 1) + ":" + (fromY - 1);}
+            //subtract Y axis for white
+            //check if enemy piece at diagonal right
+            if (color.Equals("W")){ goTo = "" + (fromX + 1) + ":" + (fromY - 1);}
                 else{ goTo = "" + (fromX + 1) + ":" + (fromY + 1); }
                 if(chessBoard.getChessPieces().ContainsKey(goTo) && chessBoard.getChessPieces()[goTo].Color.Equals("B"))
                 {
