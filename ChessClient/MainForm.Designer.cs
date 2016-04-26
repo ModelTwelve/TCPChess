@@ -23,6 +23,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.clientStartBTN = new System.Windows.Forms.Button();
             this.clientDebugListBox = new System.Windows.Forms.ListBox();
@@ -60,6 +61,7 @@
             this.label8 = new System.Windows.Forms.Label();
             this.promoteLB = new System.Windows.Forms.ListBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.playerTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -314,7 +316,7 @@
             // 
             // gameLB
             // 
-            this.gameLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gameLB.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gameLB.ForeColor = System.Drawing.Color.Blue;
             this.gameLB.Location = new System.Drawing.Point(12, 3);
             this.gameLB.Name = "gameLB";
@@ -448,6 +450,11 @@
             this.label5.TabIndex = 38;
             this.label5.Text = "Promote Pawn Piece";
             // 
+            // playerTimer
+            // 
+            this.playerTimer.Interval = 1000;
+            this.playerTimer.Tick += new System.EventHandler(this.playerTimer_Tick);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -546,6 +553,7 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ListBox promoteLB;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Timer playerTimer;
     }
 }
 

@@ -62,74 +62,86 @@ namespace ChessClient {
 
         private async Task writeTask(StreamWriter writer) {
             writer.AutoFlush = true;
-            while (true) {
-                string messageToSend = removeMessage();
-                if (messageToSend != null) {    
-                    reportingClass.addMessage("Sending: " + messageToSend);
-                    progress.Report(reportingClass);
+            bool disco = false;
+            while (!disco) {
+                try {
+                    string messageToSend = removeMessage();
+                    if (messageToSend != null) {
+                        reportingClass.addMessage("Sending: " + messageToSend);
+                        progress.Report(reportingClass);
 
-                    await writer.WriteLineAsync(messageToSend);
+                        await writer.WriteLineAsync(messageToSend);
+                    }
+                }
+                catch(Exception e) {
+                    disco = true;
+                    reportingClass.addMessage("WRITE: " + e.Message);
                 }
                 Task.Delay(100).Wait();
             }
         }
 
         private async Task readTask(StreamReader reader) {
-            while (true) {
-                var dataFromServer = await reader.ReadLineAsync();
-                if (!string.IsNullOrEmpty(dataFromServer)) {
-                    if (!dataFromServer.ToUpper().Equals("NOOP")) {
-                        reportingClass.addMessage(dataFromServer);
-                        processCommand(dataFromServer);
+            bool disco = false;
+            while (!disco) {
+                try {
+                    var dataFromServer = await reader.ReadLineAsync();
+                    if (!string.IsNullOrEmpty(dataFromServer)) {
+                        if (!dataFromServer.ToUpper().Equals("NOOP")) {
+                            reportingClass.addMessage(dataFromServer);
+                            processCommand(dataFromServer);
+                        }
                     }
+                    progress.Report(reportingClass);
                 }
-                progress.Report(reportingClass);
+                catch (Exception e) {
+                    disco = true;
+                    reportingClass.addMessage("READ: " + e.Message);
+                }
+                Task.Delay(100).Wait();
             }
         }
         private void processCommand(string dataFromServer) {
             string upperData = dataFromServer.ToUpper();
             string[] dataSplit = dataFromServer.Split(',');
+            string action = dataSplit[0].ToUpper();
             
             // If name not yet allowed from the server then the only commands we're looking for are OK and ERROR
             if (!connectOK) {
-                if (upperData.StartsWith("OK")) {
+                if (action.Equals("OK")) {
                     // Tell the frontend the name was good
-                    reportingClass.addMessage("CONNECT,OK");
+                    reportingClass.addMessage("REPORT_CONNECT_OK");
                     connectOK = true;
-                    addMessage("GET,players");
+                    addMessage("GET,Players");
                 }
-                else if (upperData.StartsWith("ERROR,")) {
+                else if (action.Equals("ERROR")) {
                     // Tell the frontend the name was bad
-                    reportingClass.addMessage("CONNECT,ERROR");
+                    reportingClass.addMessage("REPORT_CONNECT_ERROR");
                 }
                 return;
             }
 
-            if (upperData.StartsWith("ACCEPTED,")) {
-                handleACCEPTED(dataSplit);
-                return;
-            }
-
-            if (upperData.StartsWith("WINNER,")) {
-                handleWINNER(upperData);
-                return;
-            }
-
-            if (upperData.StartsWith("GO,")) {
-                handleTURN(upperData);
-                return;
-            }            
-        }
-        private void handleACCEPTED(string[] dataSplit) {
-            // The the frontend what's happening
-            reportingClass.addMessage("GAMEON," + dataSplit[1] + "," + dataSplit[2]);
-            addMessage("GET,BOARD");
-        }
-        private void handleWINNER(string data) {
-            progress.Report(reportingClass);
-        }
-        private void handleTURN(string data) {
-            progress.Report(reportingClass);
+            switch (action) {
+                case "ACCEPTED":
+                    reportingClass.addMessage("REPORT_ACCEPTED," + dataSplit[1] + "," + dataSplit[2]);
+                    addMessage("GET,BOARD");
+                    break; 
+                case "BOARD":
+                case "PLAYERS":
+                case "REQUEST":
+                case "WINNER":
+                case "ERROR":
+                case "GO":
+                    reportingClass.addMessage("REPORT_" + dataFromServer);
+                    progress.Report(reportingClass);
+                    break;
+                case "NOOP":
+                case "OK":
+                    break;
+                default:
+                    addMessage("ERROR,Unknown Action from Server "+action);
+                    break;
+            }         
         }
 
         private void addMessage(string data) {
@@ -165,6 +177,9 @@ namespace ChessClient {
 
         public void getBoard() {
             addMessage("GET,BOARD");
+        }
+        public void getTurn() {
+            addMessage("GET,TURN");
         }
 
         public void quitMatch() {

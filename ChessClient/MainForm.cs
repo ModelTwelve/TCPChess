@@ -32,6 +32,7 @@ namespace ChessClient {
         private int selectedX = -1, selectedY = -1;
 
         private string opponentPlayerName = "";
+        private TimeTracker timeTracker = null;
         private Dictionary<string, string> dictRequests = new Dictionary<string, string>();
 
         public MainForm() {
@@ -160,7 +161,7 @@ namespace ChessClient {
             
             string[] pieces = currentBoardLayout.Split(',');
             foreach (var piece in pieces) {
-                if (!piece.ToUpper().Equals("BOARD")) {
+                if (!piece.ToUpper().Equals("REPORT_BOARD")) {
                     string[] info = piece.Split(':');
                     // ex layout 
                     // row:col:color:piece
@@ -240,35 +241,45 @@ namespace ChessClient {
                 foreach (var info in src.getMessages()) {
                     addToListBox(clientDebugListBox,info);
 
-                    string infoUpper = info.ToUpper();
-                    if (infoUpper.Equals("CONNECT,ERROR")) {
-                        clientStartBTN.Text = "CONNECT";
-                        clientStartBTN.Tag = "CONNECT";
-                        clientStartBTN.Enabled = true;
-                    }                    
-                    else if (infoUpper.StartsWith("BOARD,")) {
-                        currentBoardLayout = info;
-                        enableGameOn();
-                        showBoard();                        
-                        showPieces();
-                        boardPB.Invalidate();
-                        client.requestGetPlayers();
-                    }
-                    else if (infoUpper.StartsWith("PLAYERS,")) {
-                        showPlayers(info);
-                    }
-                    else if (infoUpper.StartsWith("REQUEST,")) {
-                        showRequested(info);
-                    }
-                    else if (info.ToUpper().StartsWith("GAMEON,")) {                        
-                        showGameON(info);
-                    }
-                    else if (infoUpper.StartsWith("WINNER,")) {                        
-                        showWinner(info);
-                    }
-                    else if (infoUpper.StartsWith("REFUSED,")) {
-                        showRefused(info);
-                    }
+                    string[] split = info.Split(',');
+                    string action = split[0].ToUpper();
+                    switch (action) {
+                        case "REPORT_CONNECT_ERROR":
+                            clientStartBTN.Text = "CONNECT";
+                            clientStartBTN.Tag = "CONNECT";
+                            clientStartBTN.Enabled = true;
+                            break;
+                        case "REPORT_BOARD":
+                            currentBoardLayout = info;
+                            enableGameOn();
+                            showBoard();
+                            showPieces();
+                            boardPB.Invalidate();
+                            client.requestGetPlayers();
+                            client.getTurn();
+                            break;
+                        case "REPORT_PLAYERS":
+                            showPlayers(info);
+                            break;
+                        case "REPORT_ACCEPTED":
+                            showAccepted(info);
+                            break;
+                        case "REPORT_REQUEST":
+                            showRequested(info);
+                            break;
+                        case "REPORT_WINNER":
+                            showWinner(info);
+                            break;
+                        case "REPORT_REFUSED":
+                            showRefused(info);
+                            break;
+                        case "REPORT_GO":
+                            showTurn(info);
+                            break;
+                        default:
+                            // Do nothing special other than show it in the listbox
+                            break;
+                    }   
                 }
             }
         }
@@ -289,29 +300,47 @@ namespace ChessClient {
                 }
             }
         }
-        private void showGameON(string info) {
+        private void showTurn(string info) {
+            string[] split = info.Split(',');
+            if ( (gameLB.Tag!=null) && (gameLB.Tag.ToString().Length>0)&&(!gameLB.Tag.ToString().Equals(split[1]))) {
+                timeTracker.toggleTime();
+            }
+            gameLB.Tag = split[1];
+            showPlayerAndTime();
+        }
+
+        private void showPlayerAndTime() {
+            double millisecs = timeTracker.getMilliSec(gameLB.Tag.ToString());
+            gameLB.Text = "Waiting for " + gameLB.Tag.ToString() + " time = " + Convert.ToUInt64(millisecs / 1000).ToString();
+        }
+        private void showAccepted(string info) {
             requestsLB.Items.Clear();
             string[] split = info.Split(',');
-            opponentPlayerName = split[1];
+            opponentPlayerName = split[1];            
             string color = split[2].ToUpper();
             if (color.Equals("W")) {
                 // If your opponent is white you must be black
-                blackRB.Checked = true;                
+                blackRB.Checked = true;
+                timeTracker = new TimeTracker(opponentPlayerName, playerNameTB.Text);
             }
             else {
                 // If your opponent is black you must be white
                 whiteRB.Checked = true;
+                timeTracker = new TimeTracker(playerNameTB.Text, opponentPlayerName);
             }
+            // Get it started
+            timeTracker.toggleTime();
             colorPanel.Enabled = false;
             dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Playing " + split[1];
         }
         private void showWinner(string info) {
             string[] split = info.Split(',');
-            gameLB.Text = "Game Over. Winner is " + split[1];
+            gameLB.Text = "Game Over. Winner is " + split[1];            
             matchOver();
         }
         private void enableGameOn() {
+            playerTimer.Enabled = true;
             dictRequests.Clear();
             directionsLB.Visible = true;
             gameLB.Visible = true;
@@ -368,6 +397,7 @@ namespace ChessClient {
                         client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString()+ promotedPiece);
                         // Make sure we get the new board!
                         client.getBoard();
+                        client.getTurn();
                     }
                     selectedX = -1;
                     selectedY = -1;
@@ -409,6 +439,9 @@ namespace ChessClient {
             playersLB.SelectedIndex = -1;
         }
         private void matchOver() {
+            gameLB.Tag = "";
+            playerTimer.Enabled = false;
+            timeTracker = null;
             stopClientBTN.Tag = "GAME";
             stopClientBTN.Text = "QUIT GAME";
             clientStartBTN.Enabled = true;
@@ -418,6 +451,11 @@ namespace ChessClient {
             dictRequests = new Dictionary<string, string>();
             requestsLB.Items.Clear();
         }
+
+        private void playerTimer_Tick(object sender, EventArgs e) {
+            showPlayerAndTime();
+        }
+
         private void stopClientBTN_Click(object sender, EventArgs e) {
 
             switch (stopClientBTN.Tag.ToString()) {

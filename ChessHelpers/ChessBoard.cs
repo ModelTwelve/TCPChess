@@ -71,16 +71,15 @@ namespace ChessHelpers {
                     return false;
                 }
 
-                if (chessPieces[from].KindOfPiece.Equals("BISHOP"))
+                //checks to see all valid moves for a piece
+                ChessPiece pawncheck = chessPieces[from];
+                LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
+                if (!check.Contains(to))
                 {
-                    ChessPiece pawncheck = chessPieces[from];
-                    LinkedList<String> check = pawncheck.generatePossibleMoves(this, from);
-                    if (!check.Contains(to))
-                    {
-                        errorMessage = "A BISHOP cant move there!";
-                        return false;
-                    }
+                 errorMessage = "A "+ chessPieces[from].KindOfPiece + " cant move there!";
+                 return false;
                 }
+                
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
@@ -203,8 +202,8 @@ namespace ChessHelpers {
             chessPieces.Add("0:0", new ROOK("B"));
             chessPieces.Add("1:0", new KNIGHT("B"));
             chessPieces.Add("2:0", new BISHOP("B"));
-            chessPieces.Add("3:0", new KING("B"));
-            chessPieces.Add("4:0", new QUEEN("B"));
+            chessPieces.Add("4:0", new KING("B"));
+            chessPieces.Add("3:0", new QUEEN("B"));
             chessPieces.Add("5:0", new BISHOP("B"));
             chessPieces.Add("6:0", new KNIGHT("B"));
             chessPieces.Add("7:0", new ROOK("B"));
@@ -227,8 +226,8 @@ namespace ChessHelpers {
             chessPieces.Add("0:7", new ROOK("W"));
             chessPieces.Add("1:7", new KNIGHT("W"));
             chessPieces.Add("2:7", new BISHOP("W"));
-            chessPieces.Add("3:7", new KING("W"));
-            chessPieces.Add("4:7", new QUEEN("W"));
+            chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("3:7", new QUEEN("W"));
             chessPieces.Add("5:7", new BISHOP("W"));
             chessPieces.Add("6:7", new KNIGHT("W"));
             chessPieces.Add("7:7", new ROOK("W"));
