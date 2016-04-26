@@ -72,7 +72,7 @@ namespace ChessHelpers {
                 {
                     goTo = "" + (++rightFrontX) + ":" + (--rightFrontY);
                    
-                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (rightFrontX <= 7 && rightFrontY >= 0))
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightFrontX <= 7 && rightFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
                     }else
@@ -84,7 +84,7 @@ namespace ChessHelpers {
                 if (leftFrontDiag == true)
                 {
                     goTo = "" + (--leftFrontX) + ":" + (--leftFrontY);
-                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (leftFrontX >= 0 && leftFrontY >= 0))
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftFrontX >= 0 && leftFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
                     }else
@@ -96,7 +96,7 @@ namespace ChessHelpers {
                 if (rightBackDiag == true)
                 {
                     goTo = "" + (++rightBackX) + ":" + (++rightBackY);
-                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (rightBackX <= 7 && rightBackY <= 7))
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightBackX <= 7 && rightBackY <= 7))
                     {
                         moveList.AddLast(goTo);
                     }
@@ -108,7 +108,7 @@ namespace ChessHelpers {
                 if (leftBackDiag == true)
                 {
                     goTo = "" + (--leftBackX) + ":" + (++leftBackY);
-                    if (!chessBoard.getChessPieces().ContainsKey(goTo) && (leftBackX >= 0 && leftBackY <= 7))
+                    if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftBackX >= 0 && leftBackY <= 7))
                     {
                         moveList.AddLast(goTo);
                     }else
