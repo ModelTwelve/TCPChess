@@ -91,29 +91,41 @@ namespace ChessHelpers {
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
-                ChessPiece copyOfPieceToMove = chessPieces[from];                
-                    
-                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN")) {
-                    if ((toY == 0) || (toY == 7)) {
-                        errorMessage = promotePawn(promotedPiece, from);
-                        if (errorMessage.Length>0) {
-                            return false;
-                        }
-                        // Redo copy with new promoted piece
-                        copyOfPieceToMove = chessPieces[from];
+                ChessPiece copyOfPieceToMove = chessPieces[from];
+
+                
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && (toY == 0) || (toY == 7)) {
+                    errorMessage = promotePawn(promotedPiece, from);
+                    if (errorMessage.Length>0) {
+                        return false;
                     }
-                    else {
-                        int numSpaces = Math.Abs(fromY - toY);
-                        if (numSpaces == 2) {
-                            ((PAWN)copyOfPieceToMove).allowEnPassant = true;
-                        }
-                        else {
-                            checkForEnPassant(toX, toY, fromY, copyOfPieceToMove);
-                        }
-                    }
+                    // Redo copy with new promoted piece
+                    copyOfPieceToMove = chessPieces[from];
+                }
+
+                //if pawn moved in enpassant then remove piece behind it
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+                {
+                    copyOfPieceToMove.hasMoved = true;
+                    String behindPawnEnPassantPiece;
+                    //black you are coming "up" the board
+                    if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
+                    //white you are going "down" the board
+                    else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
+                    //remove pawn behind it
+                    chessPieces.Remove(behindPawnEnPassantPiece);
+                    //remove place where it was from
+                    chessPieces.Remove(from);
+                    //put it in new to location
+                    chessPieces.Add(to, copyOfPieceToMove);
+                    //flip
+                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                    //end turn
+                    return true;
                 }
 
                 // Ok ... from here on out I assume all is well.
+                // For normal moves (not enpassant)
                 copyOfPieceToMove.hasMoved = true;
                 if (chessPieces.ContainsKey(to)) {
                     // This piece needs removed from the board
@@ -122,14 +134,6 @@ namespace ChessHelpers {
                 // If we moved it then it's now gone from the other location aye?
                 chessPieces.Remove(from);
 
-                // The copyOfPieceToMove is now "detached" from the board so we
-                // are safe to cycle over the pieces and reset any PAWN lastMoveWasTwoSpaces
-                foreach(var piece in chessPieces) {
-                    if (piece.Value.KindOfPiece.Equals("PAWN")) {
-                        // Any remaining pawns need EnPassant disabled
-                        ((PAWN)piece.Value).allowEnPassant = false;
-                    }
-                }                
 
                 // Now add our piece at the new location
                 chessPieces.Add(to, copyOfPieceToMove);
