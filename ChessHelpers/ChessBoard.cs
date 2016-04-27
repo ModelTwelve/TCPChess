@@ -8,7 +8,10 @@ namespace ChessHelpers {
     public class ChessBoard {
         private Dictionary<string, ChessPiece> chessPieces = null;
         public string currentColorsTurn { get; set; }
-
+        public String blackKingsPlace = "4:0";
+        public String whiteKingsPlace = "4:7";
+        public bool whiteCheck = false;
+        public bool blackCheck = false;
         private object _lock = new object();
 
         public ChessBoard() {
@@ -27,6 +30,7 @@ namespace ChessHelpers {
         public bool movePiece(string playerColorAttemptingToMove, string from, string to, string promotedPiece, out string errorMessage) {
             // Start out with no error message            
             lock (_lock) {
+                
                 string[] split = to.Split(':');
                 int toX = Convert.ToInt32(split[0]);
                 int toY = Convert.ToInt32(split[1]);
@@ -88,12 +92,92 @@ namespace ChessHelpers {
                     return false;
                 }
 
+                try
+                {
+                    //checks to see if your potential move put your king into check or keeps your king in check
+                    String pos;
+                    String type;
+                    bool isInCheck = false;
+                    //create potential chess board
+                    ChessBoard potentialChessBoard = new ChessBoard();
+                    potentialChessBoard.chessPieces.Remove(from);
+                    potentialChessBoard.chessPieces.Add(to, checkMoves);
+                    
+                    
+                    //checking mock board (with potential move)
+                    foreach (var piece in potentialChessBoard.chessPieces)
+                    {
+                        //if piece isnt on your team
+                        if (!piece.Value.Color.Equals(currentColorsTurn))
+                        {
+                            //returns list of that pieces avaiable moves
+                            check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                            pos = piece.Key;
+                            type = piece.Value.KindOfPiece;
+
+                            //if kings position is in that list then we set boolean to true return an error message
+
+                            //if white move then check white king vs all black pieces
+                            if (currentColorsTurn.Equals("W"))
+                            {
+                                isInCheck = check.Contains(whiteKingsPlace);
+                                if (isInCheck)
+                                {
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " put you in Check!";
+                                    return false;
+                                }
+                            }
+                            //if black move check black king vs all white
+                            else
+                            {
+                                isInCheck = check.Contains(blackKingsPlace);
+                                if (isInCheck)
+                                {
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " put you in Check!";
+                                    return false;
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+                catch(Exception e)
+                {
+                    errorMessage = e.ToString();
+                    return false;
+                }
+                try
+                {
+                    //If your king is not (or no longer) in check then we want to check to see if your move put their king in check
+                    //check from spot of new move
+                    check = checkMoves.generatePossibleMoves(this, to);
+                    //black move so whitecheck
+                    if (currentColorsTurn.Equals("B"))
+                    {
+                        //change boolean to show you are now in check
+                        whiteCheck = check.Contains(whiteKingsPlace);
+                    }
+                    //if white move check black king
+                    else
+                    {
+                        //change boolean to show you are now in check
+                        blackCheck = check.Contains(blackKingsPlace);
+                    }
+                }
+                catch (Exception e)
+                {
+                    errorMessage = e.ToString();
+                    return false;
+                }
+
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
-                
+                //checks to see if promotion
+                //input string formatted wrong bug?
                 if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && (toY == 0) || (toY == 7)) {
                     errorMessage = promotePawn(promotedPiece, from);
                     if (errorMessage.Length>0) {
@@ -126,6 +210,13 @@ namespace ChessHelpers {
 
                 // Ok ... from here on out I assume all is well.
                 // For normal moves (not enpassant)
+
+                // if you moved a king we update where it is on the board for easy reference for check
+                if (copyOfPieceToMove.KindOfPiece.Equals("KING")){
+                    if (copyOfPieceToMove.Equals("B")){ blackKingsPlace = to; }
+                    else { whiteKingsPlace = to; }
+                }
+
                 copyOfPieceToMove.hasMoved = true;
                 if (chessPieces.ContainsKey(to)) {
                     // This piece needs removed from the board

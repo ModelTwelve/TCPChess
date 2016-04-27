@@ -588,8 +588,7 @@ namespace ChessHelpers {
             //where it will be going
             String goTo;
             var pieces = chessBoard.getChessPieces();
-            try
-            {
+            
                 //Checking for EnPassant
                 if (this.Color.Equals("B"))
                 {
@@ -624,11 +623,8 @@ namespace ChessHelpers {
                         moveList.AddLast("" + (fromX - 1) + ":" + (fromY - 1));
                     }
                 }
-            }
-            catch(Exception e)
-            {
-                return new LinkedList<string>();
-            }
+            
+            
 
             //var pieces = chessBoard.getChessPieces();
             //check if white pawn has enemy piece at diagonal right
@@ -729,5 +725,7 @@ namespace ChessHelpers {
           }
             
         }
+
+
     }
 
