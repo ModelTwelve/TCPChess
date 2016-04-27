@@ -262,6 +262,7 @@ namespace ChessHelpers
             }
         }
 
+        //Possibly something wrong here
         private string promotePawn(string promotedPiece, string from)
         {
             if (promotedPiece != null)
