@@ -15,7 +15,8 @@ namespace ChessHelpers {
         private object _lock = new object();
 
         public ChessBoard() {
-            initializeBoard();
+            //initializeBoard();
+            initializePromotePawn();
         }
 
         public string serializeBoard() {
@@ -92,17 +93,26 @@ namespace ChessHelpers {
                     return false;
                 }
 
-                try
+                
                 {
+                    //we now have determined that this move is legal
                     //checks to see if your potential move put your king into check or keeps your king in check
                     String pos;
                     String type;
                     bool isInCheck = false;
+
                     //create potential chess board
-                    ChessBoard potentialChessBoard = new ChessBoard();
+                    ChessBoard potentialChessBoard = clone();
+                    //move piece to new location
                     potentialChessBoard.chessPieces.Remove(from);
+                    //if there is a peice there delete it
+                    if (potentialChessBoard.chessPieces.ContainsKey(to))
+                    {
+                        // This piece needs removed from the board
+                        potentialChessBoard.chessPieces.Remove(to);
+                    }
+                    //add the piece to the new location in the potential board
                     potentialChessBoard.chessPieces.Add(to, checkMoves);
-                    
                     
                     //checking mock board (with potential move)
                     foreach (var piece in potentialChessBoard.chessPieces)
@@ -123,7 +133,7 @@ namespace ChessHelpers {
                                 isInCheck = check.Contains(whiteKingsPlace);
                                 if (isInCheck)
                                 {
-                                    errorMessage = "Your opponents " + type + " at position - " + pos + " put you in Check!";
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
                                     return false;
                                 }
                             }
@@ -133,7 +143,7 @@ namespace ChessHelpers {
                                 isInCheck = check.Contains(blackKingsPlace);
                                 if (isInCheck)
                                 {
-                                    errorMessage = "Your opponents " + type + " at position - " + pos + " put you in Check!";
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
                                     return false;
                                 }
                             }
@@ -142,11 +152,11 @@ namespace ChessHelpers {
 
                     }
                 }
-                catch(Exception e)
-                {
-                    errorMessage = e.ToString();
-                    return false;
-                }
+                //catch(Exception e)
+                //{
+                //    errorMessage = e.ToString();
+                //    return false;
+                //}
                 try
                 {
                     //If your king is not (or no longer) in check then we want to check to see if your move put their king in check
@@ -336,9 +346,58 @@ namespace ChessHelpers {
             chessPieces.Add("7:7", new ROOK("W"));
         }
 
+        private void initializePromotePawn()
+        {
+            currentColorsTurn = "W";
+
+            chessPieces = new Dictionary<string, ChessPiece>();
+            chessPieces.Add("0:0", new ROOK("B"));
+            chessPieces.Add("1:0", new KNIGHT("B"));
+            chessPieces.Add("2:0", new BISHOP("B"));
+            chessPieces.Add("4:0", new KING("B"));
+            chessPieces.Add("3:0", new QUEEN("B"));
+            chessPieces.Add("5:0", new BISHOP("B"));
+            chessPieces.Add("6:0", new KNIGHT("B"));
+            chessPieces.Add("7:0", new ROOK("B"));
+            chessPieces.Add("0:1", new PAWN("B"));
+            chessPieces.Add("1:1", new PAWN("B"));
+            chessPieces.Add("2:1", new PAWN("B"));
+            chessPieces.Add("3:1", new PAWN("B"));
+            chessPieces.Add("4:1", new PAWN("B"));
+            chessPieces.Add("5:1", new PAWN("B"));
+            chessPieces.Add("6:1", new PAWN("B"));
+            chessPieces.Add("7:1", new PAWN("W"));
+            chessPieces.Add("0:6", new PAWN("B"));
+            chessPieces.Add("1:6", new PAWN("W"));
+            chessPieces.Add("2:6", new PAWN("W"));
+            chessPieces.Add("3:6", new PAWN("W"));
+            chessPieces.Add("4:6", new PAWN("W"));
+            chessPieces.Add("5:6", new PAWN("W"));
+            chessPieces.Add("6:6", new PAWN("W"));
+            chessPieces.Add("7:6", new PAWN("W"));
+            chessPieces.Add("0:7", new ROOK("W"));
+            chessPieces.Add("1:7", new KNIGHT("W"));
+            chessPieces.Add("2:7", new BISHOP("W"));
+            chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("3:7", new QUEEN("W"));
+            chessPieces.Add("5:7", new BISHOP("W"));
+            chessPieces.Add("6:7", new KNIGHT("W"));
+            chessPieces.Add("7:7", new ROOK("W"));
+        }
+
         public Dictionary<string, ChessPiece> getChessPieces()
         {
             return chessPieces;
+        }
+
+        public ChessBoard clone()
+        {
+            ChessBoard cloneBoard = new ChessBoard();
+            foreach(var piece in this.chessPieces)
+            {
+                cloneBoard.chessPieces[piece.Key] = piece.Value;
+            }
+            return cloneBoard;
         }
     }
 }
