@@ -53,6 +53,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightX <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            right = false;
+                        }
                     }
                     else
                     {
@@ -66,6 +70,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftX >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            left = false;
+                        }
                     }
                     else
                     {
@@ -79,6 +87,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (downY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            down = false;
+                        }
                     }
                     else
                     {
@@ -91,6 +103,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (upY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            up = false;
+                        }
                     }
                     else
                     {
@@ -243,6 +259,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightFrontX <= 7 && rightFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            rightFrontDiag = false;
+                        }
                     }
                     else
                     {
@@ -256,6 +276,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftFrontX >= 0 && leftFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            leftFrontDiag = false;
+                        }
                     }
                     else
                     {
@@ -269,6 +293,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightBackX <= 7 && rightBackY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            rightBackDiag = false;
+                        }
                     }
                     else
                     {
@@ -281,6 +309,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftBackX >= 0 && leftBackY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            leftBackDiag = false;
+                        }
                     }
                     else
                     {
@@ -465,6 +497,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightX <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            right = false;
+                        }
                     }
                     else
                     {
@@ -478,6 +514,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftX >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            left = false;
+                        }
                     }
                     else
                     {
@@ -491,6 +531,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (downY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            down = false;
+                        }
                     }
                     else
                     {
@@ -503,6 +547,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (upY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            up = false;
+                        }
                     }
                     else
                     {
@@ -524,6 +572,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightFrontX <= 7 && rightFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            rightFrontDiag = false;
+                        }
                     }
                     else
                     {
@@ -537,6 +589,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftFrontX >= 0 && leftFrontY >= 0))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            leftFrontDiag = false;
+                        }
                     }
                     else
                     {
@@ -550,6 +606,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (rightBackX <= 7 && rightBackY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            rightBackDiag = false;
+                        }
                     }
                     else
                     {
@@ -562,6 +622,10 @@ namespace ChessHelpers
                     if ((!chessBoard.getChessPieces().ContainsKey(goTo) || chessBoard.getChessPieces()[goTo].Color.Equals(oppositeColor())) && (leftBackX >= 0 && leftBackY <= 7))
                     {
                         moveList.AddLast(goTo);
+                        if (chessBoard.getChessPieces().ContainsKey(goTo))
+                        {
+                            leftBackDiag = false;
+                        }
                     }
                     else
                     {
@@ -597,6 +661,7 @@ namespace ChessHelpers
         public override LinkedList<String> generatePossibleMoves(ChessBoard chessBoard, String from)
         {
             LinkedList<String> moveList = new LinkedList<string>();
+
             String color = this.Color;
             //convert to int
             string[] split = from.Split(':');
@@ -604,30 +669,24 @@ namespace ChessHelpers
             int fromY = Convert.ToInt32(split[1]);
             //where it will be going
             String goTo;
+            var pieces = chessBoard.getChessPieces();
             try
             {
+                //Checking for EnPassant
                 if (this.Color.Equals("B"))
                 {
                     //If pawn directly right 
                     goTo = "" + (fromX + 1) + ":" + (fromY);
-                    var pieces = chessBoard.getChessPieces();
+                    //var pieces = chessBoard.getChessPieces();
                     if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
                     {
-                        //check en passant
-
-
                         moveList.AddLast("" + (fromX + 1) + ":" + (fromY + 1));
-
                     }
                     //If pawn directly left 
                     goTo = "" + (fromX - 1) + ":" + (fromY);
                     if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
                     {
-                        //check en passant
-                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
-                        //{
                         moveList.AddLast("" + (fromX - 1) + ":" + (fromY + 1));
-                        //}
                     }
                 }
                 else
@@ -635,24 +694,16 @@ namespace ChessHelpers
                     //is white
                     //If pawn directly right 
                     goTo = "" + (fromX + 1) + ":" + (fromY);
-                    var pieces = chessBoard.getChessPieces();
+                    //var pieces = chessBoard.getChessPieces();
                     if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
                     {
-                        //check en passant
-                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
-                        //{
                         moveList.AddLast("" + (fromX + 1) + ":" + (fromY - 1));
-                        //}
                     }
                     //If pawn directly left 
                     goTo = "" + (fromX - 1) + ":" + (fromY);
                     if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
                     {
-                        //check en passant
-                        //if (((PAWN)chessBoard.getChessPieces()[goTo]).allowEnPassant)
-                        //{
                         moveList.AddLast("" + (fromX - 1) + ":" + (fromY - 1));
-                        //}
                     }
                 }
             }
@@ -661,19 +712,20 @@ namespace ChessHelpers
                 return new LinkedList<string>();
             }
 
-            //subtract Y axis for white
-            //check if enemy piece at diagonal right
+            //var pieces = chessBoard.getChessPieces();
+            //check if white pawn has enemy piece at diagonal right
             if (color.Equals("W")) { goTo = "" + (fromX + 1) + ":" + (fromY - 1); }
+            //check if black pawn has enemy piece at diagonal right
             else { goTo = "" + (fromX + 1) + ":" + (fromY + 1); }
-            if (chessBoard.getChessPieces().ContainsKey(goTo) && chessBoard.getChessPieces()[goTo].Color.Equals("B"))
+            if (pieces.ContainsKey(goTo) && pieces[goTo].Color.Equals(oppositeColor()))
             {
                 moveList.AddLast(goTo);
             }
-            //check if enemy piece at diagonal left
+            //check if white pawn has enemy piece at diagonal left
             if (color.Equals("W")) { goTo = "" + (fromX - 1) + ":" + (fromY - 1); }
+            //check if black pawn has enemy piece at diagonal left
             else { goTo = "" + (fromX - 1) + ":" + (fromY + 1); }
-
-            if (chessBoard.getChessPieces().ContainsKey(goTo) && chessBoard.getChessPieces()[goTo].Color.Equals("B"))
+            if (pieces.ContainsKey(goTo) && pieces[goTo].Color.Equals(oppositeColor()))
             {
                 moveList.AddLast(goTo);
             }
@@ -681,13 +733,13 @@ namespace ChessHelpers
 
             if (color.Equals("W")) { goTo = "" + (fromX) + ":" + (fromY - 1); }
             else { goTo = "" + (fromX) + ":" + (fromY + 1); }
-            if (!chessBoard.getChessPieces().ContainsKey(goTo))
+            if (!pieces.ContainsKey(goTo))
             {
                 moveList.AddLast(goTo);
                 //if hasn't moved check if front ok, then check next
                 if (color.Equals("W")) { goTo = "" + (fromX) + ":" + (fromY - 2); }
                 else { goTo = "" + (fromX) + ":" + (fromY + 2); }
-                if (!chessBoard.getChessPieces().ContainsKey(goTo) && hasMoved == false)
+                if (!pieces.ContainsKey(goTo) && hasMoved == false)
                 {
                     moveList.AddLast(goTo);
                 }
@@ -695,5 +747,68 @@ namespace ChessHelpers
 
             return moveList;
         }
+
+        public String oppositeColor()
+        {
+            if (this.Color.Equals("W"))
+            {
+                return "B";
+            }
+            return "W";
+        }
+
+
+        public bool enPassantCheck(ChessBoard chessBoard, String from, String to)
+        {
+            LinkedList<String> enPassantList = new LinkedList<string>();
+            string[] split = from.Split(':');
+            int fromX = Convert.ToInt32(split[0]);
+            int fromY = Convert.ToInt32(split[1]);
+            //where it will be going
+            String goTo;
+            var pieces = chessBoard.getChessPieces();
+
+            //Checking for EnPassant
+            if (this.Color.Equals("B"))
+            {
+                //If pawn directly right 
+                goTo = "" + (fromX + 1) + ":" + (fromY);
+                //var pieces = chessBoard.getChessPieces();
+                if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                {
+                    enPassantList.AddLast("" + (fromX + 1) + ":" + (fromY + 1));
+                }
+                //If pawn directly left 
+                goTo = "" + (fromX - 1) + ":" + (fromY);
+                if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                {
+                    enPassantList.AddLast("" + (fromX - 1) + ":" + (fromY + 1));
+                }
+            }
+            else
+            {
+                //is white
+                //If pawn directly right 
+                goTo = "" + (fromX + 1) + ":" + (fromY);
+                //var pieces = chessBoard.getChessPieces();
+                if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
+                {
+                    enPassantList.AddLast("" + (fromX + 1) + ":" + (fromY - 1));
+                }
+                //If pawn directly left 
+                goTo = "" + (fromX - 1) + ":" + (fromY);
+                if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
+                {
+                    enPassantList.AddLast("" + (fromX - 1) + ":" + (fromY - 1));
+                }
+            }
+
+            if (enPassantList.Contains(to))
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 }

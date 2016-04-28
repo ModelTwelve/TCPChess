@@ -10,12 +10,16 @@ namespace ChessHelpers
     {
         private Dictionary<string, ChessPiece> chessPieces = null;
         public string currentColorsTurn { get; set; }
-
+        public String blackKingsPlace = "4:0";
+        public String whiteKingsPlace = "4:7";
+        public bool whiteCheck = false;
+        public bool blackCheck = false;
         private object _lock = new object();
 
         public ChessBoard()
         {
-            initializeBoard();
+            //initializeBoard();
+            initializePromotePawn();
         }
 
         public string serializeBoard()
@@ -34,6 +38,7 @@ namespace ChessHelpers
             // Start out with no error message            
             lock (_lock)
             {
+
                 string[] split = to.Split(':');
                 int toX = Convert.ToInt32(split[0]);
                 int toY = Convert.ToInt32(split[1]);
@@ -101,38 +106,143 @@ namespace ChessHelpers
                     return false;
                 }
 
+
+                {
+                    //we now have determined that this move is legal
+                    //checks to see if your potential move put your king into check or keeps your king in check
+                    String pos;
+                    String type;
+                    bool isInCheck = false;
+
+                    //create potential chess board
+                    ChessBoard potentialChessBoard = clone();
+                    //move piece to new location
+                    potentialChessBoard.chessPieces.Remove(from);
+                    //if there is a peice there delete it
+                    if (potentialChessBoard.chessPieces.ContainsKey(to))
+                    {
+                        // This piece needs removed from the board
+                        potentialChessBoard.chessPieces.Remove(to);
+                    }
+                    //add the piece to the new location in the potential board
+                    potentialChessBoard.chessPieces.Add(to, checkMoves);
+
+                    //checking mock board (with potential move)
+                    foreach (var piece in potentialChessBoard.chessPieces)
+                    {
+                        //if piece isnt on your team
+                        if (!piece.Value.Color.Equals(currentColorsTurn))
+                        {
+                            //returns list of that pieces avaiable moves
+                            check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                            pos = piece.Key;
+                            type = piece.Value.KindOfPiece;
+
+                            //if kings position is in that list then we set boolean to true return an error message
+
+                            //if white move then check white king vs all black pieces
+                            if (currentColorsTurn.Equals("W"))
+                            {
+                                isInCheck = check.Contains(whiteKingsPlace);
+                                if (isInCheck)
+                                {
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
+                                    return false;
+                                }
+                            }
+                            //if black move check black king vs all white
+                            else
+                            {
+                                isInCheck = check.Contains(blackKingsPlace);
+                                if (isInCheck)
+                                {
+                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
+                                    return false;
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+                //catch(Exception e)
+                //{
+                //    errorMessage = e.ToString();
+                //    return false;
+                //}
+                try
+                {
+                    //If your king is not (or no longer) in check then we want to check to see if your move put their king in check
+                    //check from spot of new move
+                    check = checkMoves.generatePossibleMoves(this, to);
+                    //black move so whitecheck
+                    if (currentColorsTurn.Equals("B"))
+                    {
+                        //change boolean to show you are now in check
+                        whiteCheck = check.Contains(whiteKingsPlace);
+                    }
+                    //if white move check black king
+                    else
+                    {
+                        //change boolean to show you are now in check
+                        blackCheck = check.Contains(blackKingsPlace);
+                    }
+                }
+                catch (Exception e)
+                {
+                    errorMessage = e.ToString();
+                    return false;
+                }
+
                 // ******************************************
                 // More error checking logic goes here!
                 // ******************************************
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
-                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN"))
+                //checks to see if promotion
+                //input string formatted wrong bug?
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((toY == 0) || (toY == 7)))
                 {
-                    if ((toY == 0) || (toY == 7))
+                    errorMessage = promotePawn(promotedPiece, from);
+                    if (errorMessage.Length > 0)
                     {
-                        errorMessage = promotePawn(promotedPiece, from);
-                        if (errorMessage.Length > 0)
-                        {
-                            return false;
-                        }
-                        // Redo copy with new promoted piece
-                        copyOfPieceToMove = chessPieces[from];
+                        return false;
                     }
-                    else
-                    {
-                        int numSpaces = Math.Abs(fromY - toY);
-                        if (numSpaces == 2)
-                        {
-                            ((PAWN)copyOfPieceToMove).allowEnPassant = true;
-                        }
-                        else
-                        {
-                            checkForEnPassant(toX, toY, fromY, copyOfPieceToMove);
-                        }
-                    }
+                    // Redo copy with new promoted piece
+                    copyOfPieceToMove = chessPieces[from];
+                }
+
+                //if pawn moved in enpassant then remove piece behind it
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+                {
+                    copyOfPieceToMove.hasMoved = true;
+                    String behindPawnEnPassantPiece;
+                    //black you are coming "up" the board
+                    if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
+                    //white you are going "down" the board
+                    else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
+                    //remove pawn behind it
+                    chessPieces.Remove(behindPawnEnPassantPiece);
+                    //remove place where it was from
+                    chessPieces.Remove(from);
+                    //put it in new to location
+                    chessPieces.Add(to, copyOfPieceToMove);
+                    //flip
+                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                    //end turn
+                    return true;
                 }
 
                 // Ok ... from here on out I assume all is well.
+                // For normal moves (not enpassant)
+
+                // if you moved a king we update where it is on the board for easy reference for check
+                if (copyOfPieceToMove.KindOfPiece.Equals("KING"))
+                {
+                    if (copyOfPieceToMove.Equals("B")) { blackKingsPlace = to; }
+                    else { whiteKingsPlace = to; }
+                }
+
                 copyOfPieceToMove.hasMoved = true;
                 if (chessPieces.ContainsKey(to))
                 {
@@ -142,16 +252,6 @@ namespace ChessHelpers
                 // If we moved it then it's now gone from the other location aye?
                 chessPieces.Remove(from);
 
-                // The copyOfPieceToMove is now "detached" from the board so we
-                // are safe to cycle over the pieces and reset any PAWN lastMoveWasTwoSpaces
-                foreach (var piece in chessPieces)
-                {
-                    if (piece.Value.KindOfPiece.Equals("PAWN"))
-                    {
-                        // Any remaining pawns need EnPassant disabled
-                        ((PAWN)piece.Value).allowEnPassant = false;
-                    }
-                }
 
                 // Now add our piece at the new location
                 chessPieces.Add(to, copyOfPieceToMove);
@@ -162,6 +262,7 @@ namespace ChessHelpers
             }
         }
 
+        //Possibly something wrong here
         private string promotePawn(string promotedPiece, string from)
         {
             if (promotedPiece != null)
@@ -274,9 +375,58 @@ namespace ChessHelpers
             chessPieces.Add("7:7", new ROOK("W"));
         }
 
+        private void initializePromotePawn()
+        {
+            currentColorsTurn = "W";
+
+            chessPieces = new Dictionary<string, ChessPiece>();
+            chessPieces.Add("0:0", new ROOK("B"));
+            chessPieces.Add("1:0", new KNIGHT("B"));
+            chessPieces.Add("2:0", new BISHOP("B"));
+            chessPieces.Add("4:0", new KING("B"));
+            chessPieces.Add("3:0", new QUEEN("B"));
+            chessPieces.Add("5:0", new BISHOP("B"));
+            chessPieces.Add("6:0", new KNIGHT("B"));
+            chessPieces.Add("7:0", new ROOK("B"));
+            chessPieces.Add("0:1", new PAWN("B"));
+            chessPieces.Add("1:1", new PAWN("B"));
+            chessPieces.Add("2:1", new PAWN("B"));
+            chessPieces.Add("3:1", new PAWN("B"));
+            chessPieces.Add("4:1", new PAWN("B"));
+            chessPieces.Add("5:1", new PAWN("B"));
+            chessPieces.Add("6:1", new PAWN("B"));
+            chessPieces.Add("7:1", new PAWN("W"));
+            chessPieces.Add("0:6", new PAWN("B"));
+            chessPieces.Add("1:6", new PAWN("W"));
+            chessPieces.Add("2:6", new PAWN("W"));
+            chessPieces.Add("3:6", new PAWN("W"));
+            chessPieces.Add("4:6", new PAWN("W"));
+            chessPieces.Add("5:6", new PAWN("W"));
+            chessPieces.Add("6:6", new PAWN("W"));
+            chessPieces.Add("7:6", new PAWN("W"));
+            chessPieces.Add("0:7", new ROOK("W"));
+            chessPieces.Add("1:7", new KNIGHT("W"));
+            chessPieces.Add("2:7", new BISHOP("W"));
+            chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("3:7", new QUEEN("W"));
+            chessPieces.Add("5:7", new BISHOP("W"));
+            chessPieces.Add("6:7", new KNIGHT("W"));
+            chessPieces.Add("7:7", new ROOK("W"));
+        }
+
         public Dictionary<string, ChessPiece> getChessPieces()
         {
             return chessPieces;
+        }
+
+        public ChessBoard clone()
+        {
+            ChessBoard cloneBoard = new ChessBoard();
+            foreach (var piece in this.chessPieces)
+            {
+                cloneBoard.chessPieces[piece.Key] = piece.Value;
+            }
+            return cloneBoard;
         }
     }
 }
