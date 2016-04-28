@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChessHelpers {
-    public class PlayRequest {
+namespace ChessHelpers
+{
+    public class PlayRequest
+    {
         public string RemoteEndPoint { get; set; }
         public string Color { get; set; }
-        public PlayRequest(string remoteEndPoint, string color) {
+        public PlayRequest(string remoteEndPoint, string color)
+        {
             this.RemoteEndPoint = remoteEndPoint;
             this.Color = color;
         }

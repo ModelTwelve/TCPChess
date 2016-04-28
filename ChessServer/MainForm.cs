@@ -10,37 +10,37 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ServerForm {
-    public partial class MainForm : Form {
+namespace ServerForm
+{
+    public partial class MainForm : Form
+    {
 
         private CancellationTokenSource serverTokenSource = new CancellationTokenSource();
         private object _serverLock = new object();
 
-        public MainForm() {
+        public MainForm()
+        {
             InitializeComponent();
-        }
-
-        private void ServerForm_Load(object sender, EventArgs e) {
-
-        }
-
-        private void serverStartBTN_Click(object sender, EventArgs e) {
-            serverStartBTN.Enabled = false;
             startServer();
-        }
-        private async void startServer() {
+        }        
+        private async void startServer()
+        {
             Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportServerProgress);
             ChessServer server = new ChessServer(12345, serverTokenSource.Token, progress);
             var t = Task.Run(async () => await server.Start());
         }
-        private void ReportServerProgress(ReportingClass src) {
-            lock (_serverLock) {
-                foreach (var info in src.getMessages()) {
+        private void ReportServerProgress(ReportingClass src)
+        {
+            lock (_serverLock)
+            {
+                foreach (var info in src.getMessages())
+                {
                     addToListBox(serverDebugListBox, info);
                 }
             }
         }
-        private void addToListBox(ListBox lb, string info) {
+        private void addToListBox(ListBox lb, string info)
+        {
             lb.Items.Insert(0, DateTime.Now.ToString("H:mm:ss.ffff") + ": " + info);
         }
     }

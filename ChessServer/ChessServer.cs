@@ -6,20 +6,24 @@ using ChessHelpers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServerForm {
-    public class ChessServer {
+namespace ServerForm
+{
+    public class ChessServer
+    {
         private int _listeningPort;
         private CancellationToken cToken;
         private IProgress<ReportingClass> progress;
         private ReportingClass reportingClass = new ReportingClass();
         private ServerConnections serverConnections = new ServerConnections();
 
-        public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress) {
+        public ChessServer(int port, CancellationToken cToken, IProgress<ReportingClass> progress)
+        {
             _listeningPort = port;
             this.cToken = cToken;
             this.progress = progress;
         }
-        public async Task Start() {
+        public async Task Start()
+        {
             IPAddress ipAddre = IPAddress.Any;
             TcpListener listener = new TcpListener(ipAddre, _listeningPort);
             listener.Start();
@@ -29,42 +33,52 @@ namespace ServerForm {
             Task.Run(() => serverHouseKeepingTask());
 
             int connectionNumber = 0;
-            while (true) {
+            while (true)
+            {
                 ++connectionNumber;
-                reportingClass.addMessage(String.Format("Waiting for connection {0} ...",connectionNumber.ToString()));
-                try {
+                reportingClass.addMessage(String.Format("Waiting for connection {0} ...", connectionNumber.ToString()));
+                try
+                {
                     progress.Report(reportingClass);
                     var tcpClient = await listener.AcceptTcpClientAsync();
 
                     serverConnections.AddClient(tcpClient.Client.RemoteEndPoint.ToString());
-                    
+
                     Task.Run(() => HandleConnectionAsync(tcpClient));
                 }
-                catch (Exception exp) {
+                catch (Exception exp)
+                {
                     reportingClass.addMessage(exp.ToString());
                 }
             }
         }
- 
-        private async void HandleConnectionAsync(TcpClient tcpClient) {
+
+        private async void HandleConnectionAsync(TcpClient tcpClient)
+        {
             string clientInfo = tcpClient.Client.RemoteEndPoint.ToString();
             reportingClass.addMessage(string.Format("Got connection request from {0}", clientInfo));
-            try {
-                using (var networkStream = tcpClient.GetStream()) {
-                    using (var writer = new StreamWriter(networkStream)) {
-                        using (var reader = new StreamReader(networkStream)) {
+            try
+            {
+                using (var networkStream = tcpClient.GetStream())
+                {
+                    using (var writer = new StreamWriter(networkStream))
+                    {
+                        using (var reader = new StreamReader(networkStream))
+                        {
                             Task.Run(() => readTask(reader, clientInfo));
                             Task.Run(() => writeTask(writer, clientInfo));
                             await connectionMonitor(writer, clientInfo);
                             serverConnections.Remove(clientInfo);
                         }
                     }
-                }                
+                }
             }
-            catch (Exception exp) {
+            catch (Exception exp)
+            {
                 reportingClass.addMessage(exp.Message);
             }
-            finally {
+            finally
+            {
                 reportingClass.addMessage(string.Format("Closing the client connection - {0}", clientInfo));
                 tcpClient.Close();
             }
@@ -72,53 +86,67 @@ namespace ServerForm {
             progress.Report(reportingClass);
 
         }
-        private async Task writeTask(StreamWriter writer, string remoteEndPoint) {
+        private async Task writeTask(StreamWriter writer, string remoteEndPoint)
+        {
             writer.AutoFlush = true;
             bool disco = false;
-            while (!disco) {
-                try {
+            while (!disco)
+            {
+                try
+                {
                     string messageToSend = serverConnections.GetServerResponse(remoteEndPoint);
-                    if (messageToSend != null) {
+                    if (messageToSend != null)
+                    {
                         reportingClass.addMessage("Sending: " + messageToSend);
                         progress.Report(reportingClass);
                         await writer.WriteLineAsync(messageToSend);
                     }
                 }
-                catch(Exception e) {
+                catch (Exception e)
+                {
                     disco = true;
                     serverConnections.Remove(remoteEndPoint);
-                    reportingClass.addMessage("WRITE: "+e.Message);
+                    reportingClass.addMessage("WRITE: " + e.Message);
                 }
                 Task.Delay(100).Wait();
             }
         }
-        private async Task readTask(StreamReader reader, string remoteEndPoint) {
+        private async Task readTask(StreamReader reader, string remoteEndPoint)
+        {
             bool disco = false;
-            while (!disco) {
-                try {
+            while (!disco)
+            {
+                try
+                {
                     var dataFromClient = await reader.ReadLineAsync();
-                    if (!string.IsNullOrEmpty(dataFromClient)) {
+                    if (!string.IsNullOrEmpty(dataFromClient))
+                    {
 
                         reportingClass.addMessage(dataFromClient);
                         processCommand(remoteEndPoint, dataFromClient);
                     }
                     progress.Report(reportingClass);
                 }
-                catch(Exception e) {
+                catch (Exception e)
+                {
                     disco = true;
                     serverConnections.Remove(remoteEndPoint);
-                    reportingClass.addMessage("READ: "+e.Message);
+                    reportingClass.addMessage("READ: " + e.Message);
                 }
             }
         }
-        private async Task connectionMonitor(StreamWriter writer, string clientInfo) {
+        private async Task connectionMonitor(StreamWriter writer, string clientInfo)
+        {
             bool disco = false;
             int x = 0;
-            while ( (!disco) & (!cToken.IsCancellationRequested) ) {
+            while ((!disco) & (!cToken.IsCancellationRequested))
+            {
                 // Give the reader one additional sec to read from the stream while data is still available
-                try {
+                try
+                {
                     ++x;
-                    if (x > 20) {
+                    if (x > 20)
+                    {
                         // Every so many seconds send out a NOOP to make sure this client is still alive!
                         x = 0;
                         writer.WriteLine("NOOP");
@@ -127,18 +155,22 @@ namespace ServerForm {
                     disco = client.quitGAME;
                     Task.Delay(1000).Wait();
                 }
-                catch(Exception e) {
+                catch (Exception e)
+                {
                     // TCP Disconnect
                     disco = true;
-                }                
+                }
             }
         }
 
-        private async Task serverHouseKeepingTask() {
-            while (!cToken.IsCancellationRequested) {
+        private async Task serverHouseKeepingTask()
+        {
+            while (!cToken.IsCancellationRequested)
+            {
                 PerClientGameData client;
                 string messageToSend = serverConnections.HouseKeeping(out client);
-                if (messageToSend != null) {
+                if (messageToSend != null)
+                {
                     // The only messageToSend ever returned from HouseKeeping
                     // are simulated server messages!
                     processSimulatedServerAction(client, messageToSend);
@@ -148,13 +180,16 @@ namespace ServerForm {
             }
         }
 
-        private void processSimulatedServerAction(PerClientGameData client, string messageToSend) {
+        private void processSimulatedServerAction(PerClientGameData client, string messageToSend)
+        {
             reportingClass.addMessage("Simulate Sending: " + messageToSend);
             progress.Report(reportingClass);
-            if (messageToSend.ToUpper().StartsWith("REQUEST,")) {
+            if (messageToSend.ToUpper().StartsWith("REQUEST,"))
+            {
                 string[] split = messageToSend.Split(',');
                 string simAction = client.serverTestAutoResponseOnPlayRequest.ToUpper();
-                switch (simAction) {
+                switch (simAction)
+                {
                     case "ACCEPTED":
                         server_Command_handleWithAccept(client, split);
                         break;
@@ -178,41 +213,49 @@ namespace ServerForm {
                 }
             }
         }
-        private void server_Command_handleWithAccept(PerClientGameData clientGameData, string[] dataSplit) {
+        private void server_Command_handleWithAccept(PerClientGameData clientGameData, string[] dataSplit)
+        {
             // In this case we're simulating the server accepting the request so the opponent is the real player!
             // Tell bothsides the match is not underway!
             string playerName = dataSplit[1];
             // Whomever I'm pretending to accept will choose the opposite color
             string color = ChessBoard.FlipFlopColor(dataSplit[2]);
             var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
-            if (opRemoteEdPoint != null) {
+            if (opRemoteEdPoint != null)
+            {
                 var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
                 handleACCEPTED(clientGameData, opClientGameData, color);
             }
-            else {
+            else
+            {
                 // A request from a player that no longer exists?
                 // Just don't do anything about it!
             }
-        } 
-        private bool processServerTestCommand(string remoteEndPoint, string dataFromClient) {
+        }
+        private bool processServerTestCommand(string remoteEndPoint, string dataFromClient)
+        {
             string[] split = dataFromClient.ToUpper().Split(',');
 
-            if (split[1].StartsWith("ADD")) {
+            if (split[1].StartsWith("ADD"))
+            {
                 string playerName = split[2];
-                
-                if (serverConnections.GetRemoteEndPoint(playerName)==null) {
+
+                if (serverConnections.GetRemoteEndPoint(playerName) == null)
+                {
                     // Setup a special remote endpoint for testing
-                    remoteEndPoint = "_"+ playerName + "_"+ remoteEndPoint;
+                    remoteEndPoint = "_" + playerName + "_" + remoteEndPoint;
                     serverConnections.AddClient(remoteEndPoint);
                     serverConnections.SetPlayersName(remoteEndPoint, playerName);
-                    if (split.Length>=4) {
+                    if (split.Length >= 4)
+                    {
                         serverConnections.SetTestAutoResponseOnPlayRequest(remoteEndPoint, split[3]);
                     }
                 }
                 return true;
             }
 
-            if (split[1].StartsWith("MATCH")) {
+            if (split[1].StartsWith("MATCH"))
+            {
                 string[] player1 = split[2].Split(':');
                 string[] player2 = split[3].Split(':');
 
@@ -225,38 +268,44 @@ namespace ServerForm {
             }
             return false;
         }
-        public bool createMatchBetweenPlayers(string playerName1, string playerName2, string playerColor1, string playerColor2) {
+        public bool createMatchBetweenPlayers(string playerName1, string playerName2, string playerColor1, string playerColor2)
+        {
             // Preassigned colors must be coming from a server test!
             string remoteEndPoint1 = serverConnections.GetRemoteEndPoint(playerName1);
             string remoteEndPoint2 = serverConnections.GetRemoteEndPoint(playerName2);
 
-            if ((remoteEndPoint1!=null)&&(remoteEndPoint2!= null)) {
+            if ((remoteEndPoint1 != null) && (remoteEndPoint2 != null))
+            {
                 return serverConnections.InitializeMatch(remoteEndPoint1, remoteEndPoint2, playerColor1, playerColor2);
             }
             return false;
         }
-        
-        private void processCommand(string remoteEndPoint, string dataFromClient) {
+
+        private void processCommand(string remoteEndPoint, string dataFromClient)
+        {
             string upperData = dataFromClient.ToUpper();
             string[] dataSplit = dataFromClient.Split(',');
             var clientGameData = serverConnections.GetClientGameData(remoteEndPoint);
             string action = dataSplit[0].ToUpper();
             string playerName;
 
-            switch (action) {
+            switch (action)
+            {
                 case "SERVER_COMMAND":
                     // Special server command used for testing only!
                     processServerTestCommand(remoteEndPoint, dataFromClient);
                     break;
                 case "CONNECT":
                     playerName = dataSplit[1];
-                    if (serverConnections.GetRemoteEndPoint(playerName) == null) {
+                    if (serverConnections.GetRemoteEndPoint(playerName) == null)
+                    {
                         clientGameData.playersName = playerName;
                         clientGameData.addServerResponse("OK");
                         serverConnections.RefreshAllPlayers();
                         //sendPlayers(clientGameData);
                     }
-                    else {
+                    else
+                    {
                         clientGameData.addServerResponse("ERROR,Invalid Name");
                     }
                     break;
@@ -267,18 +316,21 @@ namespace ServerForm {
                     playerName = dataSplit[1];
                     string color = dataSplit[2];
                     var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
-                    if (opRemoteEdPoint != null) {
+                    if (opRemoteEdPoint != null)
+                    {
                         var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
                         handleACCEPTED(clientGameData, opClientGameData, color);
                     }
-                    else {
+                    else
+                    {
                         // A request from a player that no longer exists?
                         clientGameData.addServerResponse("ERROR," + playerName + " does not exist");
                     }
                     break;
                 case "GET":
                     string getWhat = dataSplit[1].ToUpper();
-                    switch (getWhat) {
+                    switch (getWhat)
+                    {
                         case "BOARD":
                             clientGameData.addServerResponse(clientGameData.serializeBoard());
                             break;
@@ -300,16 +352,19 @@ namespace ServerForm {
                 case "MOVE":
                     string[] split = dataFromClient.Split(',');
                     string errorMessage;
-                    if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length > 3 ? split[3] : null, out errorMessage)) {
+                    if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length > 3 ? split[3] : null, out errorMessage))
+                    {
                         clientGameData.addServerResponse("OK");
                     }
-                    else {
+                    else
+                    {
                         clientGameData.addServerResponse("ERROR," + errorMessage);
                     }
                     break;
                 case "QUIT":
                     string quitWhat = dataSplit[1].ToUpper();
-                    switch (quitWhat) {
+                    switch (quitWhat)
+                    {
                         case "GAME":
                             quitGame(clientGameData);
                             break;
@@ -326,61 +381,76 @@ namespace ServerForm {
                     break;
                 default:
                     // WTH ... just say ERROR
-                    clientGameData.addServerResponse("ERROR,Unknown Action from Client "+action);
+                    clientGameData.addServerResponse("ERROR,Unknown Action from Client " + action);
                     break;
-            }            
+            }
         }
 
-        private void handleREFUSE(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
+        private void handleREFUSE(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false)
+        {
             string playerName = dataSplit[1].ToUpper();
-            if (!clientGameData.CheckPlayRequests(playerName)) {
+            if (!clientGameData.CheckPlayRequests(playerName))
+            {
                 var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
-                if (opRemoteEndPoint != null) {
+                if (opRemoteEndPoint != null)
+                {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
-                    if (opClientGameData.available) {
+                    if (opClientGameData.available)
+                    {
                         opClientGameData.RemoveRequests(clientGameData.playersName);
                         opClientGameData.addServerResponse("ERROR," + clientGameData.playersName + " Refused");
-                    }                    
+                    }
                 }
             }
             // No else conditions needed ... just don't repond back
         }
 
-        private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false) {
+        private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false)
+        {
             string playerName = dataSplit[1].ToUpper();
             string color = dataSplit[2].ToUpper();
 
-            if (!clientGameData.CheckPlayRequests(playerName)) {
+            if (!clientGameData.CheckPlayRequests(playerName))
+            {
                 var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
-                if (opRemoteEdPoint != null) {
+                if (opRemoteEdPoint != null)
+                {
                     var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
-                    if (opClientGameData.available) {
+                    if (opClientGameData.available)
+                    {
                         clientGameData.AddPlayRequest(playerName, color, opRemoteEdPoint);
                         opClientGameData.addServerResponse("REQUEST," + clientGameData.playersName + "," + color);
                     }
-                    else {
+                    else
+                    {
                         clientGameData.addServerResponse("ERROR," + playerName + " is not available");
                     }
                 }
-                else {
+                else
+                {
                     clientGameData.addServerResponse("ERROR," + playerName + " does not exist");
                 }
             }
-            else {
+            else
+            {
                 clientGameData.addServerResponse("ERROR,Already have a pending request sent to " + playerName);
             }
-        }   
-        private void handleACCEPTED(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color) {
+        }
+        private void handleACCEPTED(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color)
+        {
             // Does the opponent have this request in their dict?
-            if (!opClientGameData.CheckPlayRequest(clientGameData.playersName)) {
+            if (!opClientGameData.CheckPlayRequest(clientGameData.playersName))
+            {
                 clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you");
                 return;
             }
             string playerColor1, playerColor2;
-            if (!opClientGameData.CheckPlayRequestColor(clientGameData.playersName,color)) {
+            if (!opClientGameData.CheckPlayRequestColor(clientGameData.playersName, color))
+            {
                 // Dang ... both players want to be the same color
                 Random r = new Random();
-                if (r.Next(0,2)==0) {
+                if (r.Next(0, 2) == 0)
+                {
                     color = ChessBoard.FlipFlopColor(color);
                 }
             }
@@ -388,55 +458,64 @@ namespace ServerForm {
             playerColor2 = color;
             playerColor1 = ChessBoard.FlipFlopColor(playerColor2);
             createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName, playerColor1, playerColor2);
-            
+
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
-            
+
             sendPlayers(opClientGameData);
-            if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn)) {
+            if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn))
+            {
                 sendTurn(clientGameData);
-            } else {
+            }
+            else
+            {
                 sendTurn(opClientGameData);
             }
         }
 
-        private void sendTurn(PerClientGameData clientGameData) {
+        private void sendTurn(PerClientGameData clientGameData)
+        {
             var goName = clientGameData.currentColorsTurn.Equals(clientGameData.playersColor) ? clientGameData.playersName : clientGameData.opponentsName;
-            clientGameData.addServerResponse("GO,"+ goName);
+            clientGameData.addServerResponse("GO," + goName);
         }
 
-        private void sendPlayers(PerClientGameData clientGameData) {
+        private void sendPlayers(PerClientGameData clientGameData)
+        {
             string listOfPlayers = serverConnections.SerializePlayers(clientGameData.playersName);
             // It's ok to send an empty list
             clientGameData.addServerResponse("PLAYERS" + listOfPlayers);
         }
-        
-              
-        private void quitMatch(PerClientGameData clientGameData) {
+
+
+        private void quitMatch(PerClientGameData clientGameData)
+        {
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
-            if (opClientGameData!=null) {
+            if (opClientGameData != null)
+            {
                 opClientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
                 clientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
 
                 clientGameData.destroyMatch();
                 opClientGameData.destroyMatch();
 
-                sendPlayers(opClientGameData);                
+                sendPlayers(opClientGameData);
             }
             // Regardless of the circumstances ... let's send a new player list
             sendPlayers(clientGameData);
         }
 
-        private void quitGame(PerClientGameData clientGameData) {
+        private void quitGame(PerClientGameData clientGameData)
+        {
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
-            if (opClientGameData != null) {
+            if (opClientGameData != null)
+            {
                 opClientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
                 clientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
 
                 clientGameData.destroyMatch();
                 opClientGameData.destroyMatch();
 
-                sendPlayers(opClientGameData);                
+                sendPlayers(opClientGameData);
             }
             clientGameData.addServerResponse("OK");
             clientGameData.quitGAME = true;

@@ -12,11 +12,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ChessHelpers;
 
-namespace ChessClient {
-    public partial class MainForm : Form {
+namespace ChessClient
+{
+    public partial class MainForm : Form
+    {
         private List<string> clientTestCommands = null;
-        private Dictionary<string, PictureBox> pbPieces = new Dictionary<string, PictureBox>();        
-        private CancellationTokenSource clientTokenSource = new CancellationTokenSource();        
+        private Dictionary<string, PictureBox> pbPieces = new Dictionary<string, PictureBox>();
+        private CancellationTokenSource clientTokenSource = new CancellationTokenSource();
         private object _clientLock = new object();
         private string currentBoardLayout = "";
         private Brush black = new SolidBrush(Color.DarkGray);
@@ -35,16 +37,20 @@ namespace ChessClient {
         private TimeTracker timeTracker = null;
         private Dictionary<string, string> dictRequests = new Dictionary<string, string>();
 
-        public MainForm() {
+        public MainForm()
+        {
             InitializeComponent();
-            
-            foreach (var control in Controls.OfType<Button>()) {
+
+            foreach (var control in Controls.OfType<Button>())
+            {
                 control.TabStop = false;
             }
-            foreach (var control in Controls.OfType<ListBox>()) {
+            foreach (var control in Controls.OfType<ListBox>())
+            {
                 control.TabStop = false;
             }
-            foreach (var control in Controls.OfType<Label>()) {
+            foreach (var control in Controls.OfType<Label>())
+            {
                 control.TabStop = false;
             }
             whiteRB.TabStop = false;
@@ -113,10 +119,11 @@ namespace ChessClient {
 
             boardPB.Image = new Bitmap(420, 420);
 
-            showBoard();            
+            showBoard();
         }
 
-        private void testInit() {
+        private void testInit()
+        {
 
             // PLAYERS,Donald:Lobby,David:Playing Jacob,Chris:Lobby,Jacob:Playing David,Joe:Lobby
             clientTestCommands = new List<string>() {
@@ -127,41 +134,51 @@ namespace ChessClient {
                 "Server_Command,Add,Joe,REFUSE", // When asked to PLAY Joe will REFUSE
                 "Server_Command,Match,David:W,Jacob:B",
                 "Server_Command,Add,George,REQUESTW", // When asked to PLAY George will send you a REQUEST instead
-            };            
-        }        
+            };
+        }
 
-        private void showBoard() {          
+        private void showBoard()
+        {
 
             Graphics gObj = Graphics.FromImage(boardPB.Image);
 
-            for (int row = 0; row < 8; ++row) {
+            for (int row = 0; row < 8; ++row)
+            {
                 Brush even;
                 Brush odd;
-                if (row % 2 == 0) {
+                if (row % 2 == 0)
+                {
                     even = white;
                     odd = black;
                 }
-                else {
+                else
+                {
                     odd = white;
                     even = black;
                 }
-                for (int column = 0; column < 8; ++column) {
-                    if (column % 2 == 0) {
+                for (int column = 0; column < 8; ++column)
+                {
+                    if (column % 2 == 0)
+                    {
                         gObj.FillRectangle(even, column * width + margin, row * height + margin, width, height);
                     }
-                    else {
+                    else
+                    {
                         gObj.FillRectangle(odd, column * width + margin, row * height + margin, width, height);
                     }
                 }
-            }                      
+            }
         }
-        private void showPieces() {
+        private void showPieces()
+        {
 
             Graphics gObj = Graphics.FromImage(boardPB.Image);
-            
+
             string[] pieces = currentBoardLayout.Split(',');
-            foreach (var piece in pieces) {
-                if (!piece.ToUpper().Equals("REPORT_BOARD")) {
+            foreach (var piece in pieces)
+            {
+                if (!piece.ToUpper().Equals("REPORT_BOARD"))
+                {
                     string[] info = piece.Split(':');
                     // ex layout 
                     // row:col:color:piece
@@ -170,34 +187,41 @@ namespace ChessClient {
                     float row = width * Convert.ToSingle(info[1]);
 
                     string key = info[2].ToUpper() + info[3].ToUpper();
-                    if (pbPieces.ContainsKey(key)) {
+                    if (pbPieces.ContainsKey(key))
+                    {
                         gObj.DrawImage(pbPieces[key].Image, Convert.ToInt32(column) + margin, Convert.ToInt32(row) + margin, width, height);
                     }
                 }
             }
-        }        
-        private void addToListBox(ListBox lb, string info) {
-            lb.Items.Insert(0, DateTime.Now.ToString("H:mm:ss.ffff")+": "+info);
-        }        
-        private void whenConnectPushed() {
+        }
+        private void addToListBox(ListBox lb, string info)
+        {
+            lb.Items.Insert(0, DateTime.Now.ToString("H:mm:ss.ffff") + ": " + info);
+        }
+        private void whenConnectPushed()
+        {
             clientStartBTN.Text = "PLAY MATCH";
             clientStartBTN.Tag = "PLAY";
             clientStartBTN.Enabled = false;
             stopClientBTN.Enabled = true;
             clientTestCommands = new List<string>();
         }
-        private void clientStartBTN_Click(object sender, EventArgs e) {
-            switch(clientStartBTN.Tag.ToString()) {
+        private void clientStartBTN_Click(object sender, EventArgs e)
+        {
+            switch (clientStartBTN.Tag.ToString())
+            {
                 case "CONNECT":
                     whenConnectPushed();
                     startClient();
                     break;
                 case "PLAY":
-                    if (playersLB.SelectedIndex >= 0) {
+                    if (playersLB.SelectedIndex >= 0)
+                    {
                         string toPlay = playersLB.Items[playersLB.SelectedIndex].ToString();
-                        client.requestPlay(toPlay, whiteRB.Checked ? "W" : "B");                        
+                        client.requestPlay(toPlay, whiteRB.Checked ? "W" : "B");
                     }
-                    else if (requestsLB.SelectedIndex >= 0) {
+                    else if (requestsLB.SelectedIndex >= 0)
+                    {
                         string toPlay = requestsLB.Items[requestsLB.SelectedIndex].ToString();
                         // Split this and then send back the color we'd like to play as
                         string[] split = toPlay.Split(':');
@@ -206,44 +230,54 @@ namespace ChessClient {
                         stopClientBTN.Tag = "MATCH";
                         stopClientBTN.Text = "QUIT MATCH";
                     }
-                    else {
+                    else
+                    {
                         stopClientBTN.Tag = "GAME";
                         stopClientBTN.Text = "QUIT GAME";
-                        addToListBox(clientDebugListBox,"No Player Selected. Please select a player!");
+                        addToListBox(clientDebugListBox, "No Player Selected. Please select a player!");
                     }
                     break;
-            }             
+            }
         }
-        private async void startClient() {
-            try {
-                if (client!=null) {
+        private async void startClient()
+        {
+            try
+            {
+                if (client != null)
+                {
                     // Try a reconnect!
                     client.connect(playerNameTB.Text);
                     return;
                 }
                 int port = Convert.ToInt32(portTB.Text);
-                IPAddress ipAddress=IPAddress.Parse(serverIPTB.Text);
+                IPAddress ipAddress = IPAddress.Parse(serverIPTB.Text);
                 Progress<ReportingClass> progress = new Progress<ReportingClass>(ReportClientProgress);
-                
+
                 client = new ChessClient(clientTokenSource.Token, progress, clientTestCommands);
-                var t = Task.Run(async () => {
+                var t = Task.Run(async () =>
+                {
                     await client.Start(ipAddress, port, playerNameTB.Text);
-                    clientTokenSource = new CancellationTokenSource();                    
+                    clientTokenSource = new CancellationTokenSource();
                     client = null;
                 });
             }
-            catch(Exception e) {
-                addToListBox(clientDebugListBox,e.Message);
-            }            
+            catch (Exception e)
+            {
+                addToListBox(clientDebugListBox, e.Message);
+            }
         }
-        private void ReportClientProgress(ReportingClass src) {
-            lock (_clientLock) {
-                foreach (var info in src.getMessages()) {
-                    addToListBox(clientDebugListBox,info);
+        private void ReportClientProgress(ReportingClass src)
+        {
+            lock (_clientLock)
+            {
+                foreach (var info in src.getMessages())
+                {
+                    addToListBox(clientDebugListBox, info);
 
                     string[] split = info.Split(',');
                     string action = split[0].ToUpper();
-                    switch (action) {
+                    switch (action)
+                    {
                         case "REPORT_CONNECT_ERROR":
                             clientStartBTN.Text = "CONNECT";
                             clientStartBTN.Tag = "CONNECT";
@@ -279,58 +313,69 @@ namespace ChessClient {
                         default:
                             // Do nothing special other than show it in the listbox
                             break;
-                    }   
+                    }
                 }
             }
         }
-        private void showRequested(string info) {
-            if (opponentPlayerName.Length == 0) {
+        private void showRequested(string info)
+        {
+            if (opponentPlayerName.Length == 0)
+            {
                 string[] split = info.Split(',');
                 dictRequests.Add(split[1], split[2]);
-                requestsLB.Items.Add(split[1]+":"+ split[2]);
+                requestsLB.Items.Add(split[1] + ":" + split[2]);
             }
         }
-        private void showRefused(string info) {
-            if (opponentPlayerName.Length == 0) {
+        private void showRefused(string info)
+        {
+            if (opponentPlayerName.Length == 0)
+            {
                 string[] split = info.Split(',');
                 string[] playerData = split[1].Split(':');
-                if (dictRequests.ContainsKey(playerData[0])) {
+                if (dictRequests.ContainsKey(playerData[0]))
+                {
                     dictRequests.Remove(playerData[0]);
                     requestsLB.Items.Remove(split[1]);
                 }
             }
         }
-        private void showTurn(string info) {
+        private void showTurn(string info)
+        {
             string[] split = info.Split(',');
-            if ( (gameLB.Tag!=null) && (gameLB.Tag.ToString().Length>0)&&(!gameLB.Tag.ToString().Equals(split[1]))) {
+            if ((gameLB.Tag != null) && (gameLB.Tag.ToString().Length > 0) && (!gameLB.Tag.ToString().Equals(split[1])))
+            {
                 timeTracker.toggleTime();
             }
             gameLB.Tag = split[1];
             showPlayerAndTime();
         }
 
-        private void showPlayerAndTime() {
+        private void showPlayerAndTime()
+        {
             try
             {
                 double millisecs = timeTracker.getMilliSec(gameLB.Tag.ToString());
                 gameLB.Text = "Waiting for " + gameLB.Tag.ToString() + " time = " + Convert.ToUInt64(millisecs / 1000).ToString();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
 
             }
         }
-        private void showAccepted(string info) {
+        private void showAccepted(string info)
+        {
             requestsLB.Items.Clear();
             string[] split = info.Split(',');
-            opponentPlayerName = split[1];            
+            opponentPlayerName = split[1];
             string color = split[2].ToUpper();
-            if (color.Equals("W")) {
+            if (color.Equals("W"))
+            {
                 // If your opponent is white you must be black
                 blackRB.Checked = true;
                 timeTracker = new TimeTracker(opponentPlayerName, playerNameTB.Text);
             }
-            else {
+            else
+            {
                 // If your opponent is black you must be white
                 whiteRB.Checked = true;
                 timeTracker = new TimeTracker(playerNameTB.Text, opponentPlayerName);
@@ -341,41 +386,49 @@ namespace ChessClient {
             dictRequests = new Dictionary<string, string>();
             gameLB.Text = "Playing " + split[1];
         }
-        private void showWinner(string info) {
+        private void showWinner(string info)
+        {
             string[] split = info.Split(',');
-            gameLB.Text = "Game Over. Winner is " + split[1];            
+            gameLB.Text = "Game Over. Winner is " + split[1];
             matchOver();
         }
-        private void enableGameOn() {
+        private void enableGameOn()
+        {
             playerTimer.Enabled = true;
             dictRequests.Clear();
             directionsLB.Visible = true;
             gameLB.Visible = true;
             stopClientBTN.Tag = "MATCH";
             stopClientBTN.Text = "QUIT MATCH";
-            clientStartBTN.Enabled= false;
+            clientStartBTN.Enabled = false;
         }
-        private void showPlayers(string info) {
+        private void showPlayers(string info)
+        {
             playersLB.Items.Clear();
             string[] split = info.Split(',');
-            if (split.Length > 1) {
+            if (split.Length > 1)
+            {
                 clientStartBTN.Enabled = true;
-                for (int x = 1; x < split.Length; x++) {
+                for (int x = 1; x < split.Length; x++)
+                {
                     playersLB.Items.Add(split[x]);
                 }
             }
-            else {
+            else
+            {
                 clientStartBTN.Enabled = false;
             }
         }
-        private void boardPB_Click(object sender, EventArgs e) {
+        private void boardPB_Click(object sender, EventArgs e)
+        {
             // Reset the board
-            showBoard();            
+            showBoard();
             float x, y;
-            
+
             Point point = boardPB.PointToClient(Cursor.Position);
             MouseEventArgs me = (MouseEventArgs)e;
-            if (me.Button == MouseButtons.Left) {
+            if (me.Button == MouseButtons.Left)
+            {
                 x = point.X - margin;
                 y = point.Y - margin;
                 selectedX = Convert.ToInt32(x) / Convert.ToInt32(width);
@@ -383,8 +436,10 @@ namespace ChessClient {
                 Graphics gObj = Graphics.FromImage(boardPB.Image);
                 gObj.FillRectangle(yellow, selectedX * width + margin, selectedY * height + margin, width, height);
             }
-            else {
-                if (selectedX != -1) {
+            else
+            {
+                if (selectedX != -1)
+                {
 
                     x = point.X - margin;
                     y = point.Y - margin;
@@ -393,15 +448,18 @@ namespace ChessClient {
                     newX = Convert.ToInt32(x) / Convert.ToInt32(width);
                     newY = Convert.ToInt32(y) / Convert.ToInt32(height);
 
-                    if (client != null) {
+                    if (client != null)
+                    {
                         string promotedPiece = "";
-                        if ( (newY==0) || (newY==7) ) {
-                            if (pieceType(selectedX, selectedY).Equals("PAWN")) {
+                        if ((newY == 0) || (newY == 7))
+                        {
+                            if (pieceType(selectedX, selectedY).Equals("PAWN"))
+                            {
                                 // A PAWN just moved into the final row ... add promote piece to move
                                 promotedPiece = "," + this.promoteLB.Items[this.promoteLB.SelectedIndex];
                             }
                         }
-                        client.requestMove(selectedX.ToString()+":"+selectedY.ToString()+","+newX.ToString()+":"+newY.ToString()+ promotedPiece);
+                        client.requestMove(selectedX.ToString() + ":" + selectedY.ToString() + "," + newX.ToString() + ":" + newY.ToString() + promotedPiece);
                         // Make sure we get the new board!
                         client.getBoard();
                         client.getTurn();
@@ -414,19 +472,23 @@ namespace ChessClient {
             boardPB.Invalidate();
         }
 
-        private string pieceType(int x, int y) {
+        private string pieceType(int x, int y)
+        {
             string rv = "";
             string[] pieces = currentBoardLayout.Split(',');
 
-            foreach (var piece in pieces) {
-                if (!piece.ToUpper().Equals("REPORT_BOARD")) {
+            foreach (var piece in pieces)
+            {
+                if (!piece.ToUpper().Equals("REPORT_BOARD"))
+                {
                     string[] info = piece.Split(':');
                     // ex layout 
                     // row:col:color:piece
                     // 1:0:B:PAWN
                     int column = Convert.ToInt32(info[0]);
                     int row = Convert.ToInt32(info[1]);
-                    if ( (x==column)&&(y==row) ) {
+                    if ((x == column) && (y == row))
+                    {
                         return info[3];
                     }
                 }
@@ -434,18 +496,22 @@ namespace ChessClient {
             return rv;
         }
 
-        private void button1_Click(object sender, EventArgs e) {
+        private void button1_Click(object sender, EventArgs e)
+        {
             whenConnectPushed();
             testInit();
-            startClient();            
+            startClient();
         }
-        private void playersListBox_Click(object sender, EventArgs e) {
+        private void playersListBox_Click(object sender, EventArgs e)
+        {
             requestsLB.SelectedIndex = -1;
         }
-        private void requestsLB_Click(object sender, EventArgs e) {
+        private void requestsLB_Click(object sender, EventArgs e)
+        {
             playersLB.SelectedIndex = -1;
         }
-        private void matchOver() {
+        private void matchOver()
+        {
             gameLB.Tag = "";
             playerTimer.Enabled = false;
             timeTracker = null;
@@ -453,19 +519,22 @@ namespace ChessClient {
             stopClientBTN.Text = "QUIT GAME";
             clientStartBTN.Enabled = true;
             colorPanel.Enabled = true;
-            clientStartBTN.Text = "PLAY MATCH";            
+            clientStartBTN.Text = "PLAY MATCH";
             opponentPlayerName = "";
             dictRequests = new Dictionary<string, string>();
             requestsLB.Items.Clear();
         }
 
-        private void playerTimer_Tick(object sender, EventArgs e) {
+        private void playerTimer_Tick(object sender, EventArgs e)
+        {
             showPlayerAndTime();
         }
 
-        private void stopClientBTN_Click(object sender, EventArgs e) {
+        private void stopClientBTN_Click(object sender, EventArgs e)
+        {
 
-            switch (stopClientBTN.Tag.ToString()) {
+            switch (stopClientBTN.Tag.ToString())
+            {
                 case "MATCH":
                     client.quitMatch();
                     matchOver();
