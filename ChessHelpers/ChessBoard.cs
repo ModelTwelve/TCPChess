@@ -33,6 +33,24 @@ namespace ChessHelpers
             return sb.ToString();
         }
 
+        public LinkedList<string> getPossible(string playerColorAttemptingToMove, string from, out string errorMessage)
+        {
+            errorMessage = "";
+            // Just verify that it's really their piece to move and that something
+            // really does exist there
+            if (!chessPieces.ContainsKey(from))
+            {
+                errorMessage = "No piece on the board at that location";
+                return null;
+            }
+            if (!chessPieces[from].Color.Equals(playerColorAttemptingToMove))
+            {
+                errorMessage = "You cannot move your opponents piece";
+                return null;
+            }
+            return chessPieces[from].generatePossibleMoves(this, from); ;
+        }
+
         public bool movePiece(string playerColorAttemptingToMove, string from, string to, string promotedPiece, out string errorMessage)
         {
             // Start out with no error message            
@@ -91,85 +109,69 @@ namespace ChessHelpers
 
                 //checks to see all valid moves for a piece
                 ChessPiece checkMoves = chessPieces[from];
-                LinkedList<String> check = checkMoves.generatePossibleMoves(this, from);
-                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
-                {
-                    int numSpaces = Math.Abs(fromY - toY);
-                    if (numSpaces == 2)
-                    {
-                        ((PAWN)chessPieces[from]).allowEnPassant = true;
-                    }
-                }
+                LinkedList<string> check = checkMoves.generatePossibleMoves(this, from);
+                
                 if (!check.Contains(to))
                 {
                     errorMessage = "A " + chessPieces[from].KindOfPiece + " cant move there!";
                     return false;
                 }
 
+                //we now have determined that this move is legal
+                //checks to see if your potential move put your king into check or keeps your king in check
+                string pos;
+                string type;
+                bool isInCheck = false;
 
+                //create potential chess board
+                ChessBoard potentialChessBoard = clone();
+                //move piece to new location
+                potentialChessBoard.chessPieces.Remove(from);
+                //if there is a peice there delete it
+                if (potentialChessBoard.chessPieces.ContainsKey(to))
                 {
-                    //we now have determined that this move is legal
-                    //checks to see if your potential move put your king into check or keeps your king in check
-                    String pos;
-                    String type;
-                    bool isInCheck = false;
+                    // This piece needs removed from the board
+                    potentialChessBoard.chessPieces.Remove(to);
+                }
+                //add the piece to the new location in the potential board
+                potentialChessBoard.chessPieces.Add(to, checkMoves);
 
-                    //create potential chess board
-                    ChessBoard potentialChessBoard = clone();
-                    //move piece to new location
-                    potentialChessBoard.chessPieces.Remove(from);
-                    //if there is a peice there delete it
-                    if (potentialChessBoard.chessPieces.ContainsKey(to))
+                //checking mock board (with potential move)
+                foreach (var piece in potentialChessBoard.chessPieces)
+                {
+                    //if piece isnt on your team
+                    if (!piece.Value.Color.Equals(currentColorsTurn))
                     {
-                        // This piece needs removed from the board
-                        potentialChessBoard.chessPieces.Remove(to);
-                    }
-                    //add the piece to the new location in the potential board
-                    potentialChessBoard.chessPieces.Add(to, checkMoves);
+                        //returns list of that pieces avaiable moves
+                        check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                        pos = piece.Key;
+                        type = piece.Value.KindOfPiece;
 
-                    //checking mock board (with potential move)
-                    foreach (var piece in potentialChessBoard.chessPieces)
-                    {
-                        //if piece isnt on your team
-                        if (!piece.Value.Color.Equals(currentColorsTurn))
+                        //if kings position is in that list then we set boolean to true return an error message
+
+                        //if white move then check white king vs all black pieces
+                        if (currentColorsTurn.Equals("W"))
                         {
-                            //returns list of that pieces avaiable moves
-                            check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
-                            pos = piece.Key;
-                            type = piece.Value.KindOfPiece;
-
-                            //if kings position is in that list then we set boolean to true return an error message
-
-                            //if white move then check white king vs all black pieces
-                            if (currentColorsTurn.Equals("W"))
+                            isInCheck = check.Contains(whiteKingsPlace);
+                            if (isInCheck)
                             {
-                                isInCheck = check.Contains(whiteKingsPlace);
-                                if (isInCheck)
-                                {
-                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
-                                    return false;
-                                }
+                                errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
+                                return false;
                             }
-                            //if black move check black king vs all white
-                            else
-                            {
-                                isInCheck = check.Contains(blackKingsPlace);
-                                if (isInCheck)
-                                {
-                                    errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
-                                    return false;
-                                }
-                            }
-
                         }
-
+                        //if black move check black king vs all white
+                        else
+                        {
+                            isInCheck = check.Contains(blackKingsPlace);
+                            if (isInCheck)
+                            {
+                                errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
+                                return false;
+                            }
+                        }
                     }
                 }
-                //catch(Exception e)
-                //{
-                //    errorMessage = e.ToString();
-                //    return false;
-                //}
+
                 try
                 {
                     //If your king is not (or no longer) in check then we want to check to see if your move put their king in check
@@ -194,9 +196,16 @@ namespace ChessHelpers
                     return false;
                 }
 
-                // ******************************************
-                // More error checking logic goes here!
-                // ******************************************
+                // Needed to move this down below the legal moves as it was setting
+                // allowEnPassant even when the PAWN was denied a two place move
+                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                {
+                    int numSpaces = Math.Abs(fromY - toY);
+                    if (numSpaces == 2)
+                    {
+                        ((PAWN)chessPieces[from]).allowEnPassant = true;
+                    }
+                }
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
                 //checks to see if promotion
@@ -251,7 +260,6 @@ namespace ChessHelpers
                 }
                 // If we moved it then it's now gone from the other location aye?
                 chessPieces.Remove(from);
-
 
                 // Now add our piece at the new location
                 chessPieces.Add(to, copyOfPieceToMove);

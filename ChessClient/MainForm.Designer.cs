@@ -62,6 +62,7 @@
             this.promoteLB = new System.Windows.Forms.ListBox();
             this.label5 = new System.Windows.Forms.Label();
             this.playerTimer = new System.Windows.Forms.Timer(this.components);
+            this.enhancedCB = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.boardPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bBishop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bKing)).BeginInit();
@@ -455,11 +456,25 @@
             this.playerTimer.Interval = 1000;
             this.playerTimer.Tick += new System.EventHandler(this.playerTimer_Tick);
             // 
+            // enhancedCB
+            // 
+            this.enhancedCB.AutoSize = true;
+            this.enhancedCB.Checked = true;
+            this.enhancedCB.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.enhancedCB.Location = new System.Drawing.Point(868, 418);
+            this.enhancedCB.Name = "enhancedCB";
+            this.enhancedCB.Size = new System.Drawing.Size(117, 17);
+            this.enhancedCB.TabIndex = 39;
+            this.enhancedCB.Text = "Enhanced Protocol";
+            this.enhancedCB.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.enhancedCB.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(996, 487);
+            this.Controls.Add(this.enhancedCB);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.promoteLB);
             this.Controls.Add(this.label8);
@@ -554,6 +569,7 @@
         private System.Windows.Forms.ListBox promoteLB;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Timer playerTimer;
+        private System.Windows.Forms.CheckBox enhancedCB;
     }
 }
 

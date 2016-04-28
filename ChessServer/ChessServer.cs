@@ -340,6 +340,9 @@ namespace ServerForm
                         case "TURN":
                             sendTurn(clientGameData);
                             break;
+                        case "POSSIBLE":
+                            sendPossible(clientGameData, dataSplit[2]);
+                            break;
                         default:
                             clientGameData.addServerResponse("ERROR,Invalid GET Command");
                             break;
@@ -477,6 +480,21 @@ namespace ServerForm
         {
             var goName = clientGameData.currentColorsTurn.Equals(clientGameData.playersColor) ? clientGameData.playersName : clientGameData.opponentsName;
             clientGameData.addServerResponse("GO," + goName);
+        }
+        private void sendPossible(PerClientGameData clientGameData, string from)
+        {
+            string errorMessage = "";
+            var list = clientGameData.getPossible(from, out errorMessage);
+            if (errorMessage.Length>0)
+            {
+                clientGameData.addServerResponse("ERROR," + errorMessage);
+                return;
+            }
+            else if (list!=null)
+            {
+                string rv = "POSSIBLE," + from + "," + string.Join(",", list);
+                clientGameData.addServerResponse(rv);
+            }
         }
 
         private void sendPlayers(PerClientGameData clientGameData)

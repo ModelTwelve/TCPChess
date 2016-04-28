@@ -129,6 +129,10 @@ namespace ChessHelpers
                 }
             }
         }
+        public LinkedList<string> getPossible(string from, out string errorMessage)
+        {
+            return chessBoard.getPossible(playersColor, from, out errorMessage);
+        }
 
         public bool movePiece(string from, string to, string promotedPiece, out string errorMessage)
         {

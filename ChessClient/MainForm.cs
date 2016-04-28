@@ -24,6 +24,8 @@ namespace ChessClient
         private Brush black = new SolidBrush(Color.DarkGray);
         private Brush white = new SolidBrush(Color.AntiqueWhite);
         private Brush yellow = new SolidBrush(Color.Yellow);
+        private Brush green = new SolidBrush(Color.LightGreen);
+        private Pen blackPen = new Pen(Color.Black, 2);
 
         private int margin = 10;
         private float width = 50;
@@ -304,6 +306,9 @@ namespace ChessClient
                         case "REPORT_WINNER":
                             showWinner(info);
                             break;
+                        case "REPORT_POSSIBLE":
+                            showPossible(info);
+                            break;
                         case "REPORT_REFUSED":
                             showRefused(info);
                             break;
@@ -392,6 +397,39 @@ namespace ChessClient
             gameLB.Text = "Game Over. Winner is " + split[1];
             matchOver();
         }
+        private void showPossible(string info)
+        {
+            // Reset the board
+            showBoard();
+
+            string[] split = info.Split(',');
+            string[] piecePlace = split[1].Split(':');
+            selectedX = Convert.ToInt32(piecePlace[0]);
+            selectedY = Convert.ToInt32(piecePlace[1]);
+
+            // Draw board
+            Graphics gObj = Graphics.FromImage(boardPB.Image);
+            // Show selected as yellow
+            gObj.FillRectangle(yellow, selectedX * width + margin, selectedY * height + margin, width, height);
+                        
+            for (int c = 2; c < split.Length; c++)
+            {
+                piecePlace = split[c].Split(':');
+                if (piecePlace.Length<2)
+                {
+                    continue;
+                }
+                selectedX = Convert.ToInt32(piecePlace[0]);
+                selectedY = Convert.ToInt32(piecePlace[1]);
+
+                // Show selected as green
+                gObj.FillRectangle(green, selectedX * width + margin, selectedY * height + margin, width, height);
+                gObj.DrawRectangle(blackPen, selectedX * width + margin, selectedY * height + margin, width, height);
+            }
+                        
+            showPieces();
+            boardPB.Invalidate();
+        }
         private void enableGameOn()
         {
             playerTimer.Enabled = true;
@@ -433,6 +471,12 @@ namespace ChessClient
                 y = point.Y - margin;
                 selectedX = Convert.ToInt32(x) / Convert.ToInt32(width);
                 selectedY = Convert.ToInt32(y) / Convert.ToInt32(height);
+
+                if (enhancedCB.Checked)
+                {
+                    client.requestPossible(selectedX.ToString() + ":" + selectedY.ToString());
+                }
+
                 Graphics gObj = Graphics.FromImage(boardPB.Image);
                 gObj.FillRectangle(yellow, selectedX * width + margin, selectedY * height + margin, width, height);
             }
@@ -440,7 +484,6 @@ namespace ChessClient
             {
                 if (selectedX != -1)
                 {
-
                     x = point.X - margin;
                     y = point.Y - margin;
 

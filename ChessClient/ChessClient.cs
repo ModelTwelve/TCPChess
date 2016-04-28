@@ -159,6 +159,7 @@ namespace ChessClient
                 case "WINNER":
                 case "ERROR":
                 case "GO":
+                case "POSSIBLE":
                     reportingClass.addMessage("REPORT_" + dataFromServer);
                     progress.Report(reportingClass);
                     break;
@@ -190,6 +191,11 @@ namespace ChessClient
         public void requestMove(string data)
         {
             addMessage("MOVE," + data);
+        }
+
+        public void requestPossible(string data)
+        {
+            addMessage("GET,POSSIBLE," + data);
         }
 
         public void requestGetPlayers()

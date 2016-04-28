@@ -19,10 +19,10 @@ namespace ChessHelpers
 
         public TimeTracker(string playerName1, string playerName2)
         {
-            this.playerName1 = playerName1;
-            this.playerName2 = playerName2;
-            dictTimes.Add(playerName1.ToUpper(), new IndividualTime());
-            dictTimes.Add(playerName2.ToUpper(), new IndividualTime());
+            this.playerName1 = playerName1.ToUpper();
+            this.playerName2 = playerName2.ToUpper();
+            dictTimes.Add(this.playerName1, new IndividualTime());
+            dictTimes.Add(this.playerName2, new IndividualTime());
         }
 
         public double getMilliSec(string playerName)
