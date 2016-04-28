@@ -201,7 +201,7 @@ namespace ChessHelpers
 
                 //checks to see if promotion
                 //input string formatted wrong bug?
-                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && (toY == 0) || (toY == 7))
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((toY == 0) || (toY == 7)))
                 {
                     errorMessage = promotePawn(promotedPiece, from);
                     if (errorMessage.Length > 0)
