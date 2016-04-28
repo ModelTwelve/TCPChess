@@ -310,8 +310,15 @@ namespace ChessClient {
         }
 
         private void showPlayerAndTime() {
-            double millisecs = timeTracker.getMilliSec(gameLB.Tag.ToString());
-            gameLB.Text = "Waiting for " + gameLB.Tag.ToString() + " time = " + Convert.ToUInt64(millisecs / 1000).ToString();
+            try
+            {
+                double millisecs = timeTracker.getMilliSec(gameLB.Tag.ToString());
+                gameLB.Text = "Waiting for " + gameLB.Tag.ToString() + " time = " + Convert.ToUInt64(millisecs / 1000).ToString();
+            }
+            catch(Exception e)
+            {
+
+            }
         }
         private void showAccepted(string info) {
             requestsLB.Items.Clear();
@@ -412,7 +419,7 @@ namespace ChessClient {
             string[] pieces = currentBoardLayout.Split(',');
 
             foreach (var piece in pieces) {
-                if (!piece.ToUpper().Equals("BOARD")) {
+                if (!piece.ToUpper().Equals("REPORT_BOARD")) {
                     string[] info = piece.Split(':');
                     // ex layout 
                     // row:col:color:piece
