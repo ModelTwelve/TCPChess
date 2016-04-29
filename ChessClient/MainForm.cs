@@ -404,13 +404,13 @@ namespace ChessClient
 
             string[] split = info.Split(',');
             string[] piecePlace = split[1].Split(':');
-            selectedX = Convert.ToInt32(piecePlace[0]);
-            selectedY = Convert.ToInt32(piecePlace[1]);
+            int x = Convert.ToInt32(piecePlace[0]);
+            int y = Convert.ToInt32(piecePlace[1]);
 
             // Draw board
             Graphics gObj = Graphics.FromImage(boardPB.Image);
             // Show selected as yellow
-            gObj.FillRectangle(yellow, selectedX * width + margin, selectedY * height + margin, width, height);
+            gObj.FillRectangle(yellow, x * width + margin, y * height + margin, width, height);
                         
             for (int c = 2; c < split.Length; c++)
             {
@@ -419,12 +419,12 @@ namespace ChessClient
                 {
                     continue;
                 }
-                selectedX = Convert.ToInt32(piecePlace[0]);
-                selectedY = Convert.ToInt32(piecePlace[1]);
+                x = Convert.ToInt32(piecePlace[0]);
+                y = Convert.ToInt32(piecePlace[1]);
 
                 // Show selected as green
-                gObj.FillRectangle(green, selectedX * width + margin, selectedY * height + margin, width, height);
-                gObj.DrawRectangle(blackPen, selectedX * width + margin, selectedY * height + margin, width, height);
+                gObj.FillRectangle(green, x * width + margin, y * height + margin, width, height);
+                gObj.DrawRectangle(blackPen, x * width + margin, y * height + margin, width, height);
             }
                         
             showPieces();
