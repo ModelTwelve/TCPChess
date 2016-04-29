@@ -19,7 +19,7 @@ namespace ChessHelpers
         public ChessBoard()
         {
             //initializeBoard();
-            initializePromotePawn();
+            initializeCastleScenario();
         }
 
         public string serializeBoard()
@@ -209,7 +209,6 @@ namespace ChessHelpers
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
                 //checks to see if promotion
-                //input string formatted wrong bug?
                 if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((toY == 0) || (toY == 7)))
                 {
                     errorMessage = promotePawn(promotedPiece, from);
@@ -236,6 +235,29 @@ namespace ChessHelpers
                     chessPieces.Remove(from);
                     //put it in new to location
                     chessPieces.Add(to, copyOfPieceToMove);
+                    //flip
+                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                    //end turn
+                    return true;
+                }
+
+                
+                //castle
+                if (copyOfPieceToMove.KindOfPiece.Equals("KING") && ((KING)(copyOfPieceToMove)).castleCheck(this, from, to))
+                {
+                    ChessPiece rookCastle = new ROOK(this.currentColorsTurn);//we will put rook in right place, remove old one
+                    rookCastle.hasMoved = true;
+                    copyOfPieceToMove.hasMoved = true;
+                    String rookMove = ((KING)copyOfPieceToMove).rookCastleMovePlace(from, to);
+                    string[] rookMoveArray = rookMove.Split('|');//split on pipe
+                    String rookTo = rookMoveArray[0];//where our rook is going to (add)
+                    String rookFrom = rookMoveArray[1];//where it is coming from (remove)
+                    //remove place where it was from
+                    chessPieces.Remove(from);//king
+                    chessPieces.Remove(rookFrom);//rook
+                    //put it in new to location
+                    chessPieces.Add(rookTo, rookCastle);//rook
+                    chessPieces.Add(to, copyOfPieceToMove);//king
                     //flip
                     currentColorsTurn = FlipFlopColor(currentColorsTurn);
                     //end turn
@@ -270,7 +292,7 @@ namespace ChessHelpers
             }
         }
 
-        //Possibly something wrong here
+        
         private string promotePawn(string promotedPiece, string from)
         {
             if (promotedPiece != null)
@@ -302,43 +324,7 @@ namespace ChessHelpers
             return "";
         }
 
-        private void checkForEnPassant(int toX, int toY, int fromY, ChessPiece copyOfPieceToMove)
-        {
-
-            // Possible En passant?
-            // The only way En passant can be is if we're moving a pawn to the 2 or 5 row
-            // as that is the only row behind a pawn that jumped two spaces
-            string testX = "X", testY = "Y";
-            switch (toY)
-            {
-                case 2:
-                    // See if 3 is a pawn that just finished jumping two spaces
-                    testX = toX.ToString();
-                    testY = "3";
-                    break;
-                case 5:
-                    // See if 6 is a pawn that just finished jumping two spaces
-                    testX = toX.ToString();
-                    testY = "4";
-                    break;
-                default:
-                    break;
-            }
-            string testLocation = testX + ":" + testY;
-            if (chessPieces.ContainsKey(testLocation))
-            {
-                var enpassantCheck = chessPieces[testLocation];
-                if (enpassantCheck.KindOfPiece.Equals("PAWN"))
-                {
-                    if (((PAWN)enpassantCheck).allowEnPassant)
-                    {
-                        // This was it!
-                        chessPieces.Remove(testLocation);
-                    }
-                }
-            }
-        }
-
+        
         public static string FlipFlopColor(string color)
         {
             return color.Equals("W") ? "B" : "W";
@@ -383,18 +369,13 @@ namespace ChessHelpers
             chessPieces.Add("7:7", new ROOK("W"));
         }
 
-        private void initializePromotePawn()
+        private void initializeCastleScenario()
         {
             currentColorsTurn = "W";
 
             chessPieces = new Dictionary<string, ChessPiece>();
             chessPieces.Add("0:0", new ROOK("B"));
-            chessPieces.Add("1:0", new KNIGHT("B"));
-            chessPieces.Add("2:0", new BISHOP("B"));
             chessPieces.Add("4:0", new KING("B"));
-            chessPieces.Add("3:0", new QUEEN("B"));
-            chessPieces.Add("5:0", new BISHOP("B"));
-            chessPieces.Add("6:0", new KNIGHT("B"));
             chessPieces.Add("7:0", new ROOK("B"));
             chessPieces.Add("0:1", new PAWN("B"));
             chessPieces.Add("1:1", new PAWN("B"));
@@ -413,12 +394,7 @@ namespace ChessHelpers
             chessPieces.Add("6:6", new PAWN("W"));
             chessPieces.Add("7:6", new PAWN("W"));
             chessPieces.Add("0:7", new ROOK("W"));
-            chessPieces.Add("1:7", new KNIGHT("W"));
-            chessPieces.Add("2:7", new BISHOP("W"));
             chessPieces.Add("4:7", new KING("W"));
-            chessPieces.Add("3:7", new QUEEN("W"));
-            chessPieces.Add("5:7", new BISHOP("W"));
-            chessPieces.Add("6:7", new KNIGHT("W"));
             chessPieces.Add("7:7", new ROOK("W"));
         }
 

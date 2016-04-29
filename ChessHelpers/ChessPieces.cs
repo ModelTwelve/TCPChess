@@ -364,6 +364,63 @@ namespace ChessHelpers
             int rightFrontX = fromX, leftFrontX = fromX, rightBackX = fromX, leftBackX = fromX;
             int rightFrontY = fromY, leftFrontY = fromY, rightBackY = fromY, leftBackY = fromY;
 
+            //castle
+            
+            if (!this.hasMoved)//king hasn't moved
+            {
+                String rightRookPlace;
+                String leftRookPlace;
+                //same for black or white
+                if (this.Color.Equals("B"))//black
+                {
+                    rightRookPlace = "7:0";
+                    leftRookPlace = "0:0";
+                    if (!chessBoard.getChessPieces()[rightRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the right
+                        if (!(chessBoard.getChessPieces().ContainsKey("5:0") || chessBoard.getChessPieces().ContainsKey("6:0")))
+                        {
+                            //castle is possible
+                            moveList.AddLast("6:0");
+                        }
+                    }
+                    if (!chessBoard.getChessPieces()[leftRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the left
+                        if(!(chessBoard.getChessPieces().ContainsKey("1:0") || chessBoard.getChessPieces().ContainsKey("2:0") || chessBoard.getChessPieces().ContainsKey("3:0")))
+                        {
+                            //castle is possible
+                            moveList.AddLast("2:0");
+                        }
+
+                    }
+                }else//white
+                {
+                    rightRookPlace = "7:7";
+                    leftRookPlace = "0:7";
+                    if (!chessBoard.getChessPieces()[rightRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the right
+                        if (!(chessBoard.getChessPieces().ContainsKey("5:7") || chessBoard.getChessPieces().ContainsKey("6:7")))
+                        {
+                            //castle is possible
+                            moveList.AddLast("6:7");
+                        }
+                    }
+                    if (!chessBoard.getChessPieces()[leftRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the left
+                        if (!(chessBoard.getChessPieces().ContainsKey("1:7") || chessBoard.getChessPieces().ContainsKey("2:7") || chessBoard.getChessPieces().ContainsKey("3:7")))
+                        {
+                            //castle is possible
+                            moveList.AddLast("2:7");
+                        }
+
+                    }
+                }
+
+            }
+
             //get horizontal moves
             int i = 0;
             while (i < 1)
@@ -439,6 +496,105 @@ namespace ChessHelpers
             }
             return moveList;
 
+
+        }
+
+        public bool castleCheck(ChessBoard chessBoard, String from, String to)
+        {
+            LinkedList<String> castleList = new LinkedList<String>();
+            string[] split = from.Split(':');
+            int fromX = Convert.ToInt32(split[0]);
+            int fromY = Convert.ToInt32(split[1]);
+
+            if (!this.hasMoved)//king hasn't moved
+            {
+                String rightRookPlace;
+                String leftRookPlace;
+                //same for black or white
+                if (this.Color.Equals("B"))//black
+                {
+                    rightRookPlace = "7:0";
+                    leftRookPlace = "0:0";
+                    if (!chessBoard.getChessPieces()[rightRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the right
+                        if (!(chessBoard.getChessPieces().ContainsKey("5:0") || chessBoard.getChessPieces().ContainsKey("6:0")))
+                        {
+                            //castle is possible
+                            castleList.AddLast("6:0");
+                        }
+                    }
+                    if (!chessBoard.getChessPieces()[leftRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the left
+                        if (!(chessBoard.getChessPieces().ContainsKey("1:0") || chessBoard.getChessPieces().ContainsKey("2:0") || chessBoard.getChessPieces().ContainsKey("3:0")))
+                        {
+                            //castle is possible
+                            castleList.AddLast("2:0");
+                        }
+
+                    }
+                }
+                else//white
+                {
+                    rightRookPlace = "7:7";
+                    leftRookPlace = "0:7";
+                    if (!chessBoard.getChessPieces()[rightRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the right
+                        if (!(chessBoard.getChessPieces().ContainsKey("5:7") || chessBoard.getChessPieces().ContainsKey("6:7")))
+                        {
+                            //castle is possible
+                            castleList.AddLast("6:7");
+                        }
+                    }
+                    if (!chessBoard.getChessPieces()[leftRookPlace].hasMoved)//rook has not moved
+                    {
+                        //there is nothing in the places beside the king to the left
+                        if (!(chessBoard.getChessPieces().ContainsKey("1:7") || chessBoard.getChessPieces().ContainsKey("2:7") || chessBoard.getChessPieces().ContainsKey("3:7")))
+                        {
+                            //castle is possible
+                            castleList.AddLast("2:7");
+                        }
+
+                    }
+                }
+
+            }
+            //the move you wish to make is a castle
+            return castleList.Contains(to);
+
+        }
+
+        //returns the place where the rook moves and where it was -- formated "5:0|7:0"
+        public String rookCastleMovePlace(String from, String to)
+        {
+            if (this.Color.Equals("B"))//its black king
+            {
+                if (to.Equals("6:0"))
+                {
+                    return "5:0|7:0";
+                }
+                if (to.Equals("2:0"))
+                {
+                    return "3:0|0:0";
+                }
+
+            } else//white king
+            {
+
+                if (to.Equals("6:7"))
+                {
+                    return "5:7|7:7";
+                }
+                if (to.Equals("2:7"))
+                {
+                    return "3:7|0:7";
+                }
+
+            }
+
+            return "";
 
         }
 
