@@ -313,8 +313,8 @@ namespace ServerForm
                     handlePLAY(dataSplit, clientGameData);
                     break;
                 case "ACCEPTED":
-                    playerName = dataSplit[1];
-                    string color = dataSplit[2];
+                    playerName = dataSplit[1].ToUpper();
+                    string color = dataSplit[2].ToUpper();
                     var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
                     if (opRemoteEdPoint != null)
                     {
@@ -355,7 +355,7 @@ namespace ServerForm
                 case "MOVE":
                     string[] split = dataFromClient.Split(',');
                     string errorMessage;
-                    if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length > 3 ? split[3] : null, out errorMessage))
+                    if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length > 3 ? split[3].ToUpper() : null, out errorMessage))
                     {
                         clientGameData.addServerResponse("OK");
                     }
@@ -442,31 +442,31 @@ namespace ServerForm
         private void handleACCEPTED(PerClientGameData clientGameData, PerClientGameData opClientGameData, string color)
         {
             // Does the opponent have this request in their dict?
-            if (!opClientGameData.CheckPlayRequest(clientGameData.playersName))
+            if (!opClientGameData.CheckPlayRequest(clientGameData.playersName.ToUpper()))
             {
                 clientGameData.addServerResponse("ERROR," + opClientGameData.playersName + " never requested to play you");
                 return;
             }
             string playerColor1, playerColor2;
-            if (!opClientGameData.CheckPlayRequestColor(clientGameData.playersName, color))
+            if (!opClientGameData.CheckPlayRequestColor(clientGameData.playersName.ToUpper(), color.ToUpper()))
             {
                 // Dang ... both players want to be the same color
                 Random r = new Random();
                 if (r.Next(0, 2) == 0)
                 {
-                    color = ChessBoard.FlipFlopColor(color);
+                    color = ChessBoard.FlipFlopColor(color.ToUpper());
                 }
             }
             // This is the color we've choosen for the player that issued the ACCEPT
-            playerColor2 = color;
+            playerColor2 = color.ToUpper();
             playerColor1 = ChessBoard.FlipFlopColor(playerColor2);
-            createMatchBetweenPlayers(opClientGameData.playersName, clientGameData.playersName, playerColor1, playerColor2);
+            createMatchBetweenPlayers(opClientGameData.playersName.ToUpper(), clientGameData.playersName.ToUpper(), playerColor1, playerColor2);
 
-            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
-            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
+            clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName.ToUpper() + "," + opClientGameData.playersColor);
+            opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName.ToUpper() + "," + clientGameData.playersColor);
 
             sendPlayers(opClientGameData);
-            if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn))
+            if (clientGameData.playersColor.ToUpper().Equals(clientGameData.currentColorsTurn.ToUpper()))
             {
                 sendTurn(clientGameData);
             }
@@ -478,8 +478,8 @@ namespace ServerForm
 
         private void sendTurn(PerClientGameData clientGameData)
         {
-            var goName = clientGameData.currentColorsTurn.Equals(clientGameData.playersColor) ? clientGameData.playersName : clientGameData.opponentsName;
-            clientGameData.addServerResponse("GO," + goName);
+            var goName = clientGameData.currentColorsTurn.ToUpper().Equals(clientGameData.playersColor.ToUpper()) ? clientGameData.playersName : clientGameData.opponentsName;
+            clientGameData.addServerResponse("GO," + goName.ToUpper());
         }
         private void sendPossible(PerClientGameData clientGameData, string from)
         {
@@ -499,7 +499,7 @@ namespace ServerForm
 
         private void sendPlayers(PerClientGameData clientGameData)
         {
-            string listOfPlayers = serverConnections.SerializePlayers(clientGameData.playersName);
+            string listOfPlayers = serverConnections.SerializePlayers(clientGameData.playersName.ToUpper());
             // It's ok to send an empty list
             clientGameData.addServerResponse("PLAYERS" + listOfPlayers);
         }
