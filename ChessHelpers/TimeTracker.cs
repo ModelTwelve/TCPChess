@@ -51,7 +51,7 @@ namespace ChessHelpers
             {
                 // Need to stop player2 and start player1
                 TimeSpan ts = DateTime.Now.Subtract(dictTimes[playerName2].timeStarted.Value);
-                dictTimes[playerName2].totalMilliSecs += ts.Milliseconds;
+                dictTimes[playerName2].totalMilliSecs += ts.TotalMilliseconds;
                 dictTimes[playerName2].timeStarted = null;
                 dictTimes[playerName1].timeStarted = DateTime.Now;
             }
