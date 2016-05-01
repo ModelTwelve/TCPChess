@@ -121,7 +121,6 @@ namespace ServerForm
                     var dataFromClient = await reader.ReadLineAsync();
                     if (!string.IsNullOrEmpty(dataFromClient))
                     {
-
                         reportingClass.addMessage(dataFromClient);
                         processCommand(remoteEndPoint, dataFromClient);
                     }
@@ -187,7 +186,7 @@ namespace ServerForm
             if (messageToSend.ToUpper().StartsWith("REQUEST,"))
             {
                 string[] split = messageToSend.Split(',');
-                string simAction = client.serverTestAutoResponseOnPlayRequest.ToUpper();
+                string simAction = client.serverTestAutoResponseOnPlayRequest;
                 switch (simAction)
                 {
                     case "ACCEPTED":
@@ -232,32 +231,31 @@ namespace ServerForm
                 // Just don't do anything about it!
             }
         }
-        private bool processServerTestCommand(string remoteEndPoint, string dataFromClient)
+        private bool processServerTestCommand(string remoteEndPoint, string[] origSplit, string[] upperSplit)
         {
-            string[] split = dataFromClient.ToUpper().Split(',');
-
-            if (split[1].StartsWith("ADD"))
+            if (upperSplit[1].StartsWith("ADD"))
             {
-                string playerName = split[2];
+                string playerName = upperSplit[2];
+                string displayName = origSplit[2];
 
                 if (serverConnections.GetRemoteEndPoint(playerName) == null)
                 {
                     // Setup a special remote endpoint for testing
                     remoteEndPoint = "_" + playerName + "_" + remoteEndPoint;
                     serverConnections.AddClient(remoteEndPoint);
-                    serverConnections.SetPlayersName(remoteEndPoint, playerName);
-                    if (split.Length >= 4)
+                    serverConnections.SetPlayersName(remoteEndPoint, playerName, displayName);
+                    if (upperSplit.Length >= 4)
                     {
-                        serverConnections.SetTestAutoResponseOnPlayRequest(remoteEndPoint, split[3]);
+                        serverConnections.SetTestAutoResponseOnPlayRequest(remoteEndPoint, upperSplit[3]);
                     }
                 }
                 return true;
             }
 
-            if (split[1].StartsWith("MATCH"))
+            if (upperSplit[1].StartsWith("MATCH"))
             {
-                string[] player1 = split[2].Split(':');
-                string[] player2 = split[3].Split(':');
+                string[] player1 = upperSplit[2].Split(':');
+                string[] player2 = upperSplit[3].Split(':');
 
                 string playerName1 = player1[0];
                 string playerName2 = player2[0];
@@ -281,25 +279,41 @@ namespace ServerForm
             return false;
         }
 
-        private void processCommand(string remoteEndPoint, string dataFromClient)
+        private void processCommand(string remoteEndPoint, string receivedClientData)
         {
-            string upperData = dataFromClient.ToUpper();
-            string[] dataSplit = dataFromClient.Split(',');
+            string originalClientData = receivedClientData;
+            string[] origClientSplit = originalClientData.Split(',');
+            for (int x=0;x< origClientSplit.Length;x++)
+            {
+                origClientSplit[x] = origClientSplit[x].Trim();
+            }
+            originalClientData = string.Join(",", origClientSplit);
+
+            string upperClientData = originalClientData.ToUpper();
+            string[] upperClientSplit = upperClientData.Split(',');
+            for (int x = 0; x < upperClientSplit.Length; x++)
+            {
+                upperClientSplit[x] = upperClientSplit[x].Trim();
+            }
+            upperClientData = string.Join(",", upperClientSplit);            
+            
             var clientGameData = serverConnections.GetClientGameData(remoteEndPoint);
-            string action = dataSplit[0].ToUpper();
-            string playerName;
+            string action = upperClientSplit[0];
+            string playerName, displayPlayerName;
 
             switch (action)
             {
                 case "SERVER_COMMAND":
                     // Special server command used for testing only!
-                    processServerTestCommand(remoteEndPoint, dataFromClient);
+                    processServerTestCommand(remoteEndPoint, origClientSplit, upperClientSplit);
                     break;
                 case "CONNECT":
-                    playerName = dataSplit[1];
+                    playerName = upperClientSplit[1];
+                    displayPlayerName = origClientSplit[1];
                     if (serverConnections.GetRemoteEndPoint(playerName) == null)
                     {
                         clientGameData.playersName = playerName;
+                        clientGameData.displayPlayersName = displayPlayerName;
                         clientGameData.addServerResponse("OK");
                         serverConnections.RefreshAllPlayers();
                         //sendPlayers(clientGameData);
@@ -310,15 +324,15 @@ namespace ServerForm
                     }
                     break;
                 case "PLAY":
-                    handlePLAY(dataSplit, clientGameData);
+                    handlePLAY(upperClientSplit, clientGameData);
                     break;
                 case "ACCEPTED":
-                    playerName = dataSplit[1];
-                    string color = dataSplit[2];
-                    var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
-                    if (opRemoteEdPoint != null)
+                    playerName = upperClientSplit[1];
+                    string color = upperClientSplit[2];
+                    var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
+                    if (opRemoteEndPoint != null)
                     {
-                        var opClientGameData = serverConnections.GetClientGameData(opRemoteEdPoint);
+                        var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
                         handleACCEPTED(clientGameData, opClientGameData, color);
                     }
                     else
@@ -328,7 +342,7 @@ namespace ServerForm
                     }
                     break;
                 case "GET":
-                    string getWhat = dataSplit[1].ToUpper();
+                    string getWhat = upperClientSplit[1];
                     switch (getWhat)
                     {
                         case "BOARD":
@@ -338,24 +352,27 @@ namespace ServerForm
                             sendPlayers(clientGameData);
                             break;
                         case "TURN":
-                            sendTurn(clientGameData);
+                            opRemoteEndPoint = serverConnections.GetRemoteEndPoint(clientGameData.opponentsName);
+                            if (opRemoteEndPoint != null)
+                            {
+                                var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
+                                sendTurn(clientGameData, opClientGameData);
+                            }
                             break;
                         case "POSSIBLE":
-                            sendPossible(clientGameData, dataSplit[2]);
+                            sendPossible(clientGameData, upperClientSplit[2]);
                             break;
                         default:
                             clientGameData.addServerResponse("ERROR,Invalid GET Command");
                             break;
                     }
-                    processServerTestCommand(remoteEndPoint, dataFromClient);
                     break;
                 case "REFUSE":
-                    handleREFUSE(dataSplit, clientGameData);
+                    handleREFUSE(upperClientSplit, clientGameData);
                     break;
                 case "MOVE":
-                    string[] split = dataFromClient.Split(',');
                     string errorMessage;
-                    if (serverConnections.MoveChessPiece(clientGameData, split[1], split[2], split.Length > 3 ? split[3] : null, out errorMessage))
+                    if (serverConnections.MoveChessPiece(clientGameData, upperClientSplit[1], upperClientSplit[2], upperClientSplit.Length > 3 ? upperClientSplit[3] : null, out errorMessage))
                     {
                         clientGameData.addServerResponse("OK");
                     }
@@ -365,7 +382,7 @@ namespace ServerForm
                     }
                     break;
                 case "QUIT":
-                    string quitWhat = dataSplit[1].ToUpper();
+                    string quitWhat = upperClientSplit[1];
                     switch (quitWhat)
                     {
                         case "GAME":
@@ -391,7 +408,7 @@ namespace ServerForm
 
         private void handleREFUSE(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false)
         {
-            string playerName = dataSplit[1].ToUpper();
+            string playerName = dataSplit[1];
             if (!clientGameData.CheckPlayRequests(playerName))
             {
                 var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
@@ -410,8 +427,8 @@ namespace ServerForm
 
         private void handlePLAY(string[] dataSplit, PerClientGameData clientGameData, bool serverTest = false)
         {
-            string playerName = dataSplit[1].ToUpper();
-            string color = dataSplit[2].ToUpper();
+            string playerName = dataSplit[1];
+            string color = dataSplit[2];
 
             if (!clientGameData.CheckPlayRequests(playerName))
             {
@@ -422,7 +439,7 @@ namespace ServerForm
                     if (opClientGameData.available)
                     {
                         clientGameData.AddPlayRequest(playerName, color, opRemoteEdPoint);
-                        opClientGameData.addServerResponse("REQUEST," + clientGameData.playersName + "," + color);
+                        opClientGameData.addServerResponse("REQUEST," + clientGameData.displayPlayersName + "," + color);
                     }
                     else
                     {
@@ -465,20 +482,13 @@ namespace ServerForm
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
 
-            sendPlayers(opClientGameData);
-            if (clientGameData.playersColor.Equals(clientGameData.currentColorsTurn))
-            {
-                sendTurn(clientGameData);
-            }
-            else
-            {
-                sendTurn(opClientGameData);
-            }
+            //sendPlayers(opClientGameData);
+            //sendTurn(clientGameData, opClientGameData);            
         }
 
-        private void sendTurn(PerClientGameData clientGameData)
+        private void sendTurn(PerClientGameData clientGameData, PerClientGameData opClientGameData)
         {
-            var goName = clientGameData.currentColorsTurn.Equals(clientGameData.playersColor) ? clientGameData.playersName : clientGameData.opponentsName;
+            var goName = clientGameData.currentColorsTurn.Equals(clientGameData.playersColor) ? clientGameData.displayPlayersName : opClientGameData.displayPlayersName;
             clientGameData.addServerResponse("GO," + goName);
         }
         private void sendPossible(PerClientGameData clientGameData, string from)
@@ -504,14 +514,13 @@ namespace ServerForm
             clientGameData.addServerResponse("PLAYERS" + listOfPlayers);
         }
 
-
         private void quitMatch(PerClientGameData clientGameData)
         {
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
             if (opClientGameData != null)
             {
-                opClientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
-                clientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
+                opClientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
+                clientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
 
                 clientGameData.destroyMatch();
                 opClientGameData.destroyMatch();
@@ -527,8 +536,8 @@ namespace ServerForm
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
             if (opClientGameData != null)
             {
-                opClientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
-                clientGameData.addServerResponse("WINNER," + clientGameData.opponentsName);
+                opClientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
+                clientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
 
                 clientGameData.destroyMatch();
                 opClientGameData.destroyMatch();

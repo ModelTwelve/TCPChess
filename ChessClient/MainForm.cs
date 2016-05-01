@@ -141,7 +141,6 @@ namespace ChessClient
 
         private void showBoard()
         {
-
             Graphics gObj = Graphics.FromImage(boardPB.Image);
 
             for (int row = 0; row < 8; ++row)
@@ -389,7 +388,7 @@ namespace ChessClient
             timeTracker.toggleTime();
             colorPanel.Enabled = false;
             dictRequests = new Dictionary<string, string>();
-            gameLB.Text = "Playing " + split[1];
+            gameLB.Text = "Playing " + opponentPlayerName;
         }
         private void showWinner(string info)
         {
@@ -424,7 +423,7 @@ namespace ChessClient
 
                 // Show selected as green
                 gObj.FillRectangle(green, x * width + margin, y * height + margin, width, height);
-                gObj.DrawRectangle(blackPen, x * width + margin, y * height + margin, width, height);
+                gObj.DrawRectangle(blackPen, x * width + margin+2, y * height + margin+2, width-4, height-4);
             }
                         
             showPieces();

@@ -81,7 +81,7 @@ namespace ChessHelpers
                         if ((PlayerName == null) ||
                             (!PlayerName.ToUpper().Equals(client.Value.playersName.ToUpper())))
                         {
-                            sb.Append("," + client.Value.playersName + ":" + client.Value.status);
+                            sb.Append("," + client.Value.displayPlayersName + ":" + client.Value.status);
                         }
                     }
                 }
@@ -89,13 +89,14 @@ namespace ChessHelpers
             return sb.ToString();
         }
 
-        public bool SetPlayersName(string RemoteEndPoint, string playerName)
+        public bool SetPlayersName(string RemoteEndPoint, string playerName, string displayName)
         {
             lock (_lock)
             {
                 if (dictConnections.ContainsKey(RemoteEndPoint))
                 {
                     dictConnections[RemoteEndPoint].playersName = playerName;
+                    dictConnections[RemoteEndPoint].displayPlayersName = displayName;
                     return false;
                 }
             }

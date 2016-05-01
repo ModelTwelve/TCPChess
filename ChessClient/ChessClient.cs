@@ -234,10 +234,10 @@ namespace ChessClient
         {
             addMessage("QUIT,GAME");
         }
-        public void connect(string playerName)
+        public void connect(string incomingPlayerName)
         {
-            this.playerName = playerName.ToUpper();
-            addMessage("CONNECT," + playerName.ToUpper());
+            this.playerName = incomingPlayerName.ToUpper();
+            addMessage("CONNECT," + incomingPlayerName);
         }
     }
 }

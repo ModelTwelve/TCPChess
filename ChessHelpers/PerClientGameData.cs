@@ -13,6 +13,7 @@ namespace ChessHelpers
         public string playersColor { get; set; }
         public string opponentsName { get; set; }
         public string opponentsRemoteEndPoint { get; set; }
+        public string displayPlayersName { get; set; }
         public string currentColorsTurn
         {
             get
