@@ -187,7 +187,7 @@ namespace ServerForm
             if (messageToSend.ToUpper().StartsWith("REQUEST,"))
             {
                 string[] split = messageToSend.Split(',');
-                string simAction = client.serverTestAutoResponseOnPlayRequest.ToUpper();
+                string simAction = client.serverTestAutoResponseOnPlayRequest;
                 switch (simAction)
                 {
                     case "ACCEPTED":
@@ -281,25 +281,41 @@ namespace ServerForm
             return false;
         }
 
-        private void processCommand(string remoteEndPoint, string dataFromClient)
+        private void processCommand(string remoteEndPoint, string receivedClientData)
         {
-            string upperData = dataFromClient.ToUpper();
-            string[] dataSplit = dataFromClient.Split(',');
+            string originalClientData = receivedClientData;
+            string[] origClientSplit = originalClientData.Split(',');
+            for (int x=0;x< origClientSplit.Length;x++)
+            {
+                origClientSplit[x] = origClientSplit[x].Trim();
+            }
+            originalClientData = string.Join(",", origClientSplit);
+
+            string upperClientData = originalClientData.ToUpper();
+            string[] upperClientSplit = upperClientData.Split(',');
+            for (int x = 0; x < upperClientSplit.Length; x++)
+            {
+                upperClientSplit[x] = upperClientSplit[x].Trim();
+            }
+            upperClientData = string.Join(",", upperClientSplit);            
+            
             var clientGameData = serverConnections.GetClientGameData(remoteEndPoint);
-            string action = dataSplit[0].ToUpper();
-            string playerName;
+            string action = upperClientSplit[0];
+            string playerName, displayPlayerName;
 
             switch (action)
             {
                 case "SERVER_COMMAND":
                     // Special server command used for testing only!
-                    processServerTestCommand(remoteEndPoint, dataFromClient);
+                    processServerTestCommand(remoteEndPoint, upperClientData);
                     break;
                 case "CONNECT":
-                    playerName = dataSplit[1];
+                    playerName = upperClientSplit[1];
+                    displayPlayerName = origClientSplit[1];
                     if (serverConnections.GetRemoteEndPoint(playerName) == null)
                     {
                         clientGameData.playersName = playerName;
+                        clientGameData.displayPlayersName = displayPlayerName;
                         clientGameData.addServerResponse("OK");
                         serverConnections.RefreshAllPlayers();
                         //sendPlayers(clientGameData);
@@ -310,11 +326,11 @@ namespace ServerForm
                     }
                     break;
                 case "PLAY":
-                    handlePLAY(dataSplit, clientGameData);
+                    handlePLAY(upperClientSplit, clientGameData);
                     break;
                 case "ACCEPTED":
-                    playerName = dataSplit[1].ToUpper();
-                    string color = dataSplit[2].ToUpper();
+                    playerName = upperClientSplit[1].ToUpper();
+                    string color = upperClientSplit[2].ToUpper();
                     var opRemoteEdPoint = serverConnections.GetRemoteEndPoint(playerName);
                     if (opRemoteEdPoint != null)
                     {
@@ -328,7 +344,7 @@ namespace ServerForm
                     }
                     break;
                 case "GET":
-                    string getWhat = dataSplit[1].ToUpper();
+                    string getWhat = upperClientSplit[1].ToUpper();
                     switch (getWhat)
                     {
                         case "BOARD":
@@ -341,13 +357,13 @@ namespace ServerForm
                             sendTurn(clientGameData);
                             break;
                         case "POSSIBLE":
-                            sendPossible(clientGameData, dataSplit[2]);
+                            sendPossible(clientGameData, upperClientSplit[2]);
                             break;
                         default:
                             clientGameData.addServerResponse("ERROR,Invalid GET Command");
                             break;
                     }
-                    processServerTestCommand(remoteEndPoint, dataFromClient);
+                    //processServerTestCommand(remoteEndPoint, dataFromClient);
                     break;
                 case "REFUSE":
                     handleREFUSE(dataSplit, clientGameData);
