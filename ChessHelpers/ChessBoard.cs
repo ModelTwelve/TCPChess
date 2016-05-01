@@ -18,8 +18,8 @@ namespace ChessHelpers
 
         public ChessBoard()
         {
-            //initializeBoard();
-            initializeCastleScenario();
+            initializeBoard();
+            //initializeCastleScenario();
         }
 
         public string serializeBoard()
@@ -117,60 +117,16 @@ namespace ChessHelpers
                     return false;
                 }
 
-                //we now have determined that this move is legal
-                //checks to see if your potential move put your king into check or keeps your king in check
-                string pos;
-                string type;
-                bool isInCheck = false;
 
-                //create potential chess board
-                ChessBoard potentialChessBoard = clone();
-                //move piece to new location
-                potentialChessBoard.chessPieces.Remove(from);
-                //if there is a peice there delete it
-                if (potentialChessBoard.chessPieces.ContainsKey(to))
+                if (!isInCheck(check, checkMoves, from, to))
                 {
-                    // This piece needs removed from the board
-                    potentialChessBoard.chessPieces.Remove(to);
+                    errorMessage = "You are in check!";
+                    return false;
                 }
-                //add the piece to the new location in the potential board
-                potentialChessBoard.chessPieces.Add(to, checkMoves);
 
-                //checking mock board (with potential move)
-                foreach (var piece in potentialChessBoard.chessPieces)
-                {
-                    //if piece isnt on your team
-                    if (!piece.Value.Color.Equals(currentColorsTurn))
-                    {
-                        //returns list of that pieces avaiable moves
-                        check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
-                        pos = piece.Key;
-                        type = piece.Value.KindOfPiece;
 
-                        //if kings position is in that list then we set boolean to true return an error message
 
-                        //if white move then check white king vs all black pieces
-                        if (currentColorsTurn.Equals("W"))
-                        {
-                            isInCheck = check.Contains(whiteKingsPlace);
-                            if (isInCheck)
-                            {
-                                errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
-                                return false;
-                            }
-                        }
-                        //if black move check black king vs all white
-                        else
-                        {
-                            isInCheck = check.Contains(blackKingsPlace);
-                            if (isInCheck)
-                            {
-                                errorMessage = "Your opponents " + type + " at position - " + pos + " puts you in Check!";
-                                return false;
-                            }
-                        }
-                    }
-                }
+                
 
                 try
                 {
@@ -324,6 +280,82 @@ namespace ChessHelpers
             return "";
         }
 
+        public bool isInCheck(LinkedList<string> check, ChessPiece checkMoves, String from, String to)
+        {
+            //we now have determined that this move is legal
+            //checks to see if your potential move put your king into check or keeps your king in check
+            string pos;
+            string type;
+            bool isInCheck = false;
+            String potentialKingsPlace;
+            if (currentColorsTurn.Equals("W"))
+            {
+                potentialKingsPlace = whiteKingsPlace;
+                
+            }
+            //if black move check black king vs all white
+            else
+            {
+                potentialKingsPlace = blackKingsPlace;
+               
+            }
+            //create potential chess board
+            ChessBoard potentialChessBoard = this.clone();
+            ChessPiece copyOfPieceToMove = potentialChessBoard.getChessPieces()[from];
+            if (copyOfPieceToMove.KindOfPiece.Equals("KING")) { 
+                potentialKingsPlace = to;
+            }
+            copyOfPieceToMove.hasMoved = true;
+            if (potentialChessBoard.chessPieces.ContainsKey(to))
+            {
+                // This piece needs removed from the board
+                potentialChessBoard.chessPieces.Remove(to);
+            }
+            // If we moved it then it's now gone from the other location aye?
+            potentialChessBoard.chessPieces.Remove(from);
+
+            // Now add our piece at the new location
+            potentialChessBoard.chessPieces.Add(to, copyOfPieceToMove);
+
+            //checking mock board (with potential move)
+            foreach (var piece in potentialChessBoard.chessPieces)
+            {
+                //if piece isnt on your team
+                if (!piece.Value.Color.Equals(currentColorsTurn))
+                {
+                    //returns list of that pieces avaiable moves
+                    check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                    pos = piece.Key;
+                    type = piece.Value.KindOfPiece;
+
+                    //if kings position is in that list then we set boolean to true return an error message
+
+                    //if white move then check white king vs all black pieces
+                    if (currentColorsTurn.Equals("W"))
+                    {
+                        isInCheck = check.Contains(potentialKingsPlace);
+                        if (isInCheck)
+                        {
+                            
+                            return false;
+                        }
+                    }
+                    //if black move check black king vs all white
+                    else
+                    {
+                        isInCheck = check.Contains(potentialKingsPlace);
+                        if (isInCheck)
+                        {
+                           
+                            return false;
+                        }
+                    }
+                }
+            }
+           
+            return true;
+        }
+
         
         public static string FlipFlopColor(string color)
         {
@@ -406,6 +438,7 @@ namespace ChessHelpers
         public ChessBoard clone()
         {
             ChessBoard cloneBoard = new ChessBoard();
+            cloneBoard.chessPieces.Clear();
             foreach (var piece in this.chessPieces)
             {
                 cloneBoard.chessPieces[piece.Key] = piece.Value;
