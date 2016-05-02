@@ -166,6 +166,16 @@ namespace ChessHelpers
                         ((PAWN)chessPieces[from]).allowEnPassant = true;
                     }
                 }
+                //if you have moved one square at any point
+                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                {
+                    int numSpaces = Math.Abs(fromY - toY);
+                    if (numSpaces == 1)
+                    {
+                        ((PAWN)chessPieces[from]).allowEnPassant = false;
+                    }
+                }
+
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
                 //checks to see if promotion
@@ -179,28 +189,29 @@ namespace ChessHelpers
                     // Redo copy with new promoted piece
                     copyOfPieceToMove = chessPieces[from];
                 }
-
-                //if pawn moved in enpassant then remove piece behind it
-                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
-                {
-                    copyOfPieceToMove.hasMoved = true;
-                    String behindPawnEnPassantPiece;
-                    //black you are coming "up" the board
-                    if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
-                    //white you are going "down" the board
-                    else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
-                    //remove pawn behind it
-                    chessPieces.Remove(behindPawnEnPassantPiece);
-                    //remove place where it was from
-                    chessPieces.Remove(from);
-                    //put it in new to location
-                    chessPieces.Add(to, copyOfPieceToMove);
-                    //flip
-                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
-                    //end turn
-                    return true;
-                }
-
+                
+                    //if pawn moved in enpassant then remove piece behind it
+                    if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+                    {
+                        copyOfPieceToMove.hasMoved = true;
+                        String behindPawnEnPassantPiece;
+                        //black you are coming "up" the board
+                        if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
+                        //white you are going "down" the board
+                        else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
+                        //remove pawn behind it
+                        chessPieces.Remove(behindPawnEnPassantPiece);
+                        //remove place where it was from
+                        chessPieces.Remove(from);
+                        //put it in new to location
+                        chessPieces.Add(to, copyOfPieceToMove);
+                        //flip
+                        currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                        //end turn
+                        return true;
+                    }
+                
+                
                 
                 //castle
                 if (copyOfPieceToMove.KindOfPiece.Equals("KING") && ((KING)(copyOfPieceToMove)).castleCheck(this, from, to))

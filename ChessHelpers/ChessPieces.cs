@@ -834,13 +834,13 @@ namespace ChessHelpers
                     //If pawn directly right 
                     goTo = "" + (fromX + 1) + ":" + (fromY);
                     //var pieces = chessBoard.getChessPieces();
-                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].Color.Equals("W") && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
                     {
                         moveList.AddLast("" + (fromX + 1) + ":" + (fromY + 1));
                     }
                     //If pawn directly left 
                     goTo = "" + (fromX - 1) + ":" + (fromY);
-                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].Color.Equals("W") && pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant)
                     {
                         moveList.AddLast("" + (fromX - 1) + ":" + (fromY + 1));
                     }
@@ -851,13 +851,13 @@ namespace ChessHelpers
                     //If pawn directly right 
                     goTo = "" + (fromX + 1) + ":" + (fromY);
                     //var pieces = chessBoard.getChessPieces();
-                    if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].Color.Equals("B") && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
                     {
                         moveList.AddLast("" + (fromX + 1) + ":" + (fromY - 1));
                     }
                     //If pawn directly left 
                     goTo = "" + (fromX - 1) + ":" + (fromY);
-                    if ((pieces.ContainsKey(goTo)) && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
+                    if ((pieces.ContainsKey(goTo)) && pieces[goTo].Color.Equals("B") && (pieces[goTo].KindOfPiece.Equals("PAWN") && ((PAWN)pieces[goTo]).allowEnPassant))
                     {
                         moveList.AddLast("" + (fromX - 1) + ":" + (fromY - 1));
                     }
