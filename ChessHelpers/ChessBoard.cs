@@ -18,8 +18,9 @@ namespace ChessHelpers
 
         public ChessBoard()
         {
-            initializeBoard();
+            //initializeBoard();
             //initializeCastleScenario();
+            initializeCheckmate();
         }
 
         public string serializeBoard()
@@ -117,16 +118,19 @@ namespace ChessHelpers
                     return false;
                 }
 
-
-                if (!isInCheck(check, checkMoves, from, to))
+                bool maybeCheck = isInCheck(check, checkMoves, from, to);
+                //it is in check
+                if (!maybeCheck)
                 {
+                    //is it checkmate?
+                    if (isCheckMate())
+                    {
+                        errorMessage = "Checkmate!!!!";
+                        return false;
+                    }
                     errorMessage = "You are in check!";
                     return false;
                 }
-
-
-
-                
 
                 try
                 {
@@ -325,8 +329,7 @@ namespace ChessHelpers
                 {
                     //returns list of that pieces avaiable moves
                     check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
-                    pos = piece.Key;
-                    type = piece.Value.KindOfPiece;
+                    
 
                     //if kings position is in that list then we set boolean to true return an error message
 
@@ -353,6 +356,33 @@ namespace ChessHelpers
                 }
             }
            
+            return true;
+        }
+
+
+
+        public bool isCheckMate()
+        {
+            //no possible move you can make that will take king out of check
+            foreach (var piece in this.chessPieces)
+            {
+                //if piece is on your team
+                if (piece.Value.Color.Equals(currentColorsTurn))
+                {
+                    //list of all possible moves for that piece
+                    LinkedList<string> piecePossibleMoves = piece.Value.generatePossibleMoves(this, piece.Key);
+                    //do any of these possible moves make king not in check
+                    foreach(var pieceMove in piecePossibleMoves)
+                    {
+                        if(isInCheck(piecePossibleMoves, piece.Value, piece.Key, pieceMove))
+                        {
+                            return false;
+                        }
+
+                    }
+
+                }
+            }
             return true;
         }
 
@@ -427,6 +457,45 @@ namespace ChessHelpers
             chessPieces.Add("7:6", new PAWN("W"));
             chessPieces.Add("0:7", new ROOK("W"));
             chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("7:7", new ROOK("W"));
+        }
+
+        private void initializeCheckmate()
+        {
+            currentColorsTurn = "W";
+            //all you gotta do is move the queen to 7:3
+            chessPieces = new Dictionary<string, ChessPiece>();
+            chessPieces.Add("0:0", new ROOK("B"));
+            chessPieces.Add("1:0", new KNIGHT("B"));
+            chessPieces.Add("2:0", new BISHOP("B"));
+            chessPieces.Add("4:0", new KING("B"));
+            chessPieces.Add("3:0", new QUEEN("B"));
+            chessPieces.Add("5:0", new BISHOP("B"));
+            chessPieces.Add("6:0", new KNIGHT("B"));
+            chessPieces.Add("7:0", new ROOK("B"));
+            chessPieces.Add("0:1", new PAWN("B"));
+            chessPieces.Add("1:1", new PAWN("B"));
+            chessPieces.Add("2:1", new PAWN("B"));
+            chessPieces.Add("3:1", new PAWN("B"));
+            chessPieces.Add("4:1", new PAWN("B"));
+            chessPieces.Add("5:3", new PAWN("B"));
+            chessPieces.Add("6:3", new PAWN("B"));
+            chessPieces.Add("7:1", new PAWN("B"));
+            chessPieces.Add("0:6", new PAWN("W"));
+            chessPieces.Add("1:6", new PAWN("W"));
+            chessPieces.Add("2:6", new PAWN("W"));
+            chessPieces.Add("3:6", new PAWN("W"));
+            chessPieces.Add("4:5", new PAWN("W"));
+            chessPieces.Add("5:6", new PAWN("W"));
+            chessPieces.Add("6:6", new PAWN("W"));
+            chessPieces.Add("7:6", new PAWN("W"));
+            chessPieces.Add("0:7", new ROOK("W"));
+            chessPieces.Add("1:7", new KNIGHT("W"));
+            chessPieces.Add("2:7", new BISHOP("W"));
+            chessPieces.Add("4:7", new KING("W"));
+            chessPieces.Add("3:7", new QUEEN("W"));
+            chessPieces.Add("5:7", new BISHOP("W"));
+            chessPieces.Add("6:7", new KNIGHT("W"));
             chessPieces.Add("7:7", new ROOK("W"));
         }
 
