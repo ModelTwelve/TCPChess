@@ -482,8 +482,8 @@ namespace ServerForm
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
 
-            //sendPlayers(opClientGameData);
-            //sendTurn(clientGameData, opClientGameData);            
+            sendPlayers(opClientGameData);
+            sendTurn(clientGameData, opClientGameData);            
         }
 
         private void sendTurn(PerClientGameData clientGameData, PerClientGameData opClientGameData)

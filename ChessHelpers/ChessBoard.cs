@@ -18,9 +18,9 @@ namespace ChessHelpers
 
         public ChessBoard()
         {
-            //initializeBoard();
+            initializeBoard();
             //initializeCastleScenario();
-            initializeCheckmate();
+            //initializeCheckmate();
         }
 
         public string serializeBoard()
@@ -358,9 +358,6 @@ namespace ChessHelpers
            
             return true;
         }
-
-
-
         public bool isCheckMate()
         {
             //no possible move you can make that will take king out of check
