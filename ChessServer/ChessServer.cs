@@ -281,128 +281,146 @@ namespace ServerForm
 
         private void processCommand(string remoteEndPoint, string receivedClientData)
         {
-            string originalClientData = receivedClientData;
-            string[] origClientSplit = originalClientData.Split(',');
-            for (int x=0;x< origClientSplit.Length;x++)
-            {
-                origClientSplit[x] = origClientSplit[x].Trim();
-            }
-            originalClientData = string.Join(",", origClientSplit);
-
-            string upperClientData = originalClientData.ToUpper();
-            string[] upperClientSplit = upperClientData.Split(',');
-            for (int x = 0; x < upperClientSplit.Length; x++)
-            {
-                upperClientSplit[x] = upperClientSplit[x].Trim();
-            }
-            upperClientData = string.Join(",", upperClientSplit);            
-            
             var clientGameData = serverConnections.GetClientGameData(remoteEndPoint);
-            string action = upperClientSplit[0];
-            string playerName, displayPlayerName;
 
-            switch (action)
+            try
             {
-                case "SERVER_COMMAND":
-                    // Special server command used for testing only!
-                    processServerTestCommand(remoteEndPoint, origClientSplit, upperClientSplit);
-                    break;
-                case "CONNECT":
-                    playerName = upperClientSplit[1];
-                    displayPlayerName = origClientSplit[1];
-                    if (serverConnections.GetRemoteEndPoint(playerName) == null)
-                    {
-                        clientGameData.playersName = playerName;
-                        clientGameData.displayPlayersName = displayPlayerName;
-                        clientGameData.addServerResponse("OK");
-                        serverConnections.RefreshAllPlayers();
-                        //sendPlayers(clientGameData);
-                    }
-                    else
-                    {
-                        clientGameData.addServerResponse("ERROR,Invalid Name");
-                    }
-                    break;
-                case "PLAY":
-                    handlePLAY(upperClientSplit, clientGameData);
-                    break;
-                case "ACCEPTED":
-                    playerName = upperClientSplit[1];
-                    string color = upperClientSplit[2];
-                    var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
-                    if (opRemoteEndPoint != null)
-                    {
-                        var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
-                        handleACCEPTED(clientGameData, opClientGameData, color);
-                    }
-                    else
-                    {
-                        // A request from a player that no longer exists?
-                        clientGameData.addServerResponse("ERROR," + playerName + " does not exist");
-                    }
-                    break;
-                case "GET":
-                    string getWhat = upperClientSplit[1];
-                    switch (getWhat)
-                    {
-                        case "BOARD":
+                string originalClientData = receivedClientData;
+                string[] origClientSplit = originalClientData.Split(',');
+                for (int x = 0; x < origClientSplit.Length; x++)
+                {
+                    origClientSplit[x] = origClientSplit[x].Trim();
+                }
+                originalClientData = string.Join(",", origClientSplit);
+
+                string upperClientData = originalClientData.ToUpper();
+                string[] upperClientSplit = upperClientData.Split(',');
+                for (int x = 0; x < upperClientSplit.Length; x++)
+                {
+                    upperClientSplit[x] = upperClientSplit[x].Trim();
+                }
+                upperClientData = string.Join(",", upperClientSplit);
+                
+                string action = upperClientSplit[0];
+                string playerName, displayPlayerName;
+
+                switch (action)
+                {
+                    case "SERVER_COMMAND":
+                        // Special server command used for testing only!
+                        processServerTestCommand(remoteEndPoint, origClientSplit, upperClientSplit);
+                        break;
+                    case "CONNECT":
+                        playerName = upperClientSplit[1];
+                        displayPlayerName = origClientSplit[1];
+                        if (serverConnections.GetRemoteEndPoint(playerName) == null)
+                        {
+                            clientGameData.playersName = playerName;
+                            clientGameData.displayPlayersName = displayPlayerName;
+                            clientGameData.addServerResponse("OK");
+                            serverConnections.RefreshAllPlayers();
+                            //sendPlayers(clientGameData);
+                        }
+                        else
+                        {
+                            clientGameData.addServerResponse("ERROR,Invalid Name");
+                        }
+                        break;
+                    case "PLAY":
+                        handlePLAY(upperClientSplit, clientGameData);
+                        break;
+                    case "ACCEPTED":
+                        playerName = upperClientSplit[1];
+                        string color = upperClientSplit[2];
+                        var opRemoteEndPoint = serverConnections.GetRemoteEndPoint(playerName);
+                        if (opRemoteEndPoint != null)
+                        {
+                            var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
+                            handleACCEPTED(clientGameData, opClientGameData, color);
+                        }
+                        else
+                        {
+                            // A request from a player that no longer exists?
+                            clientGameData.addServerResponse("ERROR," + playerName + " does not exist");
+                        }
+                        break;
+                    case "GET":
+                        string getWhat = upperClientSplit[1];
+                        switch (getWhat)
+                        {
+                            case "BOARD":
+                                clientGameData.addServerResponse(clientGameData.serializeBoard());
+                                break;
+                            case "PLAYERS":
+                                sendPlayers(clientGameData);
+                                break;
+                            case "TURN":
+                                opRemoteEndPoint = serverConnections.GetRemoteEndPoint(clientGameData.opponentsName);
+                                if (opRemoteEndPoint != null)
+                                {
+                                    var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
+                                    sendTurn(clientGameData, opClientGameData);
+                                }
+                                break;
+                            case "POSSIBLE":
+                                sendPossible(clientGameData, upperClientSplit[2]);
+                                break;
+                            default:
+                                clientGameData.addServerResponse("ERROR,Invalid GET Command");
+                                break;
+                        }
+                        break;
+                    case "REFUSE":
+                        handleREFUSE(upperClientSplit, clientGameData);
+                        break;
+                    case "MOVE":
+                        string errorMessage;
+                        if (serverConnections.MoveChessPiece(clientGameData, upperClientSplit[1], upperClientSplit[2], upperClientSplit.Length > 3 ? upperClientSplit[3] : null, out errorMessage))
+                        {
+                            // This was a successful move ... send back an OK 
+                            // Now send out some new boards and turns
+                            clientGameData.addServerResponse("OK");
                             clientGameData.addServerResponse(clientGameData.serializeBoard());
-                            break;
-                        case "PLAYERS":
-                            sendPlayers(clientGameData);
-                            break;
-                        case "TURN":
                             opRemoteEndPoint = serverConnections.GetRemoteEndPoint(clientGameData.opponentsName);
                             if (opRemoteEndPoint != null)
                             {
                                 var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
-                                sendTurn(clientGameData, opClientGameData);
+                                opClientGameData.addServerResponse(opClientGameData.serializeBoard());
+                                sendTurn(opClientGameData, clientGameData);
                             }
-                            break;
-                        case "POSSIBLE":
-                            sendPossible(clientGameData, upperClientSplit[2]);
-                            break;
-                        default:
-                            clientGameData.addServerResponse("ERROR,Invalid GET Command");
-                            break;
-                    }
-                    break;
-                case "REFUSE":
-                    handleREFUSE(upperClientSplit, clientGameData);
-                    break;
-                case "MOVE":
-                    string errorMessage;
-                    if (serverConnections.MoveChessPiece(clientGameData, upperClientSplit[1], upperClientSplit[2], upperClientSplit.Length > 3 ? upperClientSplit[3] : null, out errorMessage))
-                    {
-                        clientGameData.addServerResponse("OK");
-                    }
-                    else
-                    {
-                        clientGameData.addServerResponse("ERROR," + errorMessage);
-                    }
-                    break;
-                case "QUIT":
-                    string quitWhat = upperClientSplit[1];
-                    switch (quitWhat)
-                    {
-                        case "GAME":
-                            quitGame(clientGameData);
-                            break;
-                        case "MATCH":
-                            quitMatch(clientGameData);
-                            break;
-                        default:
-                            clientGameData.addServerResponse("ERROR,Invalid QUIT Command");
-                            break;
-                    }
-                    break;
-                case "ERROR":
-                    // What is the client sending me this for?
-                    break;
-                default:
-                    // WTH ... just say ERROR
-                    clientGameData.addServerResponse("ERROR,Unknown Action from Client " + action);
-                    break;
+                        }
+                        else
+                        {
+                            clientGameData.addServerResponse("ERROR," + errorMessage);
+                        }
+                        break;
+                    case "QUIT":
+                        string quitWhat = upperClientSplit[1];
+                        switch (quitWhat)
+                        {
+                            case "GAME":
+                                quitGame(clientGameData);
+                                break;
+                            case "MATCH":
+                                quitMatch(clientGameData);
+                                break;
+                            default:
+                                clientGameData.addServerResponse("ERROR,Invalid QUIT Command");
+                                break;
+                        }
+                        break;
+                    case "ERROR":
+                        // What is the client sending me this for?
+                        break;
+                    default:
+                        // WTH ... just say ERROR
+                        clientGameData.addServerResponse("ERROR,Unknown Action from Client " + action);
+                        break;
+                }
+            }
+            catch(Exception eAction)
+            {
+                clientGameData.addServerResponse("ERROR," + eAction.Message);
             }
         }
 
@@ -482,8 +500,22 @@ namespace ServerForm
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
 
+            // Gratuitous player refresh
+            sendPlayers(clientGameData);
             sendPlayers(opClientGameData);
-            sendTurn(clientGameData, opClientGameData);            
+
+            // Gratuitous board refresh
+            clientGameData.addServerResponse(clientGameData.serializeBoard());
+            opClientGameData.addServerResponse(opClientGameData.serializeBoard());
+
+            if (clientGameData.currentColorsTurn.Equals(clientGameData.playersColor))
+            {
+                sendTurn(clientGameData, opClientGameData);
+            }
+            else
+            {
+                sendTurn(opClientGameData, clientGameData);
+            }
         }
 
         private void sendTurn(PerClientGameData clientGameData, PerClientGameData opClientGameData)

@@ -44,13 +44,7 @@ namespace ChessHelpers
             lock (_lock)
             {
                 if (currentPlayerGameData.movePiece(from, to, promotedPiece, out errorMessage))
-                {
-                    // This was a successful move ... send back an OK 
-                    currentPlayerGameData.addServerResponse("OK");
-                    // Now send out some new boards
-                    //currentPlayerGameData.addServerResponse(currentPlayerGameData.serializeBoard());
-                    var opponentPlayer = dictConnections[currentPlayerGameData.opponentsRemoteEndPoint];
-                    opponentPlayer.addServerResponse(opponentPlayer.serializeBoard());
+                {  
                     return true;
                 }
             }
