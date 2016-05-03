@@ -117,8 +117,13 @@ namespace ChessHelpers
                     errorMessage = "A " + chessPieces[from].KindOfPiece + " cant move there!";
                     return false;
                 }
+                bool maybeCheck = true;
+                try {
+                     maybeCheck= isInCheck(check, checkMoves, from, to);
+                } catch(Exception e) {
 
-                bool maybeCheck = isInCheck(check, checkMoves, from, to);
+                }
+               
                 //it is in check
                 if (!maybeCheck)
                 {
@@ -331,40 +336,50 @@ namespace ChessHelpers
 
             // Now add our piece at the new location
             potentialChessBoard.chessPieces.Add(to, copyOfPieceToMove);
-
-            //checking mock board (with potential move)
-            foreach (var piece in potentialChessBoard.chessPieces)
+            try
             {
-                //if piece isnt on your team
-                if (!piece.Value.Color.Equals(currentColorsTurn))
+                //checking mock board (with potential move)
+                foreach (var piece in potentialChessBoard.chessPieces)
                 {
-                    //returns list of that pieces avaiable moves
-                    check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
-                    
-
-                    //if kings position is in that list then we set boolean to true return an error message
-
-                    //if white move then check white king vs all black pieces
-                    if (currentColorsTurn.Equals("W"))
+                    //if piece isnt on your team
+                    if (!piece.Value.Color.Equals(currentColorsTurn))
                     {
-                        isInCheck = check.Contains(potentialKingsPlace);
-                        if (isInCheck)
+                        try
                         {
-                            
-                            return false;
+                            //returns list of that pieces avaiable moves
+                            check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                        }catch
+                        {
+
                         }
-                    }
-                    //if black move check black king vs all white
-                    else
-                    {
-                        isInCheck = check.Contains(potentialKingsPlace);
-                        if (isInCheck)
+
+                        //if kings position is in that list then we set boolean to true return an error message
+
+                        //if white move then check white king vs all black pieces
+                        if (currentColorsTurn.Equals("W"))
                         {
-                           
-                            return false;
+                            isInCheck = check.Contains(potentialKingsPlace);
+                            if (isInCheck)
+                            {
+
+                                return false;
+                            }
+                        }
+                        //if black move check black king vs all white
+                        else
+                        {
+                            isInCheck = check.Contains(potentialKingsPlace);
+                            if (isInCheck)
+                            {
+
+                                return false;
+                            }
                         }
                     }
                 }
+            }catch(Exception e)
+            {
+
             }
            
             return true;
