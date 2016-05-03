@@ -111,19 +111,22 @@ namespace ChessHelpers
                 //checks to see all valid moves for a piece
                 ChessPiece checkMoves = chessPieces[from];
                 LinkedList<string> check = checkMoves.generatePossibleMoves(this, from);
-                
+
                 if (!check.Contains(to))
                 {
                     errorMessage = "A " + chessPieces[from].KindOfPiece + " cant move there!";
                     return false;
                 }
                 bool maybeCheck = true;
-                try {
-                     maybeCheck= isInCheck(check, checkMoves, from, to);
-                } catch(Exception e) {
+                try
+                {
+                    maybeCheck = isInCheck(check, checkMoves, from, to);
+                }
+                catch (Exception e)
+                {
 
                 }
-               
+
                 //it is in check
                 if (!maybeCheck)
                 {
@@ -194,30 +197,42 @@ namespace ChessHelpers
                     // Redo copy with new promoted piece
                     copyOfPieceToMove = chessPieces[from];
                 }
-                
-                    //if pawn moved in enpassant then remove piece behind it
-                    if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+
+                //if pawn moved in enpassant then remove piece behind it
+                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+                {
+                    copyOfPieceToMove.hasMoved = true;
+                    String behindPawnEnPassantPiece;
+                    //black you are coming "up" the board
+                    if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
+                    //white you are going "down" the board
+                    else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
+                    //remove pawn behind it
+                    chessPieces.Remove(behindPawnEnPassantPiece);
+                    //remove place where it was from
+                    chessPieces.Remove(from);
+                    //put it in new to location
+                    chessPieces.Add(to, copyOfPieceToMove);
+                    //flip
+                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                    //end turn
+                    return true;
+                }
+
+                // Enpassant only lasts for one move
+                foreach (var somePiece in chessPieces)
+                {
+                    if (somePiece.Value.KindOfPiece.Equals("PAWN"))
                     {
-                        copyOfPieceToMove.hasMoved = true;
-                        String behindPawnEnPassantPiece;
-                        //black you are coming "up" the board
-                        if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
-                        //white you are going "down" the board
-                        else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
-                        //remove pawn behind it
-                        chessPieces.Remove(behindPawnEnPassantPiece);
-                        //remove place where it was from
-                        chessPieces.Remove(from);
-                        //put it in new to location
-                        chessPieces.Add(to, copyOfPieceToMove);
-                        //flip
-                        currentColorsTurn = FlipFlopColor(currentColorsTurn);
-                        //end turn
-                        return true;
+                        // We're a PAWN ... are we the opposite color?
+                        if (!somePiece.Value.Color.Equals(currentColorsTurn))
+                        {
+                            // Turn off enpassant
+                            ((PAWN)somePiece.Value).allowEnPassant = false;
+                        }
                     }
-                
-                
-                
+                }
+
                 //castle
                 if (copyOfPieceToMove.KindOfPiece.Equals("KING") && ((KING)(copyOfPieceToMove)).castleCheck(this, from, to))
                 {
