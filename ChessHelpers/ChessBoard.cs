@@ -117,15 +117,20 @@ namespace ChessHelpers
                     errorMessage = "A " + chessPieces[from].KindOfPiece + " cant move there!";
                     return false;
                 }
+                bool maybeCheck = true;
+                try {
+                     maybeCheck= isInCheck(check, checkMoves, from, to);
+                } catch(Exception e) {
 
-                bool maybeCheck = isInCheck(check, checkMoves, from, to);
+                }
+               
                 //it is in check
                 if (!maybeCheck)
                 {
                     //is it checkmate?
                     if (isCheckMate())
                     {
-                        errorMessage = "Checkmate!!!!";
+                        errorMessage = "WINNER";
                         return false;
                     }
                     errorMessage = "You are in check!";
@@ -166,6 +171,16 @@ namespace ChessHelpers
                         ((PAWN)chessPieces[from]).allowEnPassant = true;
                     }
                 }
+                //if you have moved one square at any point
+                if (chessPieces[from].KindOfPiece.Equals("PAWN"))
+                {
+                    int numSpaces = Math.Abs(fromY - toY);
+                    if (numSpaces == 1)
+                    {
+                        ((PAWN)chessPieces[from]).allowEnPassant = false;
+                    }
+                }
+
                 ChessPiece copyOfPieceToMove = chessPieces[from];
 
                 //checks to see if promotion
@@ -179,28 +194,29 @@ namespace ChessHelpers
                     // Redo copy with new promoted piece
                     copyOfPieceToMove = chessPieces[from];
                 }
-
-                //if pawn moved in enpassant then remove piece behind it
-                if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
-                {
-                    copyOfPieceToMove.hasMoved = true;
-                    String behindPawnEnPassantPiece;
-                    //black you are coming "up" the board
-                    if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
-                    //white you are going "down" the board
-                    else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
-                    //remove pawn behind it
-                    chessPieces.Remove(behindPawnEnPassantPiece);
-                    //remove place where it was from
-                    chessPieces.Remove(from);
-                    //put it in new to location
-                    chessPieces.Add(to, copyOfPieceToMove);
-                    //flip
-                    currentColorsTurn = FlipFlopColor(currentColorsTurn);
-                    //end turn
-                    return true;
-                }
-
+                
+                    //if pawn moved in enpassant then remove piece behind it
+                    if (copyOfPieceToMove.KindOfPiece.Equals("PAWN") && ((PAWN)copyOfPieceToMove).enPassantCheck(this, from, to))
+                    {
+                        copyOfPieceToMove.hasMoved = true;
+                        String behindPawnEnPassantPiece;
+                        //black you are coming "up" the board
+                        if (copyOfPieceToMove.Color.Equals("B")) { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY - 1); }
+                        //white you are going "down" the board
+                        else { behindPawnEnPassantPiece = "" + (toX) + ":" + (toY + 1); }
+                        //remove pawn behind it
+                        chessPieces.Remove(behindPawnEnPassantPiece);
+                        //remove place where it was from
+                        chessPieces.Remove(from);
+                        //put it in new to location
+                        chessPieces.Add(to, copyOfPieceToMove);
+                        //flip
+                        currentColorsTurn = FlipFlopColor(currentColorsTurn);
+                        //end turn
+                        return true;
+                    }
+                
+                
                 
                 //castle
                 if (copyOfPieceToMove.KindOfPiece.Equals("KING") && ((KING)(copyOfPieceToMove)).castleCheck(this, from, to))
@@ -320,40 +336,50 @@ namespace ChessHelpers
 
             // Now add our piece at the new location
             potentialChessBoard.chessPieces.Add(to, copyOfPieceToMove);
-
-            //checking mock board (with potential move)
-            foreach (var piece in potentialChessBoard.chessPieces)
+            try
             {
-                //if piece isnt on your team
-                if (!piece.Value.Color.Equals(currentColorsTurn))
+                //checking mock board (with potential move)
+                foreach (var piece in potentialChessBoard.chessPieces)
                 {
-                    //returns list of that pieces avaiable moves
-                    check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
-                    
-
-                    //if kings position is in that list then we set boolean to true return an error message
-
-                    //if white move then check white king vs all black pieces
-                    if (currentColorsTurn.Equals("W"))
+                    //if piece isnt on your team
+                    if (!piece.Value.Color.Equals(currentColorsTurn))
                     {
-                        isInCheck = check.Contains(potentialKingsPlace);
-                        if (isInCheck)
+                        try
                         {
-                            
-                            return false;
+                            //returns list of that pieces avaiable moves
+                            check = piece.Value.generatePossibleMoves(potentialChessBoard, piece.Key);
+                        }catch
+                        {
+
                         }
-                    }
-                    //if black move check black king vs all white
-                    else
-                    {
-                        isInCheck = check.Contains(potentialKingsPlace);
-                        if (isInCheck)
+
+                        //if kings position is in that list then we set boolean to true return an error message
+
+                        //if white move then check white king vs all black pieces
+                        if (currentColorsTurn.Equals("W"))
                         {
-                           
-                            return false;
+                            isInCheck = check.Contains(potentialKingsPlace);
+                            if (isInCheck)
+                            {
+
+                                return false;
+                            }
+                        }
+                        //if black move check black king vs all white
+                        else
+                        {
+                            isInCheck = check.Contains(potentialKingsPlace);
+                            if (isInCheck)
+                            {
+
+                                return false;
+                            }
                         }
                     }
                 }
+            }catch(Exception e)
+            {
+
             }
            
             return true;
