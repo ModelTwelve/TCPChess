@@ -130,7 +130,7 @@ namespace ChessHelpers
                     //is it checkmate?
                     if (isCheckMate())
                     {
-                        errorMessage = "Checkmate!!!!";
+                        errorMessage = "WINNER";
                         return false;
                     }
                     errorMessage = "You are in check!";
