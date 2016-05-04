@@ -391,7 +391,25 @@ namespace ServerForm
                         }
                         else
                         {
-                            clientGameData.addServerResponse("ERROR," + errorMessage);
+                            // Check for WINNER (Checkmate)
+                            switch(errorMessage.ToUpper())
+                            {
+                                case "WINNER":
+                                case "LOSER":
+                                    // Either way you want to think about this this player has lost!
+                                    // and therefore the opponent has won!
+                                    opRemoteEndPoint = serverConnections.GetRemoteEndPoint(clientGameData.opponentsName);
+                                    if (opRemoteEndPoint != null)
+                                    {
+                                        var opClientGameData = serverConnections.GetClientGameData(opRemoteEndPoint);
+                                        declareWINNER(clientGameData, opClientGameData);
+                                    }
+                                    break;
+                                default:
+                                    clientGameData.addServerResponse("ERROR," + errorMessage);
+                                    break;
+                            }
+                            
                         }
                         break;
                     case "QUIT":
@@ -551,16 +569,21 @@ namespace ServerForm
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
             if (opClientGameData != null)
             {
-                opClientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
-                clientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
-
-                clientGameData.destroyMatch();
-                opClientGameData.destroyMatch();
-
-                sendPlayers(opClientGameData);
+                declareWINNER(clientGameData, opClientGameData);
             }
             // Regardless of the circumstances ... let's send a new player list
             sendPlayers(clientGameData);
+        }
+
+        private void declareWINNER(PerClientGameData clientGameData, PerClientGameData opClientGameData)
+        {
+            opClientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
+            clientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
+
+            clientGameData.destroyMatch();
+            opClientGameData.destroyMatch();
+
+            sendPlayers(opClientGameData);
         }
 
         private void quitGame(PerClientGameData clientGameData)
@@ -568,13 +591,7 @@ namespace ServerForm
             var opClientGameData = serverConnections.GetClientGameData(clientGameData.opponentsRemoteEndPoint);
             if (opClientGameData != null)
             {
-                opClientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
-                clientGameData.addServerResponse("WINNER," + opClientGameData.displayPlayersName);
-
-                clientGameData.destroyMatch();
-                opClientGameData.destroyMatch();
-
-                sendPlayers(opClientGameData);
+                declareWINNER(clientGameData, opClientGameData);
             }
             clientGameData.addServerResponse("OK");
             clientGameData.quitGAME = true;

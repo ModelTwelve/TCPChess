@@ -503,8 +503,8 @@ namespace ChessClient
                         }
                         client.requestMove(selectedX.ToString() + ":" + selectedY.ToString() + "," + newX.ToString() + ":" + newY.ToString() + promotedPiece);
                         // Make sure we get the new board!
-                        client.getBoard();
-                        client.getTurn();
+                        //client.getBoard();
+                        //client.getTurn();
                     }
                     selectedX = -1;
                     selectedY = -1;
