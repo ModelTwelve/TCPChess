@@ -18,8 +18,8 @@ namespace ChessHelpers
 
         public ChessBoard()
         {
-            initializeBoard();
-            //initializeCastleScenario();
+            //initializeBoard();
+            initializeCastleScenario();
             //initializeCheckmate();
         }
 
