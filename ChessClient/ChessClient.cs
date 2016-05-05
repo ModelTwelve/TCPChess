@@ -37,13 +37,14 @@ namespace ChessClient
         {
             connect(playerName);
 
-            TcpClient client = new TcpClient();
-            await client.ConnectAsync(ipAddress, port);
+            var client = new TcpClient();
+            Socket _socket = client.Client;
+            _socket.Connect(ipAddress, port);
 
             reportingClass.addMessage("Connected to Server");
             progress.Report(reportingClass);
 
-            using (var networkStream = client.GetStream())
+            using (var networkStream = new NetworkStream(_socket))
             {
                 using (var writer = new StreamWriter(networkStream))
                 {

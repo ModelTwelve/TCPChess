@@ -574,7 +574,6 @@ namespace ChessClient
 
         private void stopClientBTN_Click(object sender, EventArgs e)
         {
-
             switch (stopClientBTN.Tag.ToString())
             {
                 case "MATCH":

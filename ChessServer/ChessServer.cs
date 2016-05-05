@@ -25,7 +25,7 @@ namespace ServerForm
         public async Task Start()
         {
             IPAddress ipAddre = IPAddress.Any;
-            TcpListener listener = new TcpListener(ipAddre, _listeningPort);
+            var listener = new TcpListener(ipAddre, _listeningPort);
             listener.Start();
             reportingClass.addMessage("Server is running");
             reportingClass.addMessage("Listening on port " + _listeningPort);
@@ -40,11 +40,10 @@ namespace ServerForm
                 try
                 {
                     progress.Report(reportingClass);
-                    var tcpClient = await listener.AcceptTcpClientAsync();
+                    Socket _socket = await listener.AcceptSocketAsync();
+                    serverConnections.AddClient(_socket.RemoteEndPoint.ToString());
 
-                    serverConnections.AddClient(tcpClient.Client.RemoteEndPoint.ToString());
-
-                    Task.Run(() => HandleConnectionAsync(tcpClient));
+                    Task.Run(() => HandleConnectionAsync(_socket));
                 }
                 catch (Exception exp)
                 {
@@ -53,13 +52,13 @@ namespace ServerForm
             }
         }
 
-        private async void HandleConnectionAsync(TcpClient tcpClient)
+        private async void HandleConnectionAsync(Socket _socket)
         {
-            string clientInfo = tcpClient.Client.RemoteEndPoint.ToString();
+            string clientInfo = _socket.RemoteEndPoint.ToString();
             reportingClass.addMessage(string.Format("Got connection request from {0}", clientInfo));
             try
             {
-                using (var networkStream = tcpClient.GetStream())
+                using (var networkStream = new NetworkStream(_socket))
                 {
                     using (var writer = new StreamWriter(networkStream))
                     {
@@ -69,6 +68,8 @@ namespace ServerForm
                             Task.Run(() => writeTask(writer, clientInfo));
                             await connectionMonitor(writer, clientInfo);
                             serverConnections.Remove(clientInfo);
+                            // Gratuitous player refresh
+                            serverConnections.RefreshAllPlayers();
                         }
                     }
                 }
@@ -80,7 +81,7 @@ namespace ServerForm
             finally
             {
                 reportingClass.addMessage(string.Format("Closing the client connection - {0}", clientInfo));
-                tcpClient.Close();
+                _socket.Close();
             }
 
             progress.Report(reportingClass);
@@ -518,10 +519,6 @@ namespace ServerForm
             clientGameData.addServerResponse("ACCEPTED," + opClientGameData.playersName + "," + opClientGameData.playersColor);
             opClientGameData.addServerResponse("ACCEPTED," + clientGameData.playersName + "," + clientGameData.playersColor);
 
-            // Gratuitous player refresh
-            sendPlayers(clientGameData);
-            sendPlayers(opClientGameData);
-
             // Gratuitous board refresh
             clientGameData.addServerResponse(clientGameData.serializeBoard());
             opClientGameData.addServerResponse(opClientGameData.serializeBoard());
@@ -534,6 +531,9 @@ namespace ServerForm
             {
                 sendTurn(opClientGameData, clientGameData);
             }
+
+            // Gratuitous player refresh
+            serverConnections.RefreshAllPlayers();
         }
 
         private void sendTurn(PerClientGameData clientGameData, PerClientGameData opClientGameData)
@@ -571,8 +571,8 @@ namespace ServerForm
             {
                 declareWINNER(clientGameData, opClientGameData);
             }
-            // Regardless of the circumstances ... let's send a new player list
-            sendPlayers(clientGameData);
+            // Gratuitous player refresh
+            serverConnections.RefreshAllPlayers();
         }
 
         private void declareWINNER(PerClientGameData clientGameData, PerClientGameData opClientGameData)
@@ -582,8 +582,6 @@ namespace ServerForm
 
             clientGameData.destroyMatch();
             opClientGameData.destroyMatch();
-
-            sendPlayers(opClientGameData);
         }
 
         private void quitGame(PerClientGameData clientGameData)
