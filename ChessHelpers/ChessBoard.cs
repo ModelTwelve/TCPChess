@@ -340,7 +340,6 @@ namespace ChessHelpers
             if (copyOfPieceToMove.KindOfPiece.Equals("KING")) { 
                 potentialKingsPlace = to;
             }
-            copyOfPieceToMove.hasMoved = true;
             if (potentialChessBoard.chessPieces.ContainsKey(to))
             {
                 // This piece needs removed from the board
